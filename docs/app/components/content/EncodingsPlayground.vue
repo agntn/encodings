@@ -71,10 +71,18 @@ const inputFormat = ref<(typeof INPUT_FORMATS)[number]>("utf8");
 const text = ref(create("base64").encode(SAMPLE_INPUT));
 const outputFormat = ref<(typeof OUTPUT_FORMATS)[number]>("auto");
 const unknown = ref(IDENTIFY_SAMPLES[0]!.text);
-const limit = ref<string | number>("5");
+/** Empty until somebody types one, so `peel` can't mistake a typed limit for its default. */
+const limit = ref<string | number>("");
 const peeling = ref(false);
 /** The executor's own default: 5 candidates, or 10 layers with `peel`. */
 const limitDefault = computed(() => (peeling.value ? 10 : 5));
+/** The typed limit when the call needs it, left out when it's empty or the default anyway. */
+const limitArg = computed(() => {
+  const count = Number(limit.value);
+  return String(limit.value).trim() !== "" && Number.isInteger(count) && count !== limitDefault.value
+    ? count
+    : undefined;
+});
 const describe = ref("");
 const family = ref("");
 /** Option values as typed, by option name; only the encoding's own reach the call. */
@@ -134,11 +142,10 @@ const toolArgs = computed((): Record<string, unknown> => {
         ...(Object.keys(options.value).length > 0 ? { options: options.value } : {}),
       };
     case "identify": {
-      const count = Number(limit.value);
       return {
         text: unknown.value,
         ...(peeling.value ? { peel: true } : {}),
-        ...(Number.isInteger(count) && count !== limitDefault.value ? { limit: count } : {}),
+        ...(limitArg.value === undefined ? {} : { limit: limitArg.value }),
       };
     }
     case "info":
@@ -254,10 +261,9 @@ const cliLine = computed(() => {
       return `encodings decode ${encodingName.value} ${shellArg(text.value)}${output}${flags ? ` ${flags}` : ""}`;
     }
     case "identify": {
-      const count = Number(limit.value);
       const flags = [
         peeling.value ? "--peel" : "",
-        Number.isInteger(count) && count !== limitDefault.value ? `-n ${count}` : "",
+        limitArg.value === undefined ? "" : `-n ${limitArg.value}`,
       ].filter(Boolean);
       return [`encodings identify ${shellArg(unknown.value)}`, ...flags].join(" ");
     }
@@ -357,16 +363,6 @@ function decodeCandidate(
   operation.value = "decode";
 }
 
-/**
- * Turns `peel` on or off; a limit still at the old default moves to the new one.
- *
- * @param {boolean} on - Whether to peel.
- */
-function setPeeling(on: boolean) {
-  if (Number(limit.value) === limitDefault.value) limit.value = String(on ? 10 : 5);
-  peeling.value = on;
-}
-
 /** Layers outermost first with the text each reads, from hex since `text` drops control bytes. */
 const layers = computed(() => {
   if (answer.value.kind !== "identify" || answer.value.details.layers === undefined) return undefined;
@@ -400,7 +396,7 @@ function readQuery(query: Record<string, unknown>) {
     else text.value = query.text;
   }
   if (typeof query.peel === "string") peeling.value = query.peel === "true";
-  limit.value = typeof query.limit === "string" ? query.limit : String(limitDefault.value);
+  if (typeof query.limit === "string") limit.value = query.limit;
   const inFormat = String(query.inputFormat ?? "");
   if ((INPUT_FORMATS as readonly string[]).includes(inFormat)) {
     inputFormat.value = inFormat as (typeof INPUT_FORMATS)[number];
@@ -583,6 +579,7 @@ const identifyLimit = MAX_CANDIDATES;
                     type="number"
                     min="1"
                     :max="identifyLimit"
+                    :placeholder="`default ${limitDefault}`"
                     variant="none"
                     class="w-full"
                   />
@@ -593,9 +590,8 @@ const identifyLimit = MAX_CANDIDATES;
                 <dd>
                   <UCheckbox
                     id="playground-peel"
-                    :model-value="peeling"
+                    v-model="peeling"
                     label="take every layer off, outermost first"
-                    @update:model-value="setPeeling($event === true)"
                   />
                 </dd>
               </div>
