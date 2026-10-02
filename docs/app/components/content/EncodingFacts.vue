@@ -125,20 +125,20 @@ const title = computed(() => `encodings_info("${props.name}")`);
           <div>
             <dt>Overhead</dt>
             <dd class="console-accent">
-              <span class="alg-line">+{{ overhead(entry) }}% on random bytes</span>
+              <span class="facts-line">+{{ overhead(entry) }}% on random bytes</span>
             </dd>
           </div>
           <div>
             <dt>{{ entry.info.checksum ? "Checksum" : "Padding" }}</dt>
             <dd>
-              <span class="alg-line" :class="{ 'alg-none': guard === 'none' }">{{ guard }}</span>
+              <span class="facts-line" :class="{ 'facts-none': guard === 'none' }">{{ guard }}</span>
             </dd>
           </div>
           <div>
             <dt>Standard</dt>
             <dd>
               <UTooltip :text="entry.info.standard">
-                <span class="alg-line" tabindex="0">{{ entry.info.standard }}</span>
+                <span class="facts-line" tabindex="0">{{ entry.info.standard }}</span>
               </UTooltip>
             </dd>
           </div>
@@ -146,9 +146,9 @@ const title = computed(() => `encodings_info("${props.name}")`);
             <dt>{{ entry.usedBy ? "Used by" : "Family" }}</dt>
             <dd>
               <UTooltip v-if="entry.usedBy" :text="entry.usedBy">
-                <span class="alg-line" tabindex="0">{{ entry.usedBy }}</span>
+                <span class="facts-line" tabindex="0">{{ entry.usedBy }}</span>
               </UTooltip>
-              <span v-else class="alg-line">{{ kin.length + 1 }} in {{ entry.info.family }}</span>
+              <span v-else class="facts-line">{{ kin.length + 1 }} in {{ entry.info.family }}</span>
             </dd>
           </div>
         </dl>
@@ -173,31 +173,31 @@ const title = computed(() => `encodings_info("${props.name}")`);
         >
         <span class="console-mark" aria-hidden="true" />
       </p>
-      <dl class="alg-digests">
+      <dl class="facts-sample">
         <div>
           <dt><span class="console-tag">Out</span></dt>
           <dd>
             <UTooltip :text="sample.line">
-              <span class="alg-line alg-digest" tabindex="0">{{ sample.line }}</span>
+              <span class="facts-line facts-value" tabindex="0">{{ sample.line }}</span>
             </UTooltip>
           </dd>
         </div>
         <div>
           <dt><span class="console-tag">Back</span></dt>
           <dd>
-            <span class="alg-line alg-digest alg-back"
-              >{{ JSON.stringify(sample.back) }}<span v-if="sample.details" class="alg-dim">
+            <span class="facts-line facts-value facts-back"
+              >{{ JSON.stringify(sample.back) }}<span v-if="sample.details" class="facts-dim">
                 · {{ sample.details }}</span
               ></span
             >
           </dd>
         </div>
       </dl>
-      <div class="alg-alphabet" role="img" :aria-label="`${entry.info.alphabet.length}-character alphabet`">
+      <div class="facts-alphabet" role="img" :aria-label="`${entry.info.alphabet.length}-character alphabet`">
         <span
           v-for="(cell, index) in cells"
           :key="index"
-          class="alg-glyph"
+          class="facts-glyph"
           :data-used="cell.used ? '' : undefined"
           >{{ cell.character === " " ? "␠" : cell.character }}</span
         >
@@ -209,16 +209,16 @@ const title = computed(() => `encodings_info("${props.name}")`);
         <span>Options <span aria-hidden="true">[ as info() declares them ]</span></span>
         <span class="console-mark" aria-hidden="true" />
       </p>
-      <dl class="alg-options">
+      <dl class="facts-options">
         <div v-for="option in options" :key="option.name">
           <dt>
             <code>{{ option.name }}</code>
-            <span class="alg-type">{{ option.type }}</span>
+            <span class="facts-type">{{ option.type }}</span>
           </dt>
-          <dd class="alg-requirement" :data-required="option.required ? '' : undefined">
+          <dd class="facts-requirement" :data-required="option.required ? '' : undefined">
             {{ option.requirement }}
           </dd>
-          <dd class="alg-description">{{ option.description }}</dd>
+          <dd class="facts-description">{{ option.description }}</dd>
         </div>
       </dl>
     </div>
@@ -228,11 +228,11 @@ const title = computed(() => `encodings_info("${props.name}")`);
         <span>Access <span aria-hidden="true">[ library · CLI · playground ]</span></span>
         <span class="console-mark" aria-hidden="true" />
       </p>
-      <dl class="alg-leads">
+      <dl class="facts-leads">
         <dd class="console-lead">
           <span class="console-tag">Import</span>
           <UTooltip :text="subpath">
-            <code class="alg-code" tabindex="0"
+            <code class="facts-code" tabindex="0"
               ><span class="tok-kw">import</span> { {{ codecExport(entry) }} } from
               <span class="tok-str">"@agntn/encodings/{{ entry.info.family }}"</span></code
             >
@@ -242,24 +242,24 @@ const title = computed(() => `encodings_info("${props.name}")`);
         <dd class="console-lead">
           <span class="console-tag">CLI</span>
           <UTooltip :text="cli">
-            <code class="alg-code" tabindex="0"><span class="tok-fn">encodings</span> {{ cli.slice(10) }}</code>
+            <code class="facts-code" tabindex="0"><span class="tok-fn">encodings</span> {{ cli.slice(10) }}</code>
           </UTooltip>
           <span class="console-leader" aria-hidden="true" />
         </dd>
         <dd class="console-lead">
           <span class="console-tag">Try</span>
           <NuxtLink :to="playground"
-            >playground<span class="alg-dim"> with the sample above</span></NuxtLink
+            >playground<span class="facts-dim"> with the sample above</span></NuxtLink
           >
           <span class="console-leader" aria-hidden="true" />
         </dd>
         <dd v-if="kin.length" class="console-lead">
           <span class="console-tag">Kin</span>
-          <span class="alg-kin"
+          <span class="facts-kin"
             ><template v-for="(other, index) in kin.slice(0, 4)" :key="other.slug"
               ><NuxtLink :to="other.to">{{ other.slug }}</NuxtLink
               ><template v-if="index < Math.min(kin.length, 4) - 1">, </template></template
-            ><span v-if="kin.length > 4" class="alg-dim"> +{{ kin.length - 4 }}</span></span
+            ><span v-if="kin.length > 4" class="facts-dim"> +{{ kin.length - 4 }}</span></span
           >
           <span class="console-leader" aria-hidden="true" />
         </dd>
@@ -283,11 +283,11 @@ const title = computed(() => `encodings_info("${props.name}")`);
 </template>
 
 <style scoped>
-.alg-none {
+.facts-none {
   color: var(--ui-text-dimmed);
 }
 /* Values stay on one line for every encoding; the whole value is in the tooltip. */
-.alg-line {
+.facts-line {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -297,87 +297,87 @@ section :deep(.console-readout-rows > div) {
   grid-template-columns: 6.5rem minmax(0, 1fr);
 }
 /* One row per sample line: the tag, then the value on one line with the rest in the tooltip. */
-.alg-digests {
+.facts-sample {
   display: grid;
   gap: 6px;
   margin: 0;
 }
-.alg-digests > div {
+.facts-sample > div {
   display: grid;
   grid-template-columns: 4.5rem minmax(0, 1fr);
   gap: 12px;
   align-items: center;
 }
-.alg-digests dt > .console-tag {
+.facts-sample dt > .console-tag {
   margin: 0;
 }
-.alg-digests dd {
+.facts-sample dd {
   min-width: 0;
   margin: 0;
 }
-.alg-digest {
+.facts-value {
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--ui-text-highlighted);
 }
 /* One row per option: the name and its type, whether it is required, then what it does in the reading face. */
-.alg-options {
+.facts-options {
   display: grid;
   margin: 0;
 }
-.alg-options > div {
+.facts-options > div {
   display: grid;
   grid-template-columns: 11rem 7.5rem minmax(0, 1fr);
   gap: 4px 16px;
   align-items: baseline;
   padding: 8px 0;
 }
-.alg-options > div + div {
+.facts-options > div + div {
   border-top: 1px solid var(--console-line);
 }
-.alg-options dt {
+.facts-options dt {
   display: flex;
   gap: 8px;
   align-items: baseline;
   min-width: 0;
 }
-.alg-options code {
+.facts-options code {
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--ui-text-highlighted);
 }
-.alg-type {
+.facts-type {
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ui-text-dimmed);
 }
-.alg-requirement {
+.facts-requirement {
   margin: 0;
   font-size: 12px;
   color: var(--ui-text-muted);
 }
-.alg-requirement[data-required] {
+.facts-requirement[data-required] {
   color: var(--console-accent);
 }
-.alg-description {
+.facts-description {
   margin: 0;
   font-family: var(--font-sans);
   font-size: 14px;
   line-height: 1.5;
   color: var(--ui-text-muted);
 }
-.alg-back {
+.facts-back {
   color: var(--ui-text-muted);
 }
 /* Every character the encoding writes, the sample's ones open in the accent. */
-.alg-alphabet {
+.facts-alphabet {
   display: grid;
   grid-template-columns: repeat(32, minmax(0, 1fr));
   gap: 2px;
   margin-top: 14px;
 }
-.alg-glyph {
+.facts-glyph {
   display: grid;
   place-items: center;
   aspect-ratio: 1;
@@ -389,12 +389,12 @@ section :deep(.console-readout-rows > div) {
   color: var(--ui-text-dimmed);
   background: color-mix(in srgb, var(--ui-text-muted) 10%, var(--ui-bg));
 }
-.alg-glyph[data-used] {
+.facts-glyph[data-used] {
   color: var(--ui-text-highlighted);
   box-shadow: inset 0 0 0 1px var(--console-accent);
   background: color-mix(in srgb, var(--console-accent) 26%, var(--ui-bg));
 }
-.alg-code {
+.facts-code {
   min-width: 0;
   overflow: hidden;
   font: inherit;
@@ -402,43 +402,43 @@ section :deep(.console-readout-rows > div) {
   white-space: nowrap;
   color: var(--ui-text-highlighted);
 }
-.alg-dim {
+.facts-dim {
   color: var(--ui-text-dimmed);
 }
-.console-lead > a:hover .alg-dim {
+.console-lead > a:hover .facts-dim {
   color: inherit;
 }
-.alg-kin {
+.facts-kin {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.alg-kin a:hover {
+.facts-kin a:hover {
   color: var(--console-accent);
 }
-.alg-leads {
+.facts-leads {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
   gap: 0 28px;
   margin: 0;
 }
-.alg-leads > .console-lead {
+.facts-leads > .console-lead {
   margin: 0 0 8px;
   flex-wrap: nowrap;
   min-width: 0;
 }
 @media (width < 640px) {
-  .alg-leads .console-leader {
+  .facts-leads .console-leader {
     display: none;
   }
-  .alg-options > div {
+  .facts-options > div {
     grid-template-columns: minmax(0, 1fr) auto;
   }
-  .alg-description {
+  .facts-description {
     grid-column: 1 / -1;
   }
-  .alg-alphabet {
+  .facts-alphabet {
     grid-template-columns: repeat(16, minmax(0, 1fr));
   }
 }

@@ -78,13 +78,13 @@ const CORNER = "#5b636d";
         class="m-0 text-[72px] font-medium leading-[1.05] tracking-[-0.03em]"
         style="color: #f0f4f8"
       >
-        Hash it.
+        Decode it.
       </h1>
       <h1
         class="m-0 ml-[24px] text-[72px] font-medium leading-[1.05] tracking-[-0.03em]"
         style="color: #fcd34d"
       >
-        Don't guess it.
+        Don't eyeball it.
       </h1>
     </div>
     <p

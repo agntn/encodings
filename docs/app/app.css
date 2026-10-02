@@ -1051,15 +1051,6 @@ html:has(.encodings-landing) footer [data-slot="container"] {
   z-index: -1;
   background: color-mix(in srgb, var(--ui-text-muted) 5%, var(--ui-bg));
 }
-.encodings-tooltip-value {
-  color: var(--ui-text-highlighted);
-}
-.encodings-tooltip-open {
-  color: var(--tooltip-accent);
-}
-.encodings-tooltip-sep {
-  color: var(--ui-text-dimmed);
-}
 
 /* The instrument palette, on the root so a strip or a button outside a panel shares it. */
 :root {

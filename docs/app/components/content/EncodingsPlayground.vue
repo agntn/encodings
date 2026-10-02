@@ -1220,14 +1220,6 @@ const identifyLimit = MAX_CANDIDATES;
 .playground-ops .console-lead:hover > span:not(.console-tag, .console-leader) {
   color: var(--ui-text-highlighted);
 }
-.playground-optional {
-  color: var(--ui-text-dimmed);
-}
-.playground-checks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 18px;
-}
 .playground-chips {
   display: flex;
   flex-wrap: wrap;
@@ -1254,7 +1246,7 @@ const identifyLimit = MAX_CANDIDATES;
   color: var(--console-accent);
 }
 .playground-invalid {
-  color: var(--hashes-del);
+  color: var(--encodings-del);
 }
 .playground-line {
   display: block;
@@ -1262,14 +1254,14 @@ const identifyLimit = MAX_CANDIDATES;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* The digest as a value, whole and wrapped: 128 hex digits never scroll the page. */
+/* The answer as a value, whole and wrapped: a long text never scrolls the page. */
 .playground-output {
   max-height: 16rem;
   overflow-y: auto;
   white-space: pre-wrap;
   color: var(--ui-text-highlighted);
 }
-/* One row per algorithm of the listing: the name as a link, family, size, HMAC. */
+/* One row per encoding of the listing: the name as a link, family, alphabet size, checksum. */
 .playground-list li {
   grid-template-columns: minmax(0, 12rem) minmax(0, 10rem) 6rem minmax(0, 1fr);
 }
@@ -1279,16 +1271,12 @@ const identifyLimit = MAX_CANDIDATES;
 .playground-list-name:hover {
   color: var(--console-accent);
 }
-/* One row per secret length: the length, the digest, the message's size. */
-.playground-forgeries li {
-  grid-template-columns: 6rem minmax(0, 1fr) 6rem;
-}
-/* One row per candidate: the name, what it is, verify or not here. */
+/* One row per candidate: the encoding, its score and value, the decode button. */
 .playground-candidates li {
   grid-template-columns: minmax(0, 10rem) minmax(0, 1fr) auto;
   align-items: center;
 }
-/* One row per option of `hashes_algorithms` with a name: the name, whether it is required, what it does. */
+/* One row per option of one encoding: the name, whether it is required, what it does. */
 .playground-options li {
   grid-template-columns: 9rem 8rem minmax(0, 1fr);
 }
@@ -1312,12 +1300,6 @@ const identifyLimit = MAX_CANDIDATES;
     grid-template-columns: minmax(0, 1fr) auto;
   }
   .playground-list li > span:nth-of-type(1) {
-    display: none;
-  }
-  .playground-forgeries li {
-    grid-template-columns: 5rem minmax(0, 1fr);
-  }
-  .playground-forgeries li > span:last-child {
     display: none;
   }
   .playground-candidates li {
