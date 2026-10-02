@@ -25,6 +25,7 @@ import {
   z85,
   zbase32,
 } from "../src/index.ts";
+import { fromWords, fromWordsUnsafe, toWords } from "../src/bech32.ts";
 import { javascript, python } from "./fixtures/references.ts";
 
 const text = (value: string) => new TextEncoder().encode(value);
@@ -275,6 +276,39 @@ describe("bech32 and bech32m (BIP173, BIP350)", () => {
   });
 });
 
+describe("bech32 words", () => {
+  const program = hex.decode("751e76e8199196d454941c45d1b3a323f1433bd6");
+  const address = bech32.decodeWords("bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4");
+
+  it("regroups a witness program into the words after the version (BIP173)", () => {
+    expect(toWords(program)).toEqual(address.words.slice(1));
+    expect(fromWords(address.words.slice(1))).toEqual(program);
+    expect(fromWordsUnsafe(address.words.slice(1))).toEqual(program);
+  });
+
+  it("pads a partial last word with zero bits", () => {
+    expect(toWords(Uint8Array.of(0xff))).toEqual([31, 28]);
+    expect(fromWords([31, 28])).toEqual(Uint8Array.of(0xff));
+    expect(toWords(new Uint8Array(0))).toEqual([]);
+  });
+
+  it.each([
+    ["one word, five bits short of a byte", [0], "5 bits are left over, and padding is at most 4"],
+    ["padding bits that are not zero", [31, 29], "padding bits after the last byte are not zero"],
+    ["a word over 31", [0, 32], "word 32 at index 1 is not an integer from 0 to 31"],
+    ["a negative word", [-1, 0], "word -1 at index 0 is not an integer from 0 to 31"],
+    ["a fractional word", [0, 1.5], "word 1.5 at index 1 is not an integer from 0 to 31"],
+  ])("refuses %s", (_, words, message) => {
+    expect(() => fromWords(words)).toThrow(DecodeError);
+    expect(() => fromWords(words)).toThrow(`bech32: ${message}`);
+    expect(fromWordsUnsafe(words)).toBeUndefined();
+  });
+
+  it("names the offending word's index", () => {
+    expect(() => fromWords([0, 32])).toThrow(expect.objectContaining({ index: 1 }));
+  });
+});
+
 describe("segwit addresses", () => {
   it.each([
     ["BC1QW508D6QEJXTDG4Y5R3ZARVARY0C5XW7KV8F3T4", 0, "751e76e8199196d454941c45d1b3a323f1433bd6"],
@@ -301,28 +335,21 @@ describe("segwit addresses", () => {
     expect(hex.encode(decoded.program)).toBe("751e76e8199196d454941c45d1b3a323");
   });
 
-  /**
-   * Words of a witness program: bytes regrouped into 5-bit words with zero padding.
-   * @param bytes - The program.
-   * @returns {number[]} Its words.
-   */
-  const words = (bytes: Uint8Array) => bech32.decodeWords(bech32.encode("x", bytes)).words;
-
   it.each([
     [
       "version 1 under the bech32 checksum",
-      () => bech32.encodeWords("bc", [1, ...words(new Uint8Array(32))]),
+      () => bech32.encodeWords("bc", [1, ...toWords(new Uint8Array(32))]),
     ],
     [
       "version 0 under the bech32m checksum",
-      () => bech32m.encodeWords("bc", [0, ...words(new Uint8Array(20))]),
+      () => bech32m.encodeWords("bc", [0, ...toWords(new Uint8Array(20))]),
     ],
     [
       "a 21-byte version 0 program",
-      () => bech32.encodeWords("bc", [0, ...words(new Uint8Array(21))]),
+      () => bech32.encodeWords("bc", [0, ...toWords(new Uint8Array(21))]),
     ],
-    ["a 41-byte program", () => bech32m.encodeWords("bc", [1, ...words(new Uint8Array(41))])],
-    ["version 17", () => bech32m.encodeWords("bc", [17, ...words(new Uint8Array(20))])],
+    ["a 41-byte program", () => bech32m.encodeWords("bc", [1, ...toWords(new Uint8Array(41))])],
+    ["version 17", () => bech32m.encodeWords("bc", [17, ...toWords(new Uint8Array(20))])],
   ] as const)("rejects %s", (_, build) => {
     expect(() => segwit.decode(build())).toThrow(DecodeError);
   });
