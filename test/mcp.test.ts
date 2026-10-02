@@ -87,18 +87,19 @@ describe("encodings MCP server", () => {
       upper: true,
       separate: false,
       delimiters: false,
+      padding: false,
       name: "data",
       mode: "644",
     };
     expect(
       await call("encodings_encode", { encoding: "base91", input: "Hello", options: everything }),
     ).toBe(
-      "base91 (5 bytes):\n>OwJh>A\nIgnored, base91 does not take: prefix, limit, upper, separate, delimiters, name, mode",
+      "base91 (5 bytes):\n>OwJh>A\nIgnored, base91 does not take: prefix, limit, upper, separate, delimiters, padding, name, mode",
     );
     expect(
       await call("encodings_encode", { encoding: "hex", input: "Hello", options: everything }),
     ).toBe(
-      "hex (5 bytes):\n48656C6C6F\nIgnored, hex does not take: prefix, limit, separate, delimiters, name, mode",
+      "hex (5 bytes):\n48656C6C6F\nIgnored, hex does not take: prefix, limit, separate, delimiters, padding, name, mode",
     );
   });
 

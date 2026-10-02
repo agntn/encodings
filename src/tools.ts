@@ -87,6 +87,9 @@ export const encodeSchema = closed({
         Type.Boolean({ description: "binary: space between bytes (default true)" }),
       ),
       delimiters: Type.Optional(Type.Boolean({ description: "ascii85: wrap in <~ and ~>" })),
+      padding: Type.Optional(
+        Type.Boolean({ description: "base32 and base32hex: pad with = (default true)" }),
+      ),
       name: Type.Optional(
         Type.String({
           minLength: 1,

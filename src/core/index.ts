@@ -22,7 +22,7 @@ export { base32, base32crockford, base32hex, zbase32 } from "./base32.ts";
 export { base45 } from "./base45.ts";
 export { base58, base58check, base58flickr, base58ripple, type Base58Codec } from "./base58.ts";
 export { base64, base64url } from "./base64.ts";
-export type { Radix2Codec } from "./radix2.ts";
+export type { PaddedCodec, Radix2EncodeOptions, Radix2Codec } from "./radix2.ts";
 export { ascii85, z85, type Ascii85EncodeOptions } from "./base85.ts";
 export { base91 } from "./base91.ts";
 export {

@@ -219,8 +219,17 @@ export const builtins: readonly Encoding[] = [
       standard: "RFC 4648 §6",
       alphabet: BASE32_RFC,
       padding: true,
+      options: [
+        {
+          name: "padding",
+          type: "boolean",
+          required: false,
+          default: true,
+          description: "Pad the last block with = to eight characters",
+        },
+      ],
     },
-    (bytes) => base32.encode(bytes),
+    (bytes, values) => base32.encode(bytes, { padding: values["padding"] === true }),
     (text) => base32.decode(text),
   ),
   define(
@@ -232,8 +241,17 @@ export const builtins: readonly Encoding[] = [
       standard: "RFC 4648 §7",
       alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV",
       padding: true,
+      options: [
+        {
+          name: "padding",
+          type: "boolean",
+          required: false,
+          default: true,
+          description: "Pad the last block with = to eight characters",
+        },
+      ],
     },
-    (bytes) => base32hex.encode(bytes),
+    (bytes, values) => base32hex.encode(bytes, { padding: values["padding"] === true }),
     (text) => base32hex.decode(text),
   ),
   define(

@@ -27,6 +27,7 @@ import {
   zbase32,
 } from "../src/index.ts";
 import { blake256 } from "@agntn/hashes/blake256";
+import { crc16Xmodem } from "@agntn/hashes/crc";
 import { sha256 } from "@agntn/hashes/sha2";
 import { createBase58check } from "../src/base58.ts";
 import { fromWords, fromWordsUnsafe, toWords } from "../src/bech32.ts";
@@ -55,6 +56,8 @@ describe("RFC 4648 test vectors", () => {
     expect(read(base64.decode(b64))).toBe(input);
     expect(read(base32.decode(b32))).toBe(input);
     expect(read(base32hex.decode(b32h))).toBe(input);
+    expect(base32.encode(text(input), { padding: false })).toBe(b32.replaceAll("=", ""));
+    expect(base32hex.encode(text(input), { padding: false })).toBe(b32h.replaceAll("=", ""));
   });
 });
 
@@ -71,6 +74,12 @@ describe("frozen outputs of independent implementations", () => {
     base45,
     z85,
   } as const;
+
+  it.each(python)("matches row $hex without padding", (row) => {
+    const bytes = hex.decode(row["hex"]!);
+    expect(base32.encode(bytes, { padding: false })).toBe(row["base32"]!.replaceAll("=", ""));
+    expect(base32hex.encode(bytes, { padding: false })).toBe(row["base32hex"]!.replaceAll("=", ""));
+  });
 
   it.each([...javascript, ...python])("matches row $hex", (row) => {
     const bytes = hex.decode(row["hex"]!);
@@ -138,6 +147,21 @@ describe("base32 and base64 decoding rules", () => {
     expect(base32crockford.decode("CSQPYRK1E8")).toEqual(base32crockford.decode("csqp-yrki-e8"));
     expect(base32crockford.decode("0O")).toEqual(base32crockford.decode("00"));
     expect(() => base32crockford.decode("UU")).toThrow("not in the alphabet");
+  });
+
+  it("writes base32 without padding on request", () => {
+    expect(base32.encode(text("f"), { padding: true })).toBe("MY======");
+    expect(base32.encode(text("f"), { padding: false })).toBe("MY");
+    expect(base32hex.encode(text("f"), { padding: false })).toBe("CO");
+  });
+
+  it("round trips a Stellar account ID", () => {
+    const strkey = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
+    const bytes = base32.decode(strkey);
+    expect(bytes).toHaveLength(35);
+    expect(bytes[0]).toBe(6 << 3);
+    expect(crc16Xmodem(bytes.subarray(0, 33)).toReversed()).toEqual(bytes.subarray(33));
+    expect(base32.encode(bytes, { padding: false })).toBe(strkey);
   });
 
   it("writes z-base-32 as its paper does", () => {

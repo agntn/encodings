@@ -136,6 +136,10 @@ describe("encode and decode through the registry", () => {
     );
     expect(() => encode("hex", "x", { lower: true })).toThrow("not an option here; use upper");
     expect(() => encode("hex", "x", { upper: "yes" })).toThrow("must be a boolean");
+    expect(encode("base32", "f")).toBe("MY======");
+    expect(encode("base32", "f", { padding: false })).toBe("MY");
+    expect(encode("base32hex", "f", { padding: false })).toBe("CO");
+    expect(() => encode("base64", "f", { padding: false })).toThrow("takes no options");
     expect(() => encode("bech32", "x")).toThrow(InvalidOptionError);
     expect(() => encode("bech32", "x")).toThrow("prefix=undefined: is required");
   });
