@@ -382,9 +382,13 @@ function candidateLines(entries: readonly IdentifyCandidate[]): string {
  * Shows a candidate or layer the way every tool surface reads it.
  *
  * @param candidate - The candidate, with `confirmed` when it is a peeled layer.
- * @returns {IdentifyCandidate} Hex, byte count and the text when it is readable.
+ * @param handsDown - Whether the next peeled layer reads its text, which then shows even with control characters.
+ * @returns {IdentifyCandidate} Hex, byte count and the text when it is readable or handed down.
  */
-function shownCandidate(candidate: EncodingCandidate | PeelLayer): IdentifyCandidate {
+function shownCandidate(
+  candidate: EncodingCandidate | PeelLayer,
+  handsDown = false,
+): IdentifyCandidate {
   return {
     encoding: candidate.encoding,
     ...(candidate.options === undefined ? {} : { options: { ...candidate.options } }),
@@ -392,7 +396,7 @@ function shownCandidate(candidate: EncodingCandidate | PeelLayer): IdentifyCandi
     reasons: candidate.reasons,
     hex: hex.encode(candidate.bytes),
     byteLength: candidate.bytes.length,
-    ...(readable(candidate.bytes) === undefined ? {} : { text: candidate.text! }),
+    ...(handsDown || readable(candidate.bytes) !== undefined ? { text: candidate.text! } : {}),
     details: candidate.details,
     ...("confirmed" in candidate ? { confirmed: candidate.confirmed } : {}),
   };
@@ -426,7 +430,9 @@ function identifyLimit(value: unknown, peeling: boolean): number {
  * @returns {ToolResult<IdentifyDetails>} Layers, outermost first.
  */
 function peeled(text: string, limit: number): ToolResult<IdentifyDetails> {
-  const layers = peel(text, { limit }).map((layer) => shownCandidate(layer));
+  const layers = peel(text, { limit }).map((layer, index, all) =>
+    shownCandidate(layer, index < all.length - 1),
+  );
   const body =
     layers.length === 0
       ? "No layer to take off: nothing decodes this text to readable text or past a checksum."

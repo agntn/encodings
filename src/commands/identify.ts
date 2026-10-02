@@ -31,11 +31,12 @@ function flags(options: Readonly<Record<string, string | number | boolean>> = {}
  * and reasons.
  *
  * @param candidate - The candidate, or a peeled layer.
+ * @param handsDown - Whether the next peeled layer reads its text, which then shows even with control characters.
  * @returns {string} The line.
  */
-function line(candidate: EncodingCandidate | PeelLayer): string {
+function line(candidate: EncodingCandidate | PeelLayer, handsDown = false): string {
   const text = utf8(candidate.bytes);
-  const readable = text !== undefined && !/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u.test(text);
+  const readable = text !== undefined && (handsDown || !/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u.test(text));
   const value = readable ? quote(text) : hex.encode(candidate.bytes);
   const cut = value.length > PREVIEW_LENGTH ? `${value.slice(0, PREVIEW_LENGTH - 1)}…` : value;
   const reasons = [
@@ -84,6 +85,9 @@ export default defineCommand({
       process.exitCode = 1;
       return;
     }
-    for (const candidate of found) process.stdout.write(line(candidate));
+    const handsDown = (index: number) => args.peel === true && index < found.length - 1;
+    process.stdout.write(
+      found.map((candidate, index) => line(candidate, handsDown(index))).join(""),
+    );
   },
 });

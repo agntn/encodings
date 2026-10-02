@@ -404,16 +404,13 @@ function decodeCandidate(
   operation.value = "decode";
 }
 
-/** Layers outermost first with the text each reads, from hex since `text` drops control bytes. */
+/** Layers outermost first with the text each reads, the input or the text of the layer above. */
 const layers = computed(() => {
   if (answer.value.kind !== "identify" || answer.value.details.layers === undefined) return undefined;
   const found = answer.value.details.layers;
   return found.map((layer, index) => ({
     layer,
-    from:
-      index === 0
-        ? String(request.value.args.text ?? "")
-        : new TextDecoder().decode(create("hex").decode(found[index - 1]!.hex).bytes),
+    from: index === 0 ? String(request.value.args.text ?? "") : (found[index - 1]!.text ?? ""),
   }));
 });
 const innermost = computed(() => layers.value?.at(-1)?.layer);

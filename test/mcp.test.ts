@@ -153,6 +153,17 @@ describe("encodings MCP server", () => {
     );
   });
 
+  it("shows the text a peeled layer hands down, control characters escaped", async () => {
+    const text = "5958523059574e720c49474630494752686432343d";
+    expect((await call("encodings_identify", { text, peel: true })).split("\n")[2]).toBe(
+      '   21 bytes, text "YXR0YWNr\\fIGF0IGRhd24="',
+    );
+    expect(encodingsIdentify({ text, peel: true }).details.layers).toMatchObject([
+      { encoding: "hex", text: "YXR0YWNr\fIGF0IGRhd24=" },
+      { encoding: "base64", text: "attack at dawn" },
+    ]);
+  });
+
   it("offers in the schema every alphabet the registry has, and no other", () => {
     const choices = encodingInfos().flatMap((info) =>
       info.options.flatMap((option) => (option.name === "alphabet" ? (option.choices ?? []) : [])),

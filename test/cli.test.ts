@@ -139,6 +139,12 @@ describe("encodings CLI", () => {
     });
   });
 
+  it("shows the text a peeled layer hands down, control characters escaped", () => {
+    expect(
+      run("identify", "--peel", "5958523059574e720c49474630494752686432343d").stdout.split("\n")[0],
+    ).toMatch(/^0\.\d{3} {2}hex {25}"YXR0YWNr\\fIGF0IGRhd24="/u);
+  });
+
   it("names the flag a candidate needs to decode", () => {
     expect(run("identify", "CPNMUOG=", "-n", "1").stdout).toMatch(
       /^0\.\d{3} {2}base32 --alphabet=hex {7}"foob"/u,
