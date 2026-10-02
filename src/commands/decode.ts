@@ -3,10 +3,10 @@ import { base64 } from "../core/base64.ts";
 import { InvalidOptionError, shown } from "../core/errors.ts";
 import { hex } from "../core/hex.ts";
 import { create } from "../core/registry.ts";
-import { flaggedOptions, readText } from "./shared.ts";
+import { flaggedOptions, integerFlag, readText } from "./shared.ts";
 
 /** Flags that set decode options, by the option name they set. */
-const OPTION_FLAGS = ["alphabet", "check", "m"] as const;
+const OPTION_FLAGS = ["alphabet", "check", "m", "symbols", "bits", "order"] as const;
 
 export default defineCommand({
   meta: {
@@ -36,6 +36,9 @@ export default defineCommand({
     },
     check: { type: "boolean", description: "base58: Base58Check, verify and strip the checksum" },
     m: { type: "boolean", description: "bech32: Bech32m checksum (segwit v1+)" },
+    symbols: { type: "string", description: "binary: the characters for 0 and 1 (default 01)" },
+    bits: { type: "string", description: "binary: bits per byte, 1 to 8 (default 8)" },
+    order: { type: "string", description: "binary: msb or lsb first (default msb)" },
   },
   run({ args, rawArgs }) {
     const encoding = create(args.encoding);
@@ -43,7 +46,9 @@ export default defineCommand({
       .info()
       .options.filter((option) => option.decode === true)
       .map((option) => option.name);
-    const options = flaggedOptions(encoding.name, reading, OPTION_FLAGS, args, rawArgs);
+    const flagged = flaggedOptions(encoding.name, reading, OPTION_FLAGS, args, rawArgs);
+    const options =
+      "bits" in flagged ? { ...flagged, bits: integerFlag("bits", flagged["bits"]) } : flagged;
     const { bytes, details } = encoding.decode(readText(args.text), options);
     for (const [key, value] of Object.entries(details))
       process.stderr.write(`${key}: ${shown(value)}\n`);

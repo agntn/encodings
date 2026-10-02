@@ -208,6 +208,15 @@ describe("encodings MCP server", () => {
     ).toBe(
       'base32 → 6 bytes as utf8:\n"foobar"\nIgnored, base32 does not read with: alphabet=bitcoin',
     );
+    expect(
+      await call("encodings_decode", {
+        encoding: "binary",
+        text: "a b b a b b a b",
+        options: { symbols: "ab", bits: 8, order: "msb", alphabet: "hex" },
+      }),
+    ).toBe(
+      'binary (symbols=ab, bits=8, order=msb) → 1 bytes as utf8:\n"m"\nIgnored, binary does not read with: alphabet',
+    );
     await expect(
       call("encodings_decode", { encoding: "base32", text: "x", options: { alphabet: "base32" } }),
     ).rejects.toThrow("Invalid arguments");

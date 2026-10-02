@@ -159,6 +159,17 @@ describe("encode and decode through the registry", () => {
     );
     expect(decode("base58", "1Wh4bh", { check: true }).bytes).toEqual(new Uint8Array([0]));
     expect(decode("base85", "<~z~>", { alphabet: "ascii85" }).bytes).toEqual(new Uint8Array(4));
+    expect(decode("binary", "1001000 1101001", { symbols: "01", bits: 7 }).bytes).toEqual(
+      new TextEncoder().encode("Hi"),
+    );
+    expect(encode("binary", "Hi", { symbols: "ab", order: "lsb", separate: false })).toBe(
+      "aaabaababaababba",
+    );
+    expect(() => decode("binary", "0", { separate: false })).toThrow(
+      "not an option here; use symbols, bits, order",
+    );
+    expect(() => decode("binary", "0", { bits: "7" })).toThrow("must be a number");
+    expect(() => decode("binary", "0", { order: "middle" })).toThrow("use one of msb, lsb");
     expect(() => decode("base64", "-_8")).toThrow("not in the alphabet");
     expect(() => decode("base32", "MY", { padding: false })).toThrow(
       "not an option here; use alphabet",

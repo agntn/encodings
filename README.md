@@ -100,17 +100,18 @@ That's most of it, really. Strings go in as UTF-8, bytes come out as `Uint8Array
 
 ## 🗂️ Encodings
 
-| Encoding                            | Variants as options                                |
-| ----------------------------------- | -------------------------------------------------- |
-| `binary`, `octal`, `decimal`, `hex` |                                                    |
-| `base32`                            | `alphabet`: `standard`, `hex`, `crockford`, `z`    |
-| `base45`                            |                                                    |
-| `base58`                            | `alphabet`: `bitcoin`, `flickr`, `ripple`; `check` |
-| `base64`                            | `alphabet`: `standard`, `url`                      |
-| `base85`                            | `alphabet`: `rfc1924`, `ascii85`, `z85`            |
-| `base91`                            |                                                    |
-| `bech32`                            | `m` for Bech32m                                    |
-| `uuencode`, `quoted-printable`      |                                                    |
+| Encoding                       | Variants as options                                |
+| ------------------------------ | -------------------------------------------------- |
+| `binary`                       | `symbols`, `bits`, `order`: `msb`, `lsb`           |
+| `octal`, `decimal`, `hex`      |                                                    |
+| `base32`                       | `alphabet`: `standard`, `hex`, `crockford`, `z`    |
+| `base45`                       |                                                    |
+| `base58`                       | `alphabet`: `bitcoin`, `flickr`, `ripple`; `check` |
+| `base64`                       | `alphabet`: `standard`, `url`                      |
+| `base85`                       | `alphabet`: `rfc1924`, `ascii85`, `z85`            |
+| `base91`                       |                                                    |
+| `bech32`                       | `m` for Bech32m                                    |
+| `uuencode`, `quoted-printable` |                                                    |
 
 Base58Check is `base58` with `check`. z-base-32 is `base32` with `alphabet: "z"`. Decoding takes the same options, so a variant reads back the way it was written. Each family is also a subpath, like `@agntn/encodings/base58`. Alphabets, overhead and options per encoding are on [the encodings page](https://encodings.agntn.dev/encodings).
 

@@ -63,6 +63,11 @@ describe("identify", () => {
   });
 
   it("tries the alphabet options and names the one a reading needs", () => {
+    expect(top(encode("binary", "Hello world", { order: "lsb" }))).toMatchObject({
+      encoding: "binary",
+      options: { order: "lsb" },
+      text: "Hello world",
+    });
     expect(top("CPNMUOJ1E8======")).toMatchObject({
       encoding: "base32",
       options: { alphabet: "hex" },

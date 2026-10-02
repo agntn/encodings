@@ -11,7 +11,7 @@ import { BASE64_ALPHABETS, base64, type Base64Alphabet } from "./base64.ts";
 import { BASE85_ALPHABETS, base85, type Base85Alphabet } from "./base85.ts";
 import { base91 } from "./base91.ts";
 import { BECH32_LIMIT, bech32, bech32m, segwit, type SegwitAddress } from "./bech32.ts";
-import { binary } from "./binary.ts";
+import { binary, type BinaryOptions, type BitOrder } from "./binary.ts";
 import { toBytes, type BytesInput } from "./bytes.ts";
 import { decimal } from "./decimal.ts";
 import { InvalidOptionError } from "./errors.ts";
@@ -119,6 +119,20 @@ function define(
 }
 
 /**
+ * Reads binary options from checked values.
+ *
+ * @param values - Checked option values.
+ * @returns {BinaryOptions} The codec options.
+ */
+function binaryOptions(values: Values): BinaryOptions {
+  return {
+    symbols: String(values["symbols"]),
+    bits: Number(values["bits"]),
+    order: String(values["order"]) as BitOrder,
+  };
+}
+
+/**
  * Reads base58 options from checked values.
  *
  * @param values - Checked option values.
@@ -196,10 +210,36 @@ export const builtins: readonly Encoding[] = [
           default: true,
           description: "Put a space between bytes",
         },
+        {
+          name: "symbols",
+          type: "string",
+          required: false,
+          default: "01",
+          description: "The character for 0, then the one for 1, such as ab",
+          decode: true,
+        },
+        {
+          name: "bits",
+          type: "number",
+          required: false,
+          default: 8,
+          description: "Bits per byte, from 1 to 8; 7 for 7-bit ASCII",
+          decode: true,
+        },
+        {
+          name: "order",
+          type: "string",
+          required: false,
+          default: "msb",
+          description: "Most or least significant bit first",
+          decode: true,
+          choices: ["msb", "lsb"],
+        },
       ],
     },
-    (bytes, values) => binary.encode(bytes, { separate: values["separate"] === true }),
-    (text) => binary.decode(text),
+    (bytes, values) =>
+      binary.encode(bytes, { ...binaryOptions(values), separate: values["separate"] === true }),
+    (text, values) => binary.decode(text, binaryOptions(values)),
   ),
   define(
     "octal",
