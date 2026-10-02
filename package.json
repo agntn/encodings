@@ -104,7 +104,7 @@
     "build": "obuild",
     "dev": "obuild --stub",
     "lint": "pnpm build && vp lint && vp fmt --check",
-    "lint:fix": "pnpm build && vp lint --fix && vp fmt",
+    "fmt": "pnpm build && vp lint --fix && vp fmt",
     "typecheck": "tsc --noEmit --skipLibCheck && pnpm build && tsc -p tsconfig.extensions.json && tsc -p test/tsconfig.json",
     "test": "vp test run",
     "test:watch": "vp test watch",
