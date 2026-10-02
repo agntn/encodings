@@ -229,9 +229,9 @@ function pickOptions(
   for (const [key, value] of Object.entries(options)) {
     if (value === undefined || value === null) continue;
     const option = declared.find((entry) => entry.name === key);
-    if (!option) ignored.push(key);
+    if (!option) ignored.push(token(key));
     else if (option.choices && !option.choices.includes(String(value))) {
-      ignored.push(`${key}=${String(value)}`);
+      ignored.push(`${token(key)}=${token(String(value))}`);
     } else taken[key] = value as string | number | boolean;
   }
   return { taken, ignored };
