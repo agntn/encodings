@@ -62,6 +62,19 @@ const check = Type.Optional(
   Type.Boolean({ description: "base58: Base58Check, with a double SHA-256 checksum" }),
 );
 const m = Type.Optional(Type.Boolean({ description: "bech32: Bech32m checksum (segwit v1+)" }));
+const symbols = Type.Optional(
+  Type.String({
+    minLength: 2,
+    maxLength: 32,
+    description: "binary: the character for 0, then the one for 1, such as ab (default 01)",
+  }),
+);
+const bits = Type.Optional(
+  Type.Integer({ minimum: 1, maximum: 8, description: "binary: bits per byte (default 8)" }),
+);
+const order = Type.Optional(
+  Type.Enum(["msb", "lsb"], { description: "binary: which bit comes first (default msb)" }),
+);
 const text = (description: string) =>
   Type.String({ minLength: 1, maxLength: MAX_TEXT_LENGTH, description });
 
@@ -101,6 +114,9 @@ export const encodeSchema = closed({
       m,
       alphabet,
       check,
+      symbols,
+      bits,
+      order,
       delimiters: Type.Optional(
         Type.Boolean({ description: "base85 with the ascii85 alphabet: wrap in <~ and ~>" }),
       ),
@@ -133,7 +149,7 @@ export const decodeSchema = closed({
         "How to show the bytes: auto (UTF-8 when they are readable text, else hex; default), utf8, hex or base64",
     }),
   ),
-  options: Type.Optional(closed({ alphabet, check, m })),
+  options: Type.Optional(closed({ alphabet, check, m, symbols, bits, order })),
 });
 
 export const identifySchema = closed({

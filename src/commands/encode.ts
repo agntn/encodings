@@ -2,7 +2,7 @@ import { defineCommand } from "citty";
 import { InvalidOptionError } from "../core/errors.ts";
 import { create } from "../core/registry.ts";
 import type { EncodeOptions } from "../core/types.ts";
-import { argumentOrStdin, flaggedOptions, readInput } from "./shared.ts";
+import { argumentOrStdin, flaggedOptions, integerFlag, readInput } from "./shared.ts";
 
 /** Flags that set encoding options, by the option name they set. */
 const OPTION_FLAGS = [
@@ -14,6 +14,9 @@ const OPTION_FLAGS = [
   "alphabet",
   "check",
   "m",
+  "symbols",
+  "bits",
+  "order",
   "padding",
   "name",
   "mode",
@@ -31,6 +34,18 @@ function limitFlag(value: unknown): number {
     throw new InvalidOptionError("limit", value, "must be an integer of at least 8");
   }
   return limit;
+}
+
+/**
+ * Reads the flags that take numbers: `--limit` and `--bits`.
+ *
+ * @param name - Option name.
+ * @param value - The flag as citty parsed it.
+ * @returns {string | number | boolean} The option value.
+ */
+function typedFlag(name: string, value: string | boolean): string | number | boolean {
+  if (name === "limit") return limitFlag(value);
+  return name === "bits" ? integerFlag(name, value) : value;
 }
 
 export default defineCommand({
@@ -59,6 +74,9 @@ export default defineCommand({
     m: { type: "boolean", description: "bech32: Bech32m checksum (segwit v1+)" },
     upper: { type: "boolean", description: "hex: write A-F" },
     separate: { type: "boolean", description: "binary: space between bytes (default true)" },
+    symbols: { type: "string", description: "binary: the characters for 0 and 1 (default 01)" },
+    bits: { type: "string", description: "binary: bits per byte, 1 to 8 (default 8)" },
+    order: { type: "string", description: "binary: msb or lsb first (default msb)" },
     alphabet: {
       type: "string",
       description: "base32, base58, base64, base85: alphabet (encodings list <encoding>)",
@@ -79,10 +97,7 @@ export default defineCommand({
       rawArgs,
     );
     const options: EncodeOptions = Object.fromEntries(
-      Object.entries(typed).map(([name, value]) => [
-        name,
-        name === "limit" ? limitFlag(value) : value,
-      ]),
+      Object.entries(typed).map(([name, value]) => [name, typedFlag(name, value)]),
     );
     const input = readInput(argumentOrStdin(args.input), args["input-format"]);
     const text = encoding.encode(input, options);

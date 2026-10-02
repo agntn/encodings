@@ -203,6 +203,67 @@ describe("binary", () => {
     expect(() => binary.decode("0101")).toThrow("4 bits are not whole bytes");
     expect(() => binary.decode("01001002")).toThrow('"2" (U+0032) is not a bit');
   });
+
+  it("reads the a and b of the GSMG.IO SalPhaseIon page", () => {
+    const page =
+      "a b b a b b a b a b b a a a a b a b b b a b a a a b b b a a b a a b b a b a a b a b b b b a a a a b b b a a b b a b b b a b a b a b b a b b a b a b b a b b a a a b b a b a a b a b b b a a b b a b b b a b a a";
+    expect(read(binary.decode(page, { symbols: "ab" }))).toBe("matrixsumlist");
+    expect(binary.encode(text("matrixsumlist"), { symbols: "ab", separate: false })).toBe(
+      page.replaceAll(" ", ""),
+    );
+  });
+
+  it("takes any two characters, emoji included", () => {
+    expect(binary.encode(text("A"), { symbols: "10" })).toBe("10111110");
+    expect(read(binary.decode("🌑🌕🌑🌑🌑🌑🌑🌕", { symbols: "🌑🌕" }))).toBe("A");
+  });
+
+  it("reads emoji with their variation selector, zero-width symbols and CR LF", () => {
+    const suits = "♠️♥️♠️♠️♠️♠️♠️♥️\r\n♠️♥️♠️♠️♠️♠️♥️♠️";
+    expect(read(binary.decode(suits, { symbols: "♠️♥️" }))).toBe("AB");
+    expect(() => binary.decode("♠♥", { symbols: "♠️♥️" })).toThrow('"♠" (U+2660) is not a bit');
+    expect(
+      read(
+        binary.decode("\u200C\u200D\u200C\u200C\u200C\u200C\u200C\u200D", {
+          symbols: "\u200C\u200D",
+        }),
+      ),
+    ).toBe("A");
+    expect(() => binary.decode("0\u0301", { symbols: "01" })).toThrow(
+      expect.objectContaining({ message: 'binary: "\u0301" (U+0301) is not a bit', index: 1 }),
+    );
+  });
+
+  it("writes and reads fewer bits per byte and the least significant bit first", () => {
+    expect(binary.encode(text("Hi"), { bits: 7 })).toBe("1001000 1101001");
+    expect(binary.encode(text("Hi"), { order: "lsb" })).toBe("00010010 10010110");
+    expect(binary.encode(text("Hi"), { bits: 7, order: "lsb" })).toBe("0001001 1001011");
+    expect(read(binary.decode("10010001101001", { bits: 7 }))).toBe("Hi");
+    expect(read(binary.decode("0001001 1001011", { bits: 7, order: "lsb" }))).toBe("Hi");
+    expect(binary.decode("101", { bits: 1 })).toEqual(new Uint8Array([1, 0, 1]));
+  });
+
+  it("names the position in the text as given and the group size that failed", () => {
+    expect(() => binary.decode("ab ac", { symbols: "ab" })).toThrow(
+      expect.objectContaining({ index: 4 }),
+    );
+    expect(() => binary.decode("10010001", { bits: 7 })).toThrow(
+      "8 bits are not whole groups of 7",
+    );
+  });
+
+  it("refuses symbols, bit counts and bytes it cannot write", () => {
+    for (const symbols of ["0", "aa", "abc", "a ", "\t1", ""]) {
+      expect(() => binary.decode("0", { symbols })).toThrow(InvalidOptionError);
+    }
+    for (const bits of [0, 9, 7.5, Number.NaN]) {
+      expect(() => binary.encode(text("A"), { bits })).toThrow(InvalidOptionError);
+    }
+    expect(() => binary.encode(text("é"), { bits: 7 })).toThrow(
+      "byte 195 at index 0 needs more than 7 bits",
+    );
+    expect(() => binary.encode(text("é"), { bits: 7 })).toThrow(EncodingError);
+  });
 });
 
 describe("base32 and base64 decoding rules", () => {

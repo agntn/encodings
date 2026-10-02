@@ -1,1 +1,6 @@
-export { binary, type BinaryEncodeOptions } from "./core/binary.ts";
+export {
+  binary,
+  type BinaryEncodeOptions,
+  type BinaryOptions,
+  type BitOrder,
+} from "./core/binary.ts";

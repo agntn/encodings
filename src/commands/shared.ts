@@ -72,3 +72,16 @@ export function flaggedOptions(
   }
   return options;
 }
+
+/**
+ * Reads an integer flag, which citty hands over as a string.
+ *
+ * @param name - Option name, for the error.
+ * @param value - The flag as citty parsed it.
+ * @returns {number} The integer.
+ */
+export function integerFlag(name: string, value: unknown): number {
+  if (!/^\d+$/u.test(String(value)))
+    throw new InvalidOptionError(name, value, "must be an integer");
+  return Number(value);
+}

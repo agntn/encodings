@@ -17,7 +17,7 @@ export {
   UnknownEncodingError,
   normalizeError,
 } from "./errors.ts";
-export { binary, type BinaryEncodeOptions } from "./binary.ts";
+export { binary, type BinaryEncodeOptions, type BinaryOptions, type BitOrder } from "./binary.ts";
 export { octal } from "./octal.ts";
 export { decimal } from "./decimal.ts";
 export type { NumbersCodec, NumbersEncodeOptions } from "./numbers.ts";

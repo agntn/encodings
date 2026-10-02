@@ -85,6 +85,15 @@ describe("encodings CLI", () => {
       ).stdout,
     ).toBe("-_8\n");
     expect(run("decode", "base32", "CO", "--alphabet", "hex").stdout).toBe("f");
+    expect(run("decode", "binary", "abaabaaa", "--symbols", "ab").stdout).toBe("H");
+    expect(run("decode", "binary", "0001001", "--bits=7", "--order", "lsb").stdout).toBe("H");
+    expect(run("encode", "binary", "Hi", "--bits", "7", "--symbols", "ab").stdout).toBe(
+      "baabaaa bbabaab\n",
+    );
+    expect(run("decode", "binary", "0", "--bits", "seven")).toMatchObject({
+      code: 1,
+      stderr: "Invalid option bits=seven: must be an integer\n",
+    });
     expect(run("decode", "base64", "__s", "--alphabet", "url", "-o", "hex").stdout).toBe("fffb\n");
     expect(run("decode", "base85", "<~z~>", "--alphabet", "ascii85", "-o", "hex").stdout).toBe(
       "00000000\n",
