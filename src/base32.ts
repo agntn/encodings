@@ -1,7 +1,7 @@
 export {
+  BASE32_ALPHABETS,
   base32,
-  base32crockford,
-  zbase32,
+  type Base32Alphabet,
   type Base32Codec,
   type Base32EncodeOptions,
   type Base32Options,

@@ -36,20 +36,12 @@ describe("@agntn/encodings", () => {
       "decimal",
       "hex",
       "base32",
-      "base32-crockford",
-      "z-base-32",
       "base45",
       "base58",
-      "base58check",
-      "base58-flickr",
-      "base58-ripple",
       "base64",
-      "ascii85",
-      "z85",
       "base85",
       "base91",
       "bech32",
-      "bech32m",
       "uuencode",
       "quoted-printable",
     ]);
@@ -70,11 +62,11 @@ describe("family subpaths", () => {
     octal: ["octal"],
     decimal: ["decimal"],
     hex: ["hex"],
-    base32: ["base32", "base32crockford", "zbase32"],
+    base32: ["BASE32_ALPHABETS", "base32"],
     base45: ["base45"],
-    base58: ["base58", "base58check", "base58flickr", "base58ripple", "createBase58check"],
-    base64: ["base64"],
-    base85: ["ascii85", "base85", "z85"],
+    base58: ["BASE58_ALPHABETS", "base58", "createBase58check"],
+    base64: ["BASE64_ALPHABETS", "base64"],
+    base85: ["BASE85_ALPHABETS", "base85"],
     base91: ["base91"],
     bech32: [
       "BECH32_LIMIT",
@@ -106,13 +98,11 @@ describe("resolveEncoding", () => {
   it.each([
     ["base64", "base64"],
     ["Base 64", "base64"],
-    ["BASE_58_CHECK", "base58check"],
-    ["zbase32", "z-base-32"],
+    ["BASE_58", "base58"],
     ["Quoted Printable", "quoted-printable"],
     ["qp", "quoted-printable"],
     ["b64", "base64"],
     ["base16", "hex"],
-    ["btoa", "ascii85"],
     ["basE91", "base91"],
   ])("reads %j as %s", (typed, name) => {
     expect(resolveEncoding(typed)).toBe(name);
@@ -122,6 +112,7 @@ describe("resolveEncoding", () => {
     expect(() => resolveEncoding("base62")).toThrow(UnknownEncodingError);
     expect(() => resolveEncoding("base62")).toThrow(/Available: binary, octal, decimal, hex/u);
     expect(() => resolveEncoding("toString")).toThrow(UnknownEncodingError);
+    expect(() => resolveEncoding("base58check")).toThrow(UnknownEncodingError);
   });
 });
 
@@ -134,29 +125,52 @@ describe("encode and decode through the registry", () => {
   it("checks options against what the encoding declares", () => {
     expect(encode("hex", "A", { upper: true })).toBe("41");
     expect(encode("hex", "ÿ", { upper: true })).toBe("C3BF");
-    expect(() => encode("base58", "x", { upper: true })).toThrow(
+    expect(() => encode("base45", "x", { upper: true })).toThrow(
       "Invalid option upper=true: this encoding takes no options",
     );
     expect(() => encode("hex", "x", { lower: true })).toThrow("not an option here; use upper");
     expect(() => encode("hex", "x", { upper: "yes" })).toThrow("must be a boolean");
     expect(encode("base32", "f")).toBe("MY======");
     expect(encode("base32", "f", { padding: false })).toBe("MY");
-    expect(encode("base32", "f", { hex: true, padding: false })).toBe("CO");
-    expect(encode("base64", new Uint8Array([0xfb, 0xff]), { url: true, padding: false })).toBe(
-      "-_8",
+    expect(encode("base32", "f", { alphabet: "hex", padding: false })).toBe("CO");
+    expect(encode("base32", "f", { alphabet: "crockford" })).toBe("CR");
+    expect(
+      encode("base64", new Uint8Array([0xfb, 0xff]), { alphabet: "url", padding: false }),
+    ).toBe("-_8");
+    expect(encode("base58", new Uint8Array([0]), { check: true })).toBe("1Wh4bh");
+    expect(encode("base85", new Uint8Array(4), { alphabet: "ascii85", delimiters: true })).toBe(
+      "<~z~>",
     );
-    expect(() => encode("base58", "f", { padding: false })).toThrow("takes no options");
+    expect(() => encode("base85", "x", { delimiters: true })).toThrow(
+      "only the ascii85 alphabet has them",
+    );
+    expect(() => encode("base32", "f", { alphabet: "flickr" })).toThrow(
+      "Invalid option alphabet=flickr: use one of standard, hex, crockford, z",
+    );
+    expect(() => encode("base45", "f", { padding: false })).toThrow("takes no options");
     expect(() => encode("bech32", "x")).toThrow(InvalidOptionError);
     expect(() => encode("bech32", "x")).toThrow("prefix=undefined: is required");
   });
 
   it("reads with the options marked decode and refuses the rest", () => {
-    expect(decode("base32", "CO", { hex: true }).bytes).toEqual(new Uint8Array([0x66]));
-    expect(decode("base64", "-_8", { url: true }).bytes).toEqual(new Uint8Array([0xfb, 0xff]));
+    expect(decode("base32", "CO", { alphabet: "hex" }).bytes).toEqual(new Uint8Array([0x66]));
+    expect(decode("base64", "-_8", { alphabet: "url" }).bytes).toEqual(
+      new Uint8Array([0xfb, 0xff]),
+    );
+    expect(decode("base58", "1Wh4bh", { check: true }).bytes).toEqual(new Uint8Array([0]));
+    expect(decode("base85", "<~z~>", { alphabet: "ascii85" }).bytes).toEqual(new Uint8Array(4));
     expect(() => decode("base64", "-_8")).toThrow("not in the alphabet");
-    expect(() => decode("base32", "MY", { padding: false })).toThrow("not an option here; use hex");
+    expect(() => decode("base32", "MY", { padding: false })).toThrow(
+      "not an option here; use alphabet",
+    );
+    expect(() => decode("base85", "x", { delimiters: true })).toThrow(
+      "not an option here; use alphabet",
+    );
     expect(() => decode("hex", "41", { upper: true })).toThrow("this encoding takes no options");
-    expect(() => decode("base32", "CO", { hex: "yes" })).toThrow("must be a boolean");
+    expect(() => decode("base32", "CO", { alphabet: true })).toThrow("must be a string");
+    expect(() => decode("base58", "1", { alphabet: "z" })).toThrow(
+      "use one of bitcoin, flickr, ripple",
+    );
   });
 
   it("returns a segwit address as its program with the version in details", () => {
@@ -165,10 +179,19 @@ describe("encode and decode through the registry", () => {
     expect(decoded.details).toEqual({ prefix: "bc", witnessVersion: 0 });
   });
 
-  it("does not read a version 0 address as bech32m", () => {
-    expect(() => decode("bech32m", "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4")).toThrow(
-      "checksum is bech32's",
-    );
+  it("reads a Taproot address with m and refuses a version 0 address with it", () => {
+    const taproot = "bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqzk5jj0";
+    expect(decode("bech32", taproot, { m: true }).details).toEqual({
+      prefix: "bc",
+      witnessVersion: 1,
+    });
+    expect(() => decode("bech32", taproot)).toThrow("checksum is bech32m's");
+    expect(() =>
+      decode("bech32", "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4", { m: true }),
+    ).toThrow("checksum is bech32's");
+    const written = encode("bech32", "hi", { prefix: "test", m: true });
+    expect(new TextDecoder().decode(decode("bech32", written, { m: true }).bytes)).toBe("hi");
+    expect(() => decode("bech32", written)).toThrow("checksum is bech32m's");
   });
 
   it("returns plain bech32 data, such as a Nostr key, as bytes", () => {

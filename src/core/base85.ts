@@ -1,10 +1,29 @@
 import { alphabetIndex } from "./bytes.ts";
-import { DecodeError, EncodingError, named } from "./errors.ts";
+import { byAlphabet } from "./alphabets.ts";
+import { DecodeError, EncodingError, InvalidOptionError, named } from "./errors.ts";
 
-/** Options for Ascii85 output. */
-export interface Ascii85EncodeOptions {
-  /** Wrap the text in Adobe's `<~` and `~>`. Default: false. */
+/** The base85 alphabets, in the order `info().options` lists them. */
+export const BASE85_ALPHABETS = ["rfc1924", "ascii85", "z85"] as const;
+
+/** A base85 alphabet: RFC 1924's, Adobe's Ascii85 or ZeroMQ's Z85. */
+export type Base85Alphabet = (typeof BASE85_ALPHABETS)[number];
+
+/** Options for reading and writing base85. */
+export interface Base85Options {
+  /** Alphabet to use. Default: `rfc1924`. */
+  alphabet?: Base85Alphabet;
+}
+
+/** Options for base85 output. */
+export interface Base85EncodeOptions extends Base85Options {
+  /** Wrap the text in Adobe's `<~` and `~>`. Only Ascii85 has them. Default: false. */
   delimiters?: boolean;
+}
+
+/** Base85 in any of its three alphabets. */
+export interface Base85Codec {
+  encode(bytes: Uint8Array, options?: Readonly<Base85EncodeOptions>): string;
+  decode(text: string, options?: Readonly<Base85Options>): Uint8Array;
 }
 
 /**
@@ -104,7 +123,7 @@ const WHITESPACE = new Set(["\t", "\n", "\f", "\r", " "]);
 function withoutDelimiters(text: string): string {
   const body = text.trim();
   if (body.startsWith("<~")) {
-    if (!body.endsWith("~>")) throw new DecodeError("ascii85", "`<~` without a closing `~>`");
+    if (!body.endsWith("~>")) throw new DecodeError("base85", "`<~` without a closing `~>`");
     return body.slice(2, -2);
   }
   return body.endsWith("~>") ? body.slice(0, -2) : body;
@@ -121,122 +140,103 @@ function withoutDelimiters(text: string): string {
 function ascii85Digits(character: string, index: number, groupStart: boolean): number[] {
   const code = character.codePointAt(0)!;
   if (character === "z") {
-    if (!groupStart)
-      throw new DecodeError("ascii85", `"z" at index ${index} inside a group`, index);
+    if (!groupStart) throw new DecodeError("base85", `"z" at index ${index} inside a group`, index);
     return [0, 0, 0, 0, 0];
   }
   if (code >= 33 && code <= 117) return [code - 33];
   throw new DecodeError(
-    "ascii85",
+    "base85",
     `${named(character)} at index ${index} is not an Ascii85 digit`,
     index,
   );
 }
 
-/**
- * Ascii85 (btoa, PostScript and PDF): `!` to `u`, with `z` for four zero bytes. Decoding takes
- * the text with or without Adobe's `<~` `~>` and skips ASCII whitespace. The btoa `y`
- * abbreviation for four spaces is not read, as Adobe's version has none.
- */
-export const ascii85 = {
-  /**
-   * Writes bytes in Ascii85.
-   *
-   * @param bytes - Bytes to write.
-   * @param options - Whether to add Adobe's delimiters.
-   * @returns {string} The text.
-   */
-  encode(bytes: Uint8Array, options: Readonly<Ascii85EncodeOptions> = {}): string {
-    const body = encode85(bytes, (value) => String.fromCodePoint(33 + value), "z");
-    return options.delimiters ? `<~${body}~>` : body;
-  },
+/** One alphabet: how it writes bytes and reads them back. */
+interface Variant {
+  encode(bytes: Uint8Array): string;
+  decode(text: string): Uint8Array;
+}
 
-  /**
-   * Reads Ascii85 text.
-   *
-   * @param text - Ascii85 text, optionally between `<~` and `~>`.
-   * @returns {Uint8Array} The bytes.
-   */
-  decode(text: string): Uint8Array {
-    const values: number[] = [];
-    let index = 0;
-    for (const character of withoutDelimiters(text)) {
-      if (!WHITESPACE.has(character)) {
-        values.push(...ascii85Digits(character, index, values.length % 5 === 0));
-      }
-      index += character.length;
+/**
+ * Reads Ascii85 text: with or without Adobe's `<~` `~>`, skipping ASCII whitespace.
+ *
+ * @param text - Ascii85 text.
+ * @returns {Uint8Array} The bytes.
+ */
+function decodeAscii85(text: string): Uint8Array {
+  const values: number[] = [];
+  let index = 0;
+  for (const character of withoutDelimiters(text)) {
+    if (!WHITESPACE.has(character)) {
+      values.push(...ascii85Digits(character, index, values.length % 5 === 0));
     }
-    return decode85("ascii85", values);
-  },
-} as const;
+    index += character.length;
+  }
+  return decode85("base85", values);
+}
 
 const Z85_ALPHABET =
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#";
 const Z85_VALUES = alphabetIndex(Z85_ALPHABET);
 
-/**
- * Z85 (ZeroMQ RFC 32): base 85 with an alphabet safe in a string literal of source code, no
- * quote or backslash; not in XML, which `<` and `&` break. The spec covers
- * only whole groups, so encoding takes a multiple of four bytes and decoding a multiple of five
- * characters.
- */
-export const z85 = {
-  /**
-   * Writes bytes in Z85.
-   *
-   * @param bytes - A multiple of four bytes.
-   * @returns {string} Five characters per four bytes.
-   */
-  encode(bytes: Uint8Array): string {
-    if (bytes.length % 4 !== 0) {
-      throw new EncodingError(`z85: ${bytes.length} bytes are not a multiple of 4`);
-    }
-    return encode85(bytes, (value) => Z85_ALPHABET[value]!);
-  },
-
-  /**
-   * Reads Z85 text.
-   *
-   * @param text - A multiple of five Z85 characters.
-   * @returns {Uint8Array} The bytes.
-   */
-  decode(text: string): Uint8Array {
-    const values = alphabetDigits("z85", text, (character) => Z85_VALUES.get(character));
-    if (values.length % 5 !== 0) {
-      throw new DecodeError("z85", `${values.length} characters are not a multiple of 5`);
-    }
-    return decode85("z85", values);
-  },
-} as const;
-
-const BASE85_ALPHABET =
+const RFC1924_ALPHABET =
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~";
-const BASE85_VALUES = alphabetIndex(BASE85_ALPHABET);
+const RFC1924_VALUES = alphabetIndex(RFC1924_ALPHABET);
+
+const VARIANTS: Readonly<Record<Base85Alphabet, Variant>> = {
+  rfc1924: {
+    encode: (bytes) => encode85(bytes, (value) => RFC1924_ALPHABET[value]!),
+    decode: (text) =>
+      decode85(
+        "base85",
+        alphabetDigits("base85", text, (character) => RFC1924_VALUES.get(character)),
+      ),
+  },
+  ascii85: {
+    encode: (bytes) => encode85(bytes, (value) => String.fromCodePoint(33 + value), "z"),
+    decode: decodeAscii85,
+  },
+  z85: {
+    encode(bytes) {
+      if (bytes.length % 4 !== 0) {
+        throw new EncodingError(
+          `base85: ${bytes.length} bytes are not a multiple of 4, as Z85 needs`,
+        );
+      }
+      return encode85(bytes, (value) => Z85_ALPHABET[value]!);
+    },
+    decode(text) {
+      const values = alphabetDigits("base85", text, (character) => Z85_VALUES.get(character));
+      if (values.length % 5 !== 0) {
+        throw new DecodeError("base85", `${values.length} characters are not a multiple of 5`);
+      }
+      return decode85("base85", values);
+    },
+  },
+};
 
 /**
- * Base85 with the RFC 1924 alphabet, in groups of four bytes as git binary patches and Python's
- * `b85encode` write it. RFC 1924 itself reads a whole IPv6 address as one number; this reads
- * any length, with a short last group cut like Ascii85's.
+ * Base85: each four bytes as five base-85 digits, most significant first. The alphabets:
+ *
+ * - `rfc1924` (default): RFC 1924's, in groups of four bytes as git binary patches and
+ *   Python's `b85encode` write it. RFC 1924 itself reads a whole IPv6 address as one number;
+ *   this reads any length, with a short last group cut short.
+ * - `ascii85`: btoa, PostScript and PDF. `!` to `u`, with `z` for four zero bytes. Decoding
+ *   takes the text with or without Adobe's `<~` `~>` and skips ASCII whitespace. The btoa `y`
+ *   for four spaces is not read, as Adobe's version has none.
+ * - `z85`: ZeroMQ RFC 32, safe in a string literal of source code (no quote or backslash) but
+ *   not in XML, which `<` and `&` break. The spec covers only whole groups, so encoding takes a
+ *   multiple of four bytes and decoding a multiple of five characters.
  */
-export const base85 = {
-  /**
-   * Writes bytes in base85.
-   *
-   * @param bytes - Bytes to write.
-   * @returns {string} The text.
-   */
-  encode(bytes: Uint8Array): string {
-    return encode85(bytes, (value) => BASE85_ALPHABET[value]!);
+export const base85: Base85Codec = {
+  encode(bytes, options = {}) {
+    const alphabet = options.alphabet ?? "rfc1924";
+    const text = byAlphabet(VARIANTS, alphabet, "rfc1924").encode(bytes);
+    if (options.delimiters !== true) return text;
+    if (alphabet !== "ascii85") {
+      throw new InvalidOptionError("delimiters", true, "only the ascii85 alphabet has them");
+    }
+    return `<~${text}~>`;
   },
-
-  /**
-   * Reads base85 text.
-   *
-   * @param text - Base85 text.
-   * @returns {Uint8Array} The bytes.
-   */
-  decode(text: string): Uint8Array {
-    const values = alphabetDigits("base85", text, (character) => BASE85_VALUES.get(character));
-    return decode85("base85", values);
-  },
-} as const;
+  decode: (text, options = {}) => byAlphabet(VARIANTS, options.alphabet, "rfc1924").decode(text),
+};

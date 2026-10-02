@@ -24,5 +24,23 @@ export const INPUT_FORMATS = ["utf8", "hex", "base64"] as const;
 /** How a tool writes decoded bytes: `auto` picks UTF-8 for readable text and hex otherwise. */
 export const OUTPUT_FORMATS = ["auto", "utf8", "hex", "base64"] as const;
 
+/**
+ * Every value the `alphabet` option takes, across base32, base58, base64 and base85. A literal
+ * list, so the schemas load without the codecs; `test/mcp.test.ts` holds it to the registry.
+ */
+export const ALPHABETS = [
+  "standard",
+  "hex",
+  "crockford",
+  "z",
+  "bitcoin",
+  "flickr",
+  "ripple",
+  "url",
+  "rfc1924",
+  "ascii85",
+  "z85",
+] as const;
+
 export type InputFormat = (typeof INPUT_FORMATS)[number];
 export type OutputFormat = (typeof OUTPUT_FORMATS)[number];

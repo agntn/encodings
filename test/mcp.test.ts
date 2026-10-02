@@ -1,6 +1,8 @@
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { afterEach, describe, expect, it } from "vite-plus/test";
+import { encodingInfos } from "../src/index.ts";
 import { createMcpServer } from "../src/mcp.ts";
+import { ALPHABETS } from "../src/tool-contract.ts";
 import {
   encodingsDecode,
   encodingsEncode,
@@ -64,9 +66,10 @@ describe("encodings MCP server", () => {
     );
     expect(
       await call("encodings_encode", {
-        encoding: "base58check",
+        encoding: "base58",
         input: "0062e907b15cbf27d5425399ebf6f0fb50ebb88f18",
         inputFormat: "hex",
+        options: { check: true },
       }),
     ).toContain("1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa");
     expect(
@@ -86,22 +89,28 @@ describe("encodings MCP server", () => {
       limit: 90,
       upper: true,
       separate: false,
+      m: false,
+      alphabet: "standard",
+      check: false,
       delimiters: false,
-      hex: false,
-      url: false,
       padding: false,
       name: "data",
       mode: "644",
-    };
+    } as const;
     expect(
       await call("encodings_encode", { encoding: "base91", input: "Hello", options: everything }),
     ).toBe(
-      "base91 (5 bytes):\n>OwJh>A\nIgnored, base91 does not take: prefix, limit, upper, separate, delimiters, hex, url, padding, name, mode",
+      "base91 (5 bytes):\n>OwJh>A\nIgnored, base91 does not take: prefix, limit, upper, separate, m, alphabet, check, delimiters, padding, name, mode",
     );
     expect(
       await call("encodings_encode", { encoding: "hex", input: "Hello", options: everything }),
     ).toBe(
-      "hex (5 bytes):\n48656C6C6F\nIgnored, hex does not take: prefix, limit, separate, delimiters, hex, url, padding, name, mode",
+      "hex (5 bytes):\n48656C6C6F\nIgnored, hex does not take: prefix, limit, separate, m, alphabet, check, delimiters, padding, name, mode",
+    );
+    expect(
+      await call("encodings_encode", { encoding: "base58", input: "Hello", options: everything }),
+    ).toBe(
+      "base58 (5 bytes):\n9Ajdvzr\nIgnored, base58 does not take: prefix, limit, upper, separate, m, alphabet=standard, delimiters, padding, name, mode",
     );
   });
 
@@ -121,7 +130,7 @@ describe("encodings MCP server", () => {
 
   it("ranks candidates with their reasons", async () => {
     const text = await call("encodings_identify", { text: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" });
-    expect(text.split("\n")[0]).toMatch(/^1\. base58check 0\.\d+; checksum matches/u);
+    expect(text.split("\n")[0]).toMatch(/^1\. base58 \(check\) 0\.\d+; checksum matches/u);
   });
 
   it("peels layers and marks the last guess", async () => {
@@ -138,21 +147,28 @@ describe("encodings MCP server", () => {
     ]);
     expect(
       await call("encodings_identify", { text: "D1IMOR3F41RMUSJCCGM20S35CLM0====", peel: true }),
-    ).toMatch(/^1 layer, outermost first:\n1\. base32 \(hex\) /u);
+    ).toMatch(/^1 layer, outermost first:\n1\. base32 \(alphabet=hex\) /u);
     expect(await call("encodings_identify", { text: "Hello world", peel: true })).toBe(
       "No layer to take off: nothing decodes this text to readable text or past a checksum.",
     );
   });
 
+  it("offers in the schema every alphabet the registry has, and no other", () => {
+    const choices = encodingInfos().flatMap((info) =>
+      info.options.flatMap((option) => (option.name === "alphabet" ? (option.choices ?? []) : [])),
+    );
+    expect([...ALPHABETS].toSorted()).toEqual([...new Set(choices)].toSorted());
+  });
+
   it("lists encodings and shows one", async () => {
-    expect((await call("encodings_info", {})).split("\n")).toHaveLength(21);
+    expect((await call("encodings_info", {})).split("\n")).toHaveLength(13);
     expect(await call("encodings_info", { encoding: "base32" })).toContain(
-      "hex (boolean, default false, decode too)",
+      'alphabet (string, default "standard", decode too)',
     );
     expect(await call("encodings_info", { encoding: "bech32" })).toContain(
       "prefix (string, required)",
     );
-    expect((await call("encodings_info", { family: "base58" })).split("\n")).toHaveLength(4);
+    expect((await call("encodings_info", { family: "base58" })).split("\n")).toHaveLength(1);
   });
 
   it("reads with the alphabet options and names the ones it ignored", async () => {
@@ -160,16 +176,30 @@ describe("encodings MCP server", () => {
       await call("encodings_decode", {
         encoding: "base32",
         text: "CPNMUOJ1E8",
-        options: { hex: true },
+        options: { alphabet: "hex" },
       }),
-    ).toBe('base32 (hex) → 6 bytes as utf8:\n"foobar"');
+    ).toBe('base32 (alphabet=hex) → 6 bytes as utf8:\n"foobar"');
     expect(
       await call("encodings_decode", {
         encoding: "base32",
         text: "MZXW6YTBOI",
-        options: { hex: false, url: false },
+        options: { alphabet: "standard", check: false, m: false },
       }),
-    ).toBe('base32 → 6 bytes as utf8:\n"foobar"\nIgnored, base32 does not read with: url');
+    ).toBe(
+      'base32 (alphabet=standard) → 6 bytes as utf8:\n"foobar"\nIgnored, base32 does not read with: check, m',
+    );
+    expect(
+      await call("encodings_decode", {
+        encoding: "base32",
+        text: "MZXW6YTBOI",
+        options: { alphabet: "bitcoin" },
+      }),
+    ).toBe(
+      'base32 → 6 bytes as utf8:\n"foobar"\nIgnored, base32 does not read with: alphabet=bitcoin',
+    );
+    await expect(
+      call("encodings_decode", { encoding: "base32", text: "x", options: { alphabet: "base32" } }),
+    ).rejects.toThrow("Invalid arguments");
     await expect(
       call("encodings_decode", { encoding: "base32", text: "x", options: { padding: false } }),
     ).rejects.toThrow("Invalid arguments");
@@ -177,17 +207,18 @@ describe("encodings MCP server", () => {
 
   it("names the options a candidate needs", async () => {
     expect(await call("encodings_identify", { text: "CPNMUOJ1E8======", limit: 1 })).toMatch(
-      /^1\. base32 \(hex\) /u,
+      /^1\. base32 \(alphabet=hex\) /u,
     );
   });
 
   it("turns a library error into an error result", async () => {
     await expect(
       call("encodings_decode", {
-        encoding: "base58check",
+        encoding: "base58",
         text: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNb",
+        options: { check: true },
       }),
-    ).rejects.toThrow("base58check: checksum does not match");
+    ).rejects.toThrow("base58: checksum does not match");
     await expect(call("encodings_decode", { encoding: "base62", text: "x" })).rejects.toThrow(
       "Unknown encoding: base62",
     );

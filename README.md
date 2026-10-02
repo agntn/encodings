@@ -18,7 +18,7 @@ Docs and a live playground: [encodings.agntn.dev](https://encodings.agntn.dev).
 
 ## ✨ Features
 
-- 🔤 **All the usual ones.** Binary, octal, decimal, hex, base32 in four alphabets, base45, base58 in three, base64 in two, Ascii85, Z85, base85, basE91, bech32, uuencode, Quoted-Printable.
+- 🔤 **All the usual ones.** Binary, octal, decimal, hex, base32 in four alphabets, base45, base58 in three, base64 in two, base85 in three (Ascii85 and Z85 too), basE91, bech32 and bech32m, uuencode, Quoted-Printable.
 - 🧾 **Written from the specs.** RFC 4648, RFC 9285, BIP173, BIP350. No codec library underneath.
 - ✅ **Checksums checked.** Base58Check and bech32 refuse a typo instead of decoding it.
 - 🪙 **Segwit aware.** A `bc1…` address comes back as its witness version and program.
@@ -43,9 +43,9 @@ npx @agntn/encodings identify 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa -n 3
 ```
 
 ```
-0.574  base58check      0062e907b15cbf27d5425399ebf6f0fb50ebb88f18  (checksum matches)
-0.043  base32-crockford 0a83fb05d62de0e7844da5b4fd04b90d3676876faa
-0.024  base58           0062e907b15cbf27d5425399ebf6f0fb50ebb88f18c29b7d93
+0.574  base58 --check              0062e907b15cbf27d5425399ebf6f0fb50ebb88f18  (checksum matches)
+0.043  base32 --alphabet=crockford 0a83fb05d62de0e7844da5b4fd04b90d3676876faa
+0.024  base58                      0062e907b15cbf27d5425399ebf6f0fb50ebb88f18c29b7d93
 ```
 
 The genesis address. Version byte `00`, then Satoshi's HASH160. The bare `encodings` below is `pnpm exec encodings` after a local install, or once `pnpm add -g @agntn/encodings`.
@@ -63,11 +63,11 @@ witnessVersion: 0
 The prefix and the version go to stderr. Pipe stdout anywhere, it's pure program bytes. Typo in an address?
 
 ```bash
-encodings decode base58check 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNb
+encodings decode base58 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNb --check
 ```
 
 ```
-base58check: checksum does not match
+base58: checksum does not match
 ```
 
 Exit code 1. No key, no config, no network.
@@ -87,10 +87,10 @@ Exit code 1. No key, no config, no network.
 ## 🧠 Library
 
 ```ts
-import { base58check, decode, encode, identify } from "@agntn/encodings";
+import { base58, decode, encode, identify } from "@agntn/encodings";
 
 encode("base64", "gm"); // "Z20="
-base58check.decode("1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"); // 21 bytes
+base58.decode("1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa", { check: true }); // 21 bytes
 decode("bech32", "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4").details;
 // { prefix: "bc", witnessVersion: 0 }
 identify("JBSWY3DPEBLW64TMMQ======")[0]?.text; // "Hello World"
@@ -100,19 +100,19 @@ That's most of it, really. Strings go in as UTF-8, bytes come out as `Uint8Array
 
 ## 🗂️ Encodings
 
-| Family                      | Encodings                                                 |
-| --------------------------- | --------------------------------------------------------- |
-| binary, octal, decimal, hex | `binary`, `octal`, `decimal`, `hex`                       |
-| base32                      | `base32`, `base32-crockford`, `z-base-32`                 |
-| base45                      | `base45`                                                  |
-| base58                      | `base58`, `base58check`, `base58-flickr`, `base58-ripple` |
-| base64                      | `base64`                                                  |
-| base85                      | `ascii85`, `z85`, `base85`                                |
-| base91                      | `base91`                                                  |
-| bech32                      | `bech32`, `bech32m`                                       |
-| uuencode, quoted-printable  | `uuencode`, `quoted-printable`                            |
+| Encoding                            | Variants as options                                |
+| ----------------------------------- | -------------------------------------------------- |
+| `binary`, `octal`, `decimal`, `hex` |                                                    |
+| `base32`                            | `alphabet`: `standard`, `hex`, `crockford`, `z`    |
+| `base45`                            |                                                    |
+| `base58`                            | `alphabet`: `bitcoin`, `flickr`, `ripple`; `check` |
+| `base64`                            | `alphabet`: `standard`, `url`                      |
+| `base85`                            | `alphabet`: `rfc1924`, `ascii85`, `z85`            |
+| `base91`                            |                                                    |
+| `bech32`                            | `m` for Bech32m                                    |
+| `uuencode`, `quoted-printable`      |                                                    |
 
-base32hex and base64url are `{ hex: true }` and `{ url: true }` on `base32` and `base64`, in both directions. Each family is also a subpath, like `@agntn/encodings/base58`. Alphabets, overhead and options per encoding are on [the encodings page](https://encodings.agntn.dev/encodings).
+Base58Check is `base58` with `check`. z-base-32 is `base32` with `alphabet: "z"`. Decoding takes the same options, so a variant reads back the way it was written. Each family is also a subpath, like `@agntn/encodings/base58`. Alphabets, overhead and options per encoding are on [the encodings page](https://encodings.agntn.dev/encodings).
 
 ## 🤖 Agents
 

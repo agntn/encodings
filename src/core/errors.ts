@@ -20,6 +20,16 @@ export function quote(text: string): string {
 }
 
 /**
+ * Writes an option value into a label: an ASCII word such as `hex` as it is, anything else quoted.
+ *
+ * @param text - The value.
+ * @returns {string} The word, or the quoted value.
+ */
+export function token(text: string): string {
+  return /^[\w.-]+$/u.test(text) ? text : quote(text);
+}
+
+/**
  * Shows a caller's value inside an error message. A value with a line break, a control or a
  * format character is quoted: these messages reach a model as they are, and a raw line break
  * would add a line that reads as the tool's own answer. The error's fields keep the raw value.

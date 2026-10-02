@@ -23,23 +23,39 @@ export { decimal } from "./decimal.ts";
 export type { NumbersCodec, NumbersEncodeOptions } from "./numbers.ts";
 export { hex, type HexEncodeOptions } from "./hex.ts";
 export {
+  BASE32_ALPHABETS,
   base32,
-  base32crockford,
-  zbase32,
+  type Base32Alphabet,
   type Base32Codec,
   type Base32EncodeOptions,
   type Base32Options,
 } from "./base32.ts";
 export { base45 } from "./base45.ts";
-export { base58, base58check, base58flickr, base58ripple, type Base58Codec } from "./base58.ts";
 export {
+  BASE58_ALPHABETS,
+  base58,
+  type Base58Alphabet,
+  type Base58CheckCodec,
+  type Base58Codec,
+  type Base58Options,
+} from "./base58.ts";
+export {
+  BASE64_ALPHABETS,
   base64,
+  type Base64Alphabet,
   type Base64Codec,
   type Base64EncodeOptions,
   type Base64Options,
 } from "./base64.ts";
 export type { Radix2Codec } from "./radix2.ts";
-export { ascii85, base85, z85, type Ascii85EncodeOptions } from "./base85.ts";
+export {
+  BASE85_ALPHABETS,
+  base85,
+  type Base85Alphabet,
+  type Base85Codec,
+  type Base85EncodeOptions,
+  type Base85Options,
+} from "./base85.ts";
 export { base91 } from "./base91.ts";
 export {
   BECH32_LIMIT,

@@ -1,17 +1,16 @@
-import { base32, base32crockford, zbase32 } from "./base32.ts";
+import { BASE32_ALPHABETS, base32, type Base32Alphabet } from "./base32.ts";
 import { base45 } from "./base45.ts";
-import { BASE58_ALPHABET, base58, base58check, base58flickr, base58ripple } from "./base58.ts";
-import { base64 } from "./base64.ts";
-import { ascii85, base85, z85 } from "./base85.ts";
-import { base91 } from "./base91.ts";
 import {
-  BECH32_LIMIT,
-  bech32,
-  bech32m,
-  segwit,
-  type Bech32Codec,
-  type SegwitAddress,
-} from "./bech32.ts";
+  BASE58_ALPHABET,
+  BASE58_ALPHABETS,
+  base58,
+  type Base58Alphabet,
+  type Base58Options,
+} from "./base58.ts";
+import { BASE64_ALPHABETS, base64, type Base64Alphabet } from "./base64.ts";
+import { BASE85_ALPHABETS, base85, type Base85Alphabet } from "./base85.ts";
+import { base91 } from "./base91.ts";
+import { BECH32_LIMIT, bech32, bech32m, segwit, type SegwitAddress } from "./bech32.ts";
 import { binary } from "./binary.ts";
 import { toBytes, type BytesInput } from "./bytes.ts";
 import { decimal } from "./decimal.ts";
@@ -37,7 +36,8 @@ type About = Omit<EncodingInfo, "name" | "checksum" | "padding" | "options"> &
 type Values = Readonly<Record<string, string | number | boolean>>;
 
 /**
- * Checks one value the caller passed against the option it names.
+ * Checks one value the caller passed against the option it names: its type and, for a choice,
+ * one of its values.
  *
  * @param options - Descriptors.
  * @param name - Option name.
@@ -55,6 +55,9 @@ function checkGiven(options: readonly EncodingOption[], name: string, value: unk
   }
   if (typeof value !== option.type) {
     throw new InvalidOptionError(name, value, `must be a ${option.type}`);
+  }
+  if (option.choices && !option.choices.includes(String(value))) {
+    throw new InvalidOptionError(name, value, `use one of ${option.choices.join(", ")}`);
   }
 }
 
@@ -115,41 +118,40 @@ function define(
   };
 }
 
-const LIMIT_OPTION: EncodingOption = {
-  name: "limit",
-  type: "number",
-  required: false,
-  default: BECH32_LIMIT,
-  description: "Longest result allowed; BIP173 sets 90, Lightning invoices need more",
-};
+/**
+ * Reads base58 options from checked values.
+ *
+ * @param values - Checked option values.
+ * @returns {Base58Options} The codec options.
+ */
+function base58Options(values: Values): Base58Options {
+  return {
+    alphabet: String(values["alphabet"]) as Base58Alphabet,
+    check: values["check"] === true,
+  };
+}
 
 /**
- * A bech32 variant for the registry. Decoding prefers the segwit reading when the text is a
- * valid segwit address of this variant, and returns the program with its version; otherwise it
- * returns the bytes the words carry.
+ * Reads bech32 text. A valid segwit address of the chosen variant comes back as its program with
+ * its version; anything else as the bytes the words carry.
  *
- * @param name - `bech32` or `bech32m`.
- * @param codec - The variant's codec.
- * @param about - Metadata.
- * @returns {Encoding} The encoding.
+ * @param text - Bech32 text.
+ * @param m - Whether to read the Bech32m checksum.
+ * @returns {Decoded} The bytes with the prefix, and the witness version of an address.
  */
-function defineBech32(name: string, codec: Bech32Codec, about: About): Encoding {
-  return define(
-    name,
-    about,
-    (bytes, values) => codec.encode(String(values["prefix"]), bytes, Number(values["limit"])),
-    (text): Decoded => {
-      const address = segwitAddress(text, name === "bech32");
-      if (address) {
-        return {
-          bytes: address.program,
-          details: { prefix: address.prefix, witnessVersion: address.version },
-        };
-      }
-      const { prefix, bytes } = codec.decode(text, Math.max(text.length, BECH32_LIMIT));
-      return { bytes, details: { prefix } };
-    },
+function readBech32(text: string, m: boolean): Decoded {
+  const address = segwitAddress(text, !m);
+  if (address) {
+    return {
+      bytes: address.program,
+      details: { prefix: address.prefix, witnessVersion: address.version },
+    };
+  }
+  const { prefix, bytes } = (m ? bech32m : bech32).decode(
+    text,
+    Math.max(text.length, BECH32_LIMIT),
   );
+  return { bytes, details: { prefix } };
 }
 
 /**
@@ -266,18 +268,20 @@ export const builtins: readonly Encoding[] = [
     "base32",
     {
       label: "Base32",
-      description: "A-Z and 2-7, or 0-9 and A-V with hex, padded with = to blocks of eight",
+      description: "Five bits per character in one of four alphabets; RFC 4648 pads with =",
       family: "base32",
-      standard: "RFC 4648 §6 and §7",
+      standard: "RFC 4648 §6 and §7, Crockford's Base32, z-base-32",
       alphabet: BASE32_RFC,
       padding: true,
       options: [
         {
-          name: "hex",
-          type: "boolean",
+          name: "alphabet",
+          type: "string",
           required: false,
-          default: false,
-          description: "Use the extended hex alphabet 0-9 and A-V, which sorts in byte order",
+          default: "standard",
+          choices: [...BASE32_ALPHABETS],
+          description:
+            "standard A-Z 2-7 (RFC 4648 §6), hex 0-9 A-V (§7), crockford (no I, L, O, U; reads its look-alikes and hyphens) or z (z-base-32)",
           decode: true,
         },
         {
@@ -285,37 +289,17 @@ export const builtins: readonly Encoding[] = [
           type: "boolean",
           required: false,
           default: true,
-          description: "Pad the last block with = to eight characters",
+          description: "Pad the last block with = to eight characters; standard and hex only",
         },
       ],
     },
     (bytes, values) =>
-      base32.encode(bytes, { hex: values["hex"] === true, padding: values["padding"] === true }),
-    (text, values) => base32.decode(text, { hex: values["hex"] === true }),
-  ),
-  define(
-    "base32-crockford",
-    {
-      label: "Crockford's Base32",
-      description: "Base32 without I, L, O and U; decoding ignores case and hyphens",
-      family: "base32",
-      standard: "Douglas Crockford, Base32 (crockford.com/base32.html)",
-      alphabet: "0123456789ABCDEFGHJKMNPQRSTVWXYZ",
-    },
-    (bytes) => base32crockford.encode(bytes),
-    (text) => base32crockford.decode(text),
-  ),
-  define(
-    "z-base-32",
-    {
-      label: "z-base-32",
-      description: "Lowercase Base32 ordered for people to read and say; Mnet, Lightning",
-      family: "base32",
-      standard: "Zooko O'Whielacronx, human-oriented base-32 encoding (2002)",
-      alphabet: "ybndrfg8ejkmcpqxot1uwisza345h769",
-    },
-    (bytes) => zbase32.encode(bytes),
-    (text) => zbase32.decode(text),
+      base32.encode(bytes, {
+        alphabet: String(values["alphabet"]) as Base32Alphabet,
+        padding: values["padding"] === true,
+      }),
+    (text, values) =>
+      base32.decode(text, { alphabet: String(values["alphabet"]) as Base32Alphabet }),
   ),
   define(
     "base45",
@@ -334,67 +318,53 @@ export const builtins: readonly Encoding[] = [
     "base58",
     {
       label: "Base58",
-      description: "Bitcoin's alphabet without 0, O, I and l; Solana keys, IPFS CIDv0",
+      description: "Bytes as one base-58 number; Bitcoin addresses and WIF with check, Solana keys",
       family: "base58",
-      standard: "Bitcoin Core base58.cpp",
+      standard: "Bitcoin Core base58.cpp, Flickr short URLs, XRP Ledger address encoding",
       alphabet: BASE58_ALPHABET,
+      options: [
+        {
+          name: "alphabet",
+          type: "string",
+          required: false,
+          default: "bitcoin",
+          choices: [...BASE58_ALPHABETS],
+          description:
+            "bitcoin (no 0, O, I, l), flickr (lowercase before uppercase) or ripple (XRP Ledger, addresses start with r)",
+          decode: true,
+        },
+        {
+          name: "check",
+          type: "boolean",
+          required: false,
+          default: false,
+          description:
+            "Base58Check: add a 4-byte double SHA-256 checksum, and check and strip it when reading",
+          decode: true,
+          checksum: true,
+        },
+      ],
     },
-    (bytes) => base58.encode(bytes),
-    (text) => base58.decode(text),
-  ),
-  define(
-    "base58check",
-    {
-      label: "Base58Check",
-      description: "Base58 with a 4-byte double SHA-256 checksum; Bitcoin addresses, WIF, xpub",
-      family: "base58",
-      standard: "Bitcoin Core base58.cpp (EncodeBase58Check)",
-      alphabet: BASE58_ALPHABET,
-      checksum: true,
-    },
-    (bytes) => base58check.encode(bytes),
-    (text) => base58check.decode(text),
-  ),
-  define(
-    "base58-flickr",
-    {
-      label: "Base58 (Flickr)",
-      description: "Base58 with lowercase before uppercase, as Flickr short URLs write it",
-      family: "base58",
-      standard: "Flickr short URLs (flic.kr)",
-      alphabet: "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ",
-    },
-    (bytes) => base58flickr.encode(bytes),
-    (text) => base58flickr.decode(text),
-  ),
-  define(
-    "base58-ripple",
-    {
-      label: "Base58 (Ripple)",
-      description: "Base58 with the XRP Ledger's alphabet, where addresses start with r",
-      family: "base58",
-      standard: "XRP Ledger address encoding",
-      alphabet: "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz",
-    },
-    (bytes) => base58ripple.encode(bytes),
-    (text) => base58ripple.decode(text),
+    (bytes, values) => base58.encode(bytes, base58Options(values)),
+    (text, values) => base58.decode(text, base58Options(values)),
   ),
   define(
     "base64",
     {
       label: "Base64",
-      description: "Letters, digits, + and /, or - and _ with url, padded with =",
+      description: "Letters, digits, + and /, or - and _ in the url alphabet, padded with =",
       family: "base64",
       standard: "RFC 4648 §4 and §5",
       alphabet: `${BASE64_RFC}+/`,
       padding: true,
       options: [
         {
-          name: "url",
-          type: "boolean",
+          name: "alphabet",
+          type: "string",
           required: false,
-          default: false,
-          description: "Use - and _ for + and /, safe in URLs and file names",
+          default: "standard",
+          choices: [...BASE64_ALPHABETS],
+          description: "standard (+ and /) or url (- and _, safe in URLs and file names)",
           decode: true,
         },
         {
@@ -407,57 +377,49 @@ export const builtins: readonly Encoding[] = [
       ],
     },
     (bytes, values) =>
-      base64.encode(bytes, { url: values["url"] === true, padding: values["padding"] === true }),
-    (text, values) => base64.decode(text, { url: values["url"] === true }),
-  ),
-  define(
-    "ascii85",
-    {
-      label: "Ascii85",
-      description: "Four bytes as five characters from ! to u, z for zeros; PostScript and PDF",
-      family: "base85",
-      standard: "Adobe PostScript Language Reference, ASCII85Decode",
-      alphabet:
-        "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstu",
-      options: [
-        {
-          name: "delimiters",
-          type: "boolean",
-          required: false,
-          default: false,
-          description: "Wrap the text in Adobe's <~ and ~>",
-        },
-      ],
-    },
-    (bytes, values) => ascii85.encode(bytes, { delimiters: values["delimiters"] === true }),
-    (text) => ascii85.decode(text),
-  ),
-  define(
-    "z85",
-    {
-      label: "Z85",
-      description: "ZeroMQ's base85 with a source-safe alphabet; whole 4-byte groups only",
-      family: "base85",
-      standard: "ZeroMQ RFC 32/Z85",
-      alphabet:
-        "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#",
-    },
-    (bytes) => z85.encode(bytes),
-    (text) => z85.decode(text),
+      base64.encode(bytes, {
+        alphabet: String(values["alphabet"]) as Base64Alphabet,
+        padding: values["padding"] === true,
+      }),
+    (text, values) =>
+      base64.decode(text, { alphabet: String(values["alphabet"]) as Base64Alphabet }),
   ),
   define(
     "base85",
     {
       label: "Base85",
-      description:
-        "Base 85 with the RFC 1924 alphabet in 4-byte groups, as git and Python write it",
+      description: "Four bytes as five characters; git and Python, Ascii85 for PDF, Z85 for ZeroMQ",
       family: "base85",
-      standard: "RFC 1924 alphabet, git binary patch grouping",
+      standard: "RFC 1924 alphabet in git's grouping, Adobe Ascii85, ZeroMQ RFC 32/Z85",
       alphabet:
         "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~",
+      options: [
+        {
+          name: "alphabet",
+          type: "string",
+          required: false,
+          default: "rfc1924",
+          choices: [...BASE85_ALPHABETS],
+          description:
+            "rfc1924 (git, Python b85encode), ascii85 (! to u, z for zeros; PostScript, PDF) or z85 (ZeroMQ, whole 4-byte groups)",
+          decode: true,
+        },
+        {
+          name: "delimiters",
+          type: "boolean",
+          required: false,
+          default: false,
+          description: "Wrap the text in Adobe's <~ and ~>; ascii85 only",
+        },
+      ],
     },
-    (bytes) => base85.encode(bytes),
-    (text) => base85.decode(text),
+    (bytes, values) =>
+      base85.encode(bytes, {
+        alphabet: String(values["alphabet"]) as Base85Alphabet,
+        delimiters: values["delimiters"] === true,
+      }),
+    (text, values) =>
+      base85.decode(text, { alphabet: String(values["alphabet"]) as Base85Alphabet }),
   ),
   define(
     "base91",
@@ -472,40 +434,48 @@ export const builtins: readonly Encoding[] = [
     (bytes) => base91.encode(bytes),
     (text) => base91.decode(text),
   ),
-  defineBech32("bech32", bech32, {
-    label: "Bech32",
-    description: "Prefix, 1, 5-bit words and a BCH checksum; segwit v0, Lightning, Nostr, Cosmos",
-    family: "bech32",
-    standard: "BIP173",
-    alphabet: "qpzry9x8gf2tvdw0s3jn54khce6mua7l",
-    checksum: true,
-    options: [
-      {
-        name: "prefix",
-        type: "string",
-        required: true,
-        description: "Human-readable part, such as bc, tb or npub",
-      },
-      LIMIT_OPTION,
-    ],
-  }),
-  defineBech32("bech32m", bech32m, {
-    label: "Bech32m",
-    description: "Bech32 with the BIP350 checksum constant; segwit v1+ (Taproot)",
-    family: "bech32",
-    standard: "BIP350",
-    alphabet: "qpzry9x8gf2tvdw0s3jn54khce6mua7l",
-    checksum: true,
-    options: [
-      {
-        name: "prefix",
-        type: "string",
-        required: true,
-        description: "Human-readable part, such as bc or tb",
-      },
-      LIMIT_OPTION,
-    ],
-  }),
+  define(
+    "bech32",
+    {
+      label: "Bech32",
+      description:
+        "Prefix, 1, 5-bit words and a BCH checksum; segwit, Taproot with m, Lightning, Nostr",
+      family: "bech32",
+      standard: "BIP173, BIP350 (Bech32m)",
+      alphabet: "qpzry9x8gf2tvdw0s3jn54khce6mua7l",
+      checksum: true,
+      options: [
+        {
+          name: "prefix",
+          type: "string",
+          required: true,
+          description: "Human-readable part, such as bc, tb or npub",
+        },
+        {
+          name: "limit",
+          type: "number",
+          required: false,
+          default: BECH32_LIMIT,
+          description: "Longest result allowed; BIP173 sets 90, Lightning invoices need more",
+        },
+        {
+          name: "m",
+          type: "boolean",
+          required: false,
+          default: false,
+          description: "Bech32m, the BIP350 checksum of segwit v1 and later (Taproot)",
+          decode: true,
+        },
+      ],
+    },
+    (bytes, values) =>
+      (values["m"] === true ? bech32m : bech32).encode(
+        String(values["prefix"]),
+        bytes,
+        Number(values["limit"]),
+      ),
+    (text, values) => readBech32(text, values["m"] === true),
+  ),
   define(
     "uuencode",
     {

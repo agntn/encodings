@@ -1,11 +1,35 @@
 import { sha256 } from "@agntn/hashes/sha2";
+import { byAlphabet } from "./alphabets.ts";
 import { alphabetIndex, concat, equalBytes } from "./bytes.ts";
 import { ChecksumError, DecodeError, InvalidOptionError, named } from "./errors.ts";
 
-/** A codec over one base58 alphabet. */
-export interface Base58Codec {
+/** A codec over one base58 alphabet, with no options. */
+export interface Base58CheckCodec {
   encode(bytes: Uint8Array): string;
   decode(text: string): Uint8Array;
+}
+
+/** The base58 alphabets, in the order `info().options` lists them. */
+export const BASE58_ALPHABETS = ["bitcoin", "flickr", "ripple"] as const;
+
+/** A base58 alphabet: Bitcoin's, Flickr's or the XRP Ledger's. */
+export type Base58Alphabet = (typeof BASE58_ALPHABETS)[number];
+
+/** Options for reading and writing base58. */
+export interface Base58Options {
+  /** Alphabet to use. Default: `bitcoin`. */
+  alphabet?: Base58Alphabet;
+  /**
+   * Add a four-byte double SHA-256 checksum when writing, and check and strip it when reading,
+   * as Base58Check does. Default: false.
+   */
+  check?: boolean;
+}
+
+/** Base58 in any of its three alphabets, with or without the Base58Check checksum. */
+export interface Base58Codec {
+  encode(bytes: Uint8Array, options?: Readonly<Base58Options>): string;
+  decode(text: string, options?: Readonly<Base58Options>): Uint8Array;
 }
 
 /**
@@ -14,9 +38,9 @@ export interface Base58Codec {
  *
  * @param name - Registry name, used in error messages.
  * @param alphabet - The 58 characters in value order.
- * @returns {Base58Codec} The codec.
+ * @returns {Base58CheckCodec} The codec.
  */
-function base58Codec(name: string, alphabet: string): Base58Codec {
+function base58Codec(name: string, alphabet: string): Base58CheckCodec {
   const values = alphabetIndex(alphabet);
   const zero = alphabet[0]!;
 
@@ -81,37 +105,33 @@ function base58Codec(name: string, alphabet: string): Base58Codec {
 /** Bitcoin's base58 alphabet: digits and letters without `0`, `O`, `I` and `l`. */
 export const BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
-/** Base58 with Bitcoin's alphabet, also used by IPFS CIDv0, Solana and Monero's blocks. */
-export const base58: Base58Codec = base58Codec("base58", BASE58_ALPHABET);
-
-/** Base58 with Flickr's alphabet: Bitcoin's with each lowercase and uppercase run swapped. */
-export const base58flickr: Base58Codec = base58Codec(
-  "base58-flickr",
-  "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ",
-);
-
-/** Base58 with the XRP Ledger's alphabet, where account addresses start with `r`. */
-export const base58ripple: Base58Codec = base58Codec(
-  "base58-ripple",
-  "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz",
-);
+/** The characters of each alphabet in value order. */
+const DIGITS: Readonly<Record<Base58Alphabet, string>> = {
+  bitcoin: BASE58_ALPHABET,
+  flickr: "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ",
+  ripple: "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz",
+};
 
 /**
- * Builds Base58Check over another hash or alphabet, the way Decred and the XRP Ledger use it.
+ * Wraps a codec so it appends the first four bytes of the payload's double hash, and checks and
+ * strips them when reading.
  *
- * @param hash - The checksum hash, such as `blake256` from `@agntn/hashes/blake256`.
- * @param alphabet - The 58 characters in value order. Bitcoin's when left out.
- * @returns {Base58Codec} The codec. Its errors name `base58check`.
+ * @param name - Registry name, for errors.
+ * @param codec - The plain codec.
+ * @param hash - The checksum hash, run twice.
+ * @returns {Base58CheckCodec} The codec.
  */
-export function createBase58check(
+function withChecksum(
+  name: string,
+  codec: Readonly<Base58CheckCodec>,
   hash: (bytes: Uint8Array) => Uint8Array,
-  alphabet: string = BASE58_ALPHABET,
-): Base58Codec {
-  if (alphabet.length !== 58 || new Set(alphabet).size !== 58) {
-    throw new InvalidOptionError("alphabet", alphabet, "needs 58 distinct characters");
-  }
-  const codec = base58Codec("base58check", alphabet);
-
+): Base58CheckCodec {
+  /**
+   * The first four bytes of the payload's double hash.
+   *
+   * @param payload - The payload.
+   * @returns {Uint8Array} The checksum.
+   */
   function checksum(payload: Uint8Array): Uint8Array {
     const digest = hash(hash(payload));
     if (digest.length < 4) {
@@ -128,20 +148,65 @@ export function createBase58check(
     decode(text) {
       const bytes = codec.decode(text);
       if (bytes.length < 4) {
-        throw new DecodeError("base58check", `${bytes.length} bytes leave no room for a checksum`);
+        throw new DecodeError(name, `${bytes.length} bytes leave no room for a checksum`);
       }
       const payload = bytes.subarray(0, -4);
-      if (!equalBytes(bytes.subarray(-4), checksum(payload))) {
-        throw new ChecksumError("base58check");
-      }
+      if (!equalBytes(bytes.subarray(-4), checksum(payload))) throw new ChecksumError(name);
       return payload;
     },
   };
 }
 
+const PLAIN: Readonly<Record<Base58Alphabet, Base58CheckCodec>> = {
+  bitcoin: base58Codec("base58", DIGITS.bitcoin),
+  flickr: base58Codec("base58", DIGITS.flickr),
+  ripple: base58Codec("base58", DIGITS.ripple),
+};
+
+const CHECKED: Readonly<Record<Base58Alphabet, Base58CheckCodec>> = {
+  bitcoin: withChecksum("base58", PLAIN.bitcoin, sha256),
+  flickr: withChecksum("base58", PLAIN.flickr, sha256),
+  ripple: withChecksum("base58", PLAIN.ripple, sha256),
+};
+
 /**
- * Base58Check, Bitcoin's form for addresses, WIF keys and extended keys: the payload and the
- * first four bytes of its double SHA-256, in Bitcoin's base58. The payload starts with the
- * version byte or bytes; this codec keeps them in it and checks nothing but the checksum.
+ * Picks the codec for a set of options.
+ *
+ * @param options - Alphabet and checksum.
+ * @returns {Base58CheckCodec} The codec.
  */
-export const base58check: Base58Codec = createBase58check(sha256);
+function codecFor(options: Readonly<Base58Options>): Base58CheckCodec {
+  return byAlphabet(options.check === true ? CHECKED : PLAIN, options.alphabet, "bitcoin");
+}
+
+/**
+ * Base58: the bytes as one big-endian number in base 58, each leading zero byte kept as one
+ * leading copy of the alphabet's first character. Bitcoin's alphabet by default, as IPFS
+ * CIDv0, Solana and Monero's blocks use it; `flickr` swaps its lowercase and uppercase runs for
+ * Flickr's short URLs, and `ripple` is the XRP Ledger's, where account addresses start with
+ * `r`. `check` turns it into Base58Check: the payload and the first four bytes of its double
+ * SHA-256, the form of Bitcoin addresses, WIF keys, extended keys and XRP Ledger addresses. The
+ * payload starts with the version byte or bytes; `check` keeps them in it and checks nothing but
+ * the checksum.
+ */
+export const base58: Base58Codec = {
+  encode: (bytes, options = {}) => codecFor(options).encode(bytes),
+  decode: (text, options = {}) => codecFor(options).decode(text),
+};
+
+/**
+ * Builds Base58Check over another hash or alphabet, the way Decred uses it.
+ *
+ * @param hash - The checksum hash, such as `blake256` from `@agntn/hashes/blake256`.
+ * @param alphabet - The 58 characters in value order. Bitcoin's when left out.
+ * @returns {Base58CheckCodec} The codec. Its errors name `base58check`.
+ */
+export function createBase58check(
+  hash: (bytes: Uint8Array) => Uint8Array,
+  alphabet: string = BASE58_ALPHABET,
+): Base58CheckCodec {
+  if (alphabet.length !== 58 || new Set(alphabet).size !== 58) {
+    throw new InvalidOptionError("alphabet", alphabet, "needs 58 distinct characters");
+  }
+  return withChecksum("base58check", base58Codec("base58check", alphabet), hash);
+}

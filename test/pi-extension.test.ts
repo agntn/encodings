@@ -23,19 +23,22 @@ describe("pi encodings extension", () => {
   it("executes through the shared executor and returns structured details", async () => {
     const host = await loadPiExtension(extensionPath);
 
-    const result = await host
-      .tool("encodings_decode")
-      .execute(
-        "call-1",
-        { encoding: "base58check", text: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" },
-        undefined,
-        undefined,
-        host.context,
-      );
+    const result = await host.tool("encodings_decode").execute(
+      "call-1",
+      {
+        encoding: "base58",
+        text: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+        options: { check: true },
+      },
+      undefined,
+      undefined,
+      host.context,
+    );
 
     expect(result.content[0]?.type).toBe("text");
     expect(result.details).toMatchObject({
-      encoding: "base58check",
+      encoding: "base58",
+      options: { check: true },
       hex: "0062e907b15cbf27d5425399ebf6f0fb50ebb88f18",
       byteLength: 21,
     });
@@ -52,7 +55,11 @@ describe("pi encodings extension", () => {
     await expect(
       decode.execute(
         "call-2",
-        { encoding: "base58check", text: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNb" },
+        {
+          encoding: "base58",
+          text: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNb",
+          options: { check: true },
+        },
         undefined,
         undefined,
         host.context,

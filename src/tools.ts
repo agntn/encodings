@@ -9,6 +9,7 @@ import {
 } from "@agntn/tools";
 import { encodingFamilies } from "./core/types.ts";
 import {
+  ALPHABETS,
   INPUT_FORMATS,
   MAX_CANDIDATES,
   MAX_NAME_LENGTH,
@@ -49,8 +50,18 @@ const encoding = Type.String({
   minLength: 1,
   maxLength: MAX_NAME_LENGTH,
   description:
-    "Encoding name, such as base64, base58check or bech32; case, spaces and hyphens do not matter. encodings_info lists them",
+    "Encoding name, such as base64, base58 or bech32; case, spaces and hyphens do not matter. encodings_info lists them",
 });
+const alphabet = Type.Optional(
+  Type.Enum(ALPHABETS, {
+    description:
+      "base32: standard, hex, crockford or z. base58: bitcoin, flickr or ripple. base64: standard or url. base85: rfc1924, ascii85 or z85",
+  }),
+);
+const check = Type.Optional(
+  Type.Boolean({ description: "base58: Base58Check, with a double SHA-256 checksum" }),
+);
+const m = Type.Optional(Type.Boolean({ description: "bech32: Bech32m checksum (segwit v1+)" }));
 const text = (description: string) =>
   Type.String({ minLength: 1, maxLength: MAX_TEXT_LENGTH, description });
 
@@ -71,15 +82,14 @@ export const encodeSchema = closed({
         Type.String({
           minLength: 1,
           maxLength: MAX_PREFIX_LENGTH,
-          description:
-            "bech32 and bech32m: human-readable part, such as bc or npub. Required there",
+          description: "bech32: human-readable part, such as bc or npub. Required there",
         }),
       ),
       limit: Type.Optional(
         Type.Integer({
           minimum: 8,
           maximum: MAX_TEXT_LENGTH,
-          description: "bech32 and bech32m: longest result allowed (default 90)",
+          description: "bech32: longest result allowed (default 90)",
         }),
       ),
       upper: Type.Optional(Type.Boolean({ description: "hex: write A-F" })),
@@ -88,9 +98,12 @@ export const encodeSchema = closed({
           description: "binary, octal and decimal: space between bytes (default true)",
         }),
       ),
-      delimiters: Type.Optional(Type.Boolean({ description: "ascii85: wrap in <~ and ~>" })),
-      hex: Type.Optional(Type.Boolean({ description: "base32: extended hex alphabet 0-9 A-V" })),
-      url: Type.Optional(Type.Boolean({ description: "base64: - and _ for + and /" })),
+      m,
+      alphabet,
+      check,
+      delimiters: Type.Optional(
+        Type.Boolean({ description: "base85 with the ascii85 alphabet: wrap in <~ and ~>" }),
+      ),
       padding: Type.Optional(
         Type.Boolean({ description: "base32 and base64: pad with = (default true)" }),
       ),
@@ -120,12 +133,7 @@ export const decodeSchema = closed({
         "How to show the bytes: auto (UTF-8 when they are readable text, else hex; default), utf8, hex or base64",
     }),
   ),
-  options: Type.Optional(
-    closed({
-      hex: Type.Optional(Type.Boolean({ description: "base32: extended hex alphabet 0-9 A-V" })),
-      url: Type.Optional(Type.Boolean({ description: "base64: - and _ for + and /" })),
-    }),
-  ),
+  options: Type.Optional(closed({ alphabet, check, m })),
 });
 
 export const identifySchema = closed({
@@ -162,17 +170,21 @@ export const infoSchema = closed({
   ),
 });
 
+/** The options that stand for variants other libraries name as encodings of their own. */
+const VARIANTS =
+  "Variants are options: Crockford and z-base-32 are base32 alphabets, Base58Check is base58 with check, base64url is base64 with alphabet url, Ascii85 and Z85 are base85 alphabets, Bech32m is bech32 with m.";
+
 export const encodeTool = defineTool({
   name: "encodings_encode",
   title: "Encode",
   description:
-    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, base32 and its variants, base45, base58, base58check, base64 (url too), ascii85, z85, base85, base91, bech32, bech32m, uuencode or quoted-printable.",
+    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, bech32 (Bech32m too), uuencode or quoted-printable.",
   snippet: "Use encodings_encode to write text or bytes in base64, base58, bech32 and the like.",
   guidelines: [
     "Text is encoded as UTF-8. For bytes, pass them in hex or base64 and set inputFormat.",
-    "bech32 and bech32m need options.prefix. base58check appends the checksum; put the version byte in the input yourself.",
+    "bech32 needs options.prefix. base58 with options.check appends the checksum; put the version byte in the input yourself.",
     "Only the options of the chosen encoding apply. Any other option is ignored and named in the reply.",
-    "base32hex is base32 with options.hex, base64url is base64 with options.url.",
+    VARIANTS,
   ],
   effect: "read",
   input: encodeSchema,
@@ -183,11 +195,11 @@ export const decodeTool = defineTool({
   name: "encodings_decode",
   title: "Decode",
   description:
-    "Read text in a named binary-to-text encoding back into bytes, shown as UTF-8 text or hex. Checksums (base58check, bech32, bech32m) are verified, and a segwit address yields its witness version and program.",
+    "Read text in a named binary-to-text encoding back into bytes, shown as UTF-8 text or hex. Checksums (base58 with check, bech32) are verified, and a segwit address yields its witness version and program.",
   snippet: "Use encodings_decode when you know the encoding of a string.",
   guidelines: [
     "Unsure which encoding it is? Call encodings_identify first.",
-    "base32hex is base32 with options.hex, base64url is base64 with options.url. identify names the options a candidate needs.",
+    `${VARIANTS} identify names the options a candidate needs.`,
     "The answer names the byte count and any prefix, version or file name the text carried.",
   ],
   effect: "read",

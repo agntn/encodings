@@ -139,10 +139,20 @@ export default defineNuxtConfig({
   mcp: {
     enabled: false,
   },
-  /** base32hex and base64url became options of base32 and base64; their old pages point there. */
+  /** Variants became options of their family; their old pages point at the section there. */
   routeRules: {
     "/encodings/base32hex": { redirect: { to: "/encodings/base32#the-hex-alphabet", statusCode: 301 } },
+    "/encodings/base32-crockford": {
+      redirect: { to: "/encodings/base32#the-crockford-alphabet", statusCode: 301 },
+    },
+    "/encodings/z-base-32": { redirect: { to: "/encodings/base32#the-z-alphabet", statusCode: 301 } },
+    "/encodings/base58check": { redirect: { to: "/encodings/base58#base58check", statusCode: 301 } },
+    "/encodings/base58-flickr": { redirect: { to: "/encodings/base58#the-flickr-alphabet", statusCode: 301 } },
+    "/encodings/base58-ripple": { redirect: { to: "/encodings/base58#the-ripple-alphabet", statusCode: 301 } },
     "/encodings/base64url": { redirect: { to: "/encodings/base64#the-url-alphabet", statusCode: 301 } },
+    "/encodings/ascii85": { redirect: { to: "/encodings/base85#the-ascii85-alphabet", statusCode: 301 } },
+    "/encodings/z85": { redirect: { to: "/encodings/base85#the-z85-alphabet", statusCode: 301 } },
+    "/encodings/bech32m": { redirect: { to: "/encodings/bech32#bech32m", statusCode: 301 } },
   },
   nitro: {
     preset: "cloudflare_module",
