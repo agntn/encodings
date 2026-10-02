@@ -25,6 +25,9 @@ import {
   type OutputFormat,
 } from "./tool-contract.ts";
 
+/** The contract the playground and the docs read, so a limit changes in one place. */
+export { INPUT_FORMATS, MAX_BASE58_LENGTH, MAX_CANDIDATES, MAX_TEXT_LENGTH, OUTPUT_FORMATS };
+
 /**
  * Text for the model plus details for the harness, shared by every tool surface.
  * A failure throws instead: Pi records every returned value as a successful call.
