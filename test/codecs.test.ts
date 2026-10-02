@@ -539,6 +539,25 @@ describe("base256", () => {
     );
   });
 
+  it("reads symbols the text ran into one grapheme back apart", () => {
+    const symbols = "🇩🇪 🇵 🇱";
+    const text = base256.encode(new Uint8Array([1, 2, 0]), { symbols });
+    expect(text).toBe("🇵🇱🇩🇪");
+    expect(base256.decode(text, { symbols })).toEqual(new Uint8Array([1, 2, 0]));
+  });
+
+  it("names a huge grapheme by its first code point only", () => {
+    const error = (() => {
+      try {
+        base256.decode(`a${"\u0301".repeat(100_000)}`, { symbols: "🇩🇪 b" });
+      } catch (caught) {
+        return caught as Error;
+      }
+      return new Error("no error");
+    })();
+    expect(error.message).toBe('base256: "a" (U+0061) is not in the table');
+  });
+
   it("quotes a symbol of several code points whole in errors", () => {
     expect(() => base256.decode("x", { symbols: "a\u0301 a\u0301" })).toThrow('repeats "a\u0301"');
     expect(() => base256.decode("🇵🇱", { symbols: "🇩🇪🇫🇷" })).toThrow('"🇵🇱" is not in the table');

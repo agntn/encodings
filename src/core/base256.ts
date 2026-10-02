@@ -35,6 +35,8 @@ interface Table {
   digits: Readonly<Record<string, number>>;
   /** Whether a symbol spans more than one code point, so text splits into graphemes. */
   clusters: boolean;
+  /** Code points in the longest symbol. */
+  longest: number;
 }
 
 /** One symbol of the text with its UTF-16 index. */
@@ -69,7 +71,32 @@ function keyOf(segment: string): string {
  * @returns {string} Such as `"a" (U+0061)` or `"🇵🇱"`.
  */
 function nameOf(symbol: string): string {
-  return Array.from(symbol).length === 1 ? named(symbol) : quote(symbol);
+  const points = Array.from(symbol);
+  return points.length === 1 || points.length > 8 ? named(points[0]!) : quote(symbol);
+}
+
+/**
+ * Reads one grapheme as digits: a symbol of the table, or else symbols the text ran together,
+ * such as 🇵 and 🇱 written side by side, taking the longest match first.
+ *
+ * @param key - The grapheme without presentation selectors.
+ * @param checked - The table.
+ * @param index - Index of the grapheme in the text, for errors.
+ * @returns {number[]} The digits it spells.
+ */
+function digitsOf(key: string, checked: Readonly<Table>, index: number): number[] {
+  const { digits, longest } = checked;
+  const points = Array.from(key);
+  const out: number[] = [];
+  let at = 0;
+  while (at < points.length) {
+    let end = Math.min(points.length, at + longest);
+    while (end > at && !Object.hasOwn(digits, points.slice(at, end).join(""))) end--;
+    if (end === at) throw new DecodeError("base256", `${nameOf(key)} is not in the table`, index);
+    out.push(digits[points.slice(at, end).join("")]!);
+    at = end;
+  }
+  return out;
 }
 
 /**
@@ -107,8 +134,8 @@ function tableOf(option: string, given: string, distinct: boolean): Table {
   if (spelled.length < 2 || spelled.length > 256) {
     throw new InvalidOptionError(option, given, "needs 2 to 256 different symbols");
   }
-  const clusters = spelled.some((symbol) => Array.from(keyOf(symbol)).length > 1);
-  return { spelled, digits, clusters };
+  const longest = Math.max(...spelled.map((symbol) => Array.from(keyOf(symbol)).length));
+  return { spelled, digits, clusters: longest > 1, longest };
 }
 
 /** The symbols of each alphabet, by name. */
@@ -220,20 +247,14 @@ export const base256 = {
    * @returns {Uint8Array} One byte per symbol.
    */
   decode(text: string, options: Readonly<Base256Options> = {}): Uint8Array {
-    const { digits, clusters } = table(options);
+    const checked = table(options);
     const out: number[] = [];
-    for (const { segment, index } of piecesOf(
-      text,
-      start(text, options.multibase === true),
-      clusters,
-    )) {
+    const from = start(text, options.multibase === true);
+    for (const { segment, index } of piecesOf(text, from, checked.clusters)) {
       const key = keyOf(segment);
       if (key === "" || WHITESPACE.test(key)) continue;
-      const digit = Object.hasOwn(digits, key) ? digits[key] : undefined;
-      if (digit === undefined) {
-        throw new DecodeError("base256", `${nameOf(key)} is not in the table`, index);
-      }
-      out.push(digit);
+      const digit = Object.hasOwn(checked.digits, key) ? checked.digits[key] : undefined;
+      out.push(...(digit === undefined ? digitsOf(key, checked, index) : [digit]));
     }
     return Uint8Array.from(out);
   },
