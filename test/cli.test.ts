@@ -106,6 +106,10 @@ describe("encodings CLI", () => {
       code: 1,
       stderr: "Invalid option prefix=bc: base64 does not take it\n",
     });
+    expect(run("encode", "z85", "hi")).toMatchObject({
+      code: 1,
+      stderr: "z85: 2 bytes are not a multiple of 4\n",
+    });
     expect(run("encode", "base62", "x").stderr).toMatch(/^Unknown encoding: base62\. Available: /u);
     expect(run("identify", "€€€")).toMatchObject({ code: 1, stdout: "" });
   });

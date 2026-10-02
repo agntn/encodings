@@ -2,6 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 import {
   ChecksumError,
   DecodeError,
+  EncodingError,
   ascii85,
   base32,
   base32crockford,
@@ -209,6 +210,7 @@ describe("Ascii85 and Z85", () => {
   it("writes the ZeroMQ RFC 32 example and refuses partial groups", () => {
     expect(z85.encode(hex.decode("864FD26FB559F75B"))).toBe("HelloWorld");
     expect(() => z85.encode(new Uint8Array(3))).toThrow("not a multiple of 4");
+    expect(() => z85.encode(new Uint8Array(3))).toThrow(EncodingError);
     expect(() => z85.decode("Hello")).not.toThrow();
     expect(() => z85.decode("Hell")).toThrow("not a multiple of 5");
   });

@@ -1,5 +1,5 @@
 import { alphabetIndex } from "./bytes.ts";
-import { DecodeError, named } from "./errors.ts";
+import { DecodeError, EncodingError, named } from "./errors.ts";
 
 /** Options for Ascii85 output. */
 export interface Ascii85EncodeOptions {
@@ -157,7 +157,7 @@ export const z85 = {
    */
   encode(bytes: Uint8Array): string {
     if (bytes.length % 4 !== 0) {
-      throw new RangeError(`z85: ${bytes.length} bytes are not a multiple of 4`);
+      throw new EncodingError(`z85: ${bytes.length} bytes are not a multiple of 4`);
     }
     return encode85(bytes, (value) => Z85_ALPHABET[value]!);
   },
