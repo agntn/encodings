@@ -87,6 +87,8 @@ describe("encodings MCP server", () => {
       upper: true,
       separate: false,
       delimiters: false,
+      hex: false,
+      url: false,
       padding: false,
       name: "data",
       mode: "644",
@@ -94,12 +96,12 @@ describe("encodings MCP server", () => {
     expect(
       await call("encodings_encode", { encoding: "base91", input: "Hello", options: everything }),
     ).toBe(
-      "base91 (5 bytes):\n>OwJh>A\nIgnored, base91 does not take: prefix, limit, upper, separate, delimiters, padding, name, mode",
+      "base91 (5 bytes):\n>OwJh>A\nIgnored, base91 does not take: prefix, limit, upper, separate, delimiters, hex, url, padding, name, mode",
     );
     expect(
       await call("encodings_encode", { encoding: "hex", input: "Hello", options: everything }),
     ).toBe(
-      "hex (5 bytes):\n48656C6C6F\nIgnored, hex does not take: prefix, limit, separate, delimiters, padding, name, mode",
+      "hex (5 bytes):\n48656C6C6F\nIgnored, hex does not take: prefix, limit, separate, delimiters, hex, url, padding, name, mode",
     );
   });
 
@@ -134,17 +136,49 @@ describe("encodings MCP server", () => {
       expect.stringMatching(/^2\. base64 \(unconfirmed guess\) 0\.\d+$/u),
       "   12 bytes, hex 53616c7465645f5fb196bea1",
     ]);
+    expect(
+      await call("encodings_identify", { text: "D1IMOR3F41RMUSJCCGM20S35CLM0====", peel: true }),
+    ).toMatch(/^1 layer, outermost first:\n1\. base32 \(hex\) /u);
     expect(await call("encodings_identify", { text: "Hello world", peel: true })).toBe(
       "No layer to take off: nothing decodes this text to readable text or past a checksum.",
     );
   });
 
   it("lists encodings and shows one", async () => {
-    expect((await call("encodings_info", {})).split("\n")).toHaveLength(23);
+    expect((await call("encodings_info", {})).split("\n")).toHaveLength(21);
+    expect(await call("encodings_info", { encoding: "base32" })).toContain(
+      "hex (boolean, default false, decode too)",
+    );
     expect(await call("encodings_info", { encoding: "bech32" })).toContain(
       "prefix (string, required)",
     );
     expect((await call("encodings_info", { family: "base58" })).split("\n")).toHaveLength(4);
+  });
+
+  it("reads with the alphabet options and names the ones it ignored", async () => {
+    expect(
+      await call("encodings_decode", {
+        encoding: "base32",
+        text: "CPNMUOJ1E8",
+        options: { hex: true },
+      }),
+    ).toBe('base32 (hex) → 6 bytes as utf8:\n"foobar"');
+    expect(
+      await call("encodings_decode", {
+        encoding: "base32",
+        text: "MZXW6YTBOI",
+        options: { hex: false, url: false },
+      }),
+    ).toBe('base32 → 6 bytes as utf8:\n"foobar"\nIgnored, base32 does not read with: url');
+    await expect(
+      call("encodings_decode", { encoding: "base32", text: "x", options: { padding: false } }),
+    ).rejects.toThrow("Invalid arguments");
+  });
+
+  it("names the options a candidate needs", async () => {
+    expect(await call("encodings_identify", { text: "CPNMUOJ1E8======", limit: 1 })).toMatch(
+      /^1\. base32 \(hex\) /u,
+    );
   });
 
   it("turns a library error into an error result", async () => {

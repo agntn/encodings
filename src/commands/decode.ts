@@ -3,7 +3,10 @@ import { base64 } from "../core/base64.ts";
 import { InvalidOptionError, shown } from "../core/errors.ts";
 import { hex } from "../core/hex.ts";
 import { create } from "../core/registry.ts";
-import { readText } from "./shared.ts";
+import { flaggedOptions, readText } from "./shared.ts";
+
+/** Flags that set decode options, by the option name they set. */
+const OPTION_FLAGS = ["hex", "url"] as const;
 
 export default defineCommand({
   meta: {
@@ -27,9 +30,17 @@ export default defineCommand({
       description: "How to write the bytes: raw (default), hex or base64",
       default: "raw",
     },
+    hex: { type: "boolean", description: "base32: extended hex alphabet 0-9 A-V" },
+    url: { type: "boolean", description: "base64: - and _ for + and /" },
   },
-  run({ args }) {
-    const { bytes, details } = create(args.encoding).decode(readText(args.text));
+  run({ args, rawArgs }) {
+    const encoding = create(args.encoding);
+    const reading = encoding
+      .info()
+      .options.filter((option) => option.decode === true)
+      .map((option) => option.name);
+    const options = flaggedOptions(encoding.name, reading, OPTION_FLAGS, args, rawArgs);
+    const { bytes, details } = encoding.decode(readText(args.text), options);
     for (const [key, value] of Object.entries(details))
       process.stderr.write(`${key}: ${shown(value)}\n`);
     if (args.output === "raw") {

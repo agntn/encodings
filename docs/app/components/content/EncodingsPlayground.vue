@@ -14,7 +14,7 @@ import {
 } from "#tool-operations";
 import { SAMPLE_INPUT } from "../../composables/useLandingSample";
 import { ENCODINGS, SAMPLE_OPTIONS, encodingEntry, familyLabel, overhead } from "../../utils/encodings";
-import { optionFlags, shellArg } from "../../utils/format";
+import { optionFlags, readingName, shellArg } from "../../utils/format";
 import { jsonTokens, shellTokens } from "../../utils/tokens";
 import type { ToolName } from "../../utils/tools";
 
@@ -77,7 +77,10 @@ const family = ref("");
 const values = reactive<Record<string, string | boolean>>({});
 
 const entry = computed(() => encodingEntry(encodingName.value) ?? ENCODINGS[0]!);
-const optionFields = computed(() => entry.value.info.options);
+/** The options the form shows: every one to encode, the ones marked `decode` to decode. */
+const optionFields = computed(() =>
+  entry.value.info.options.filter((option) => operation.value === "encode" || option.decode === true),
+);
 
 const encodingItems = computed(() =>
   ENCODINGS.map((row) => ({ label: row.slug, value: row.slug, icon: row.icon })),
@@ -124,6 +127,7 @@ const toolArgs = computed((): Record<string, unknown> => {
         encoding: encodingName.value,
         text: text.value,
         ...(outputFormat.value === "auto" ? {} : { outputFormat: outputFormat.value }),
+        ...(Object.keys(options.value).length > 0 ? { options: options.value } : {}),
       };
     case "identify": {
       const count = Number(limit.value);
@@ -238,7 +242,8 @@ const cliLine = computed(() => {
     }
     case "decode": {
       const output = outputFormat.value === "hex" || outputFormat.value === "base64" ? ` -o ${outputFormat.value}` : "";
-      return `encodings decode ${encodingName.value} ${shellArg(text.value)}${output}`;
+      const flags = optionFlags(options.value);
+      return `encodings decode ${encodingName.value} ${shellArg(text.value)}${output}${flags ? ` ${flags}` : ""}`;
     }
     case "identify": {
       const count = Number(limit.value);
@@ -319,13 +324,15 @@ function selectEncoding(slug: string) {
 }
 
 /**
- * Takes an identify candidate into decode, with the text it was found in.
+ * Takes an identify candidate into decode, with its text and the options its reading needed.
  *
  * @param {string} slug - The candidate's encoding.
+ * @param {Record<string, string | number | boolean>} [options] - Its decode options.
  */
-function decodeCandidate(slug: string) {
+function decodeCandidate(slug: string, options: Record<string, string | number | boolean> = {}) {
   encodingName.value = slug;
   for (const key of Object.keys(values)) delete values[key];
+  for (const [key, value] of Object.entries(options)) values[key] = typeof value === "boolean" ? value : String(value);
   text.value = unknown.value;
   outputFormat.value = "auto";
   operation.value = "decode";
@@ -585,31 +592,6 @@ const identifyLimit = MAX_CANDIDATES;
                     />
                   </dd>
                 </div>
-                <div v-for="option in optionFields" :key="option.name">
-                  <dt>
-                    <label :for="`playground-option-${option.name}`">{{ option.name }}</label>
-                  </dt>
-                  <dd>
-                    <UCheckbox
-                      v-if="option.type === 'boolean'"
-                      :id="`playground-option-${option.name}`"
-                      :model-value="values[option.name] === undefined ? option.default === true : values[option.name] === true"
-                      :label="option.description"
-                      @update:model-value="values[option.name] = $event === true"
-                    />
-                    <UInput
-                      v-else
-                      :id="`playground-option-${option.name}`"
-                      v-model="values[option.name] as string"
-                      :type="option.type === 'number' ? 'number' : 'text'"
-                      variant="none"
-                      :placeholder="option.default === undefined ? option.description : `default ${option.default}`"
-                      spellcheck="false"
-                      autocomplete="off"
-                      class="w-full"
-                    />
-                  </dd>
-                </div>
               </template>
               <template v-else>
                 <div>
@@ -643,6 +625,31 @@ const identifyLimit = MAX_CANDIDATES;
                   </dd>
                 </div>
               </template>
+              <div v-for="option in optionFields" :key="option.name">
+                <dt>
+                  <label :for="`playground-option-${option.name}`">{{ option.name }}</label>
+                </dt>
+                <dd>
+                  <UCheckbox
+                    v-if="option.type === 'boolean'"
+                    :id="`playground-option-${option.name}`"
+                    :model-value="values[option.name] === undefined ? option.default === true : values[option.name] === true"
+                    :label="option.description"
+                    @update:model-value="values[option.name] = $event === true"
+                  />
+                  <UInput
+                    v-else
+                    :id="`playground-option-${option.name}`"
+                    v-model="values[option.name] as string"
+                    :type="option.type === 'number' ? 'number' : 'text'"
+                    variant="none"
+                    :placeholder="option.default === undefined ? option.description : `default ${option.default}`"
+                    spellcheck="false"
+                    autocomplete="off"
+                    class="w-full"
+                  />
+                </dd>
+              </div>
             </dl>
           </div>
 
@@ -936,7 +943,11 @@ const identifyLimit = MAX_CANDIDATES;
                 }}</span></span
               >
               <h3 :class="{ 'playground-invalid': answer.details.candidates.length === 0 }">
-                {{ answer.details.candidates[0]?.encoding ?? "Nothing reads it" }}
+                {{
+                  answer.details.candidates[0]
+                    ? readingName(answer.details.candidates[0].encoding, answer.details.candidates[0].options)
+                    : "Nothing reads it"
+                }}
               </h3>
               <p class="console-about">
                 {{
@@ -985,11 +996,11 @@ const identifyLimit = MAX_CANDIDATES;
         >
           <li
             v-for="(candidate, index) in answer.details.candidates"
-            :key="candidate.encoding"
+            :key="readingName(candidate.encoding, candidate.options)"
             :style="{ animationDelay: `${Math.min(index * 30, 600)}ms` }"
           >
             <NuxtLink :to="`/encodings/${candidate.encoding}`" class="playground-list-name">{{
-              candidate.encoding
+              readingName(candidate.encoding, candidate.options)
             }}</NuxtLink>
             <span class="playground-line playground-none"
               >{{ candidate.confidence.toFixed(3) }} ·
@@ -1000,8 +1011,8 @@ const identifyLimit = MAX_CANDIDATES;
               variant="subtle"
               trailing-icon="i-lucide-arrow-right"
               label="decode"
-              :aria-label="`Decode with ${candidate.encoding}`"
-              @click="decodeCandidate(candidate.encoding)"
+              :aria-label="`Decode with ${readingName(candidate.encoding, candidate.options)}`"
+              @click="decodeCandidate(candidate.encoding, candidate.options)"
             />
           </li>
         </ol>

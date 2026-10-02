@@ -47,6 +47,8 @@ export interface EncodeDetails {
 
 export interface DecodeDetails {
   encoding: string;
+  /** Decode options the encoding read with. */
+  options: Record<string, string | number | boolean>;
   /** Format `value` is written in. */
   format: Exclude<OutputFormat, "auto">;
   /** The decoded bytes in `format`. */
@@ -60,6 +62,8 @@ export interface DecodeDetails {
 
 export interface IdentifyCandidate {
   encoding: string;
+  /** Decode options this reading needs, such as `{ hex: true }`. */
+  options?: Record<string, string | number | boolean>;
   confidence: number;
   reasons: string[];
   hex: string;
@@ -168,6 +172,45 @@ function detailLine(details: Readonly<Record<string, string | number>>): string 
 }
 
 /**
+ * Names a reading's options after the encoding: `(hex)` for a switch, `name=value` otherwise.
+ *
+ * @param options - Option values.
+ * @returns {string} The label with a leading space, or nothing.
+ */
+function optionLabel(options: Readonly<Record<string, unknown>>): string {
+  const parts = Object.entries(options)
+    .filter(([, value]) => value !== undefined && value !== false)
+    .map(([key, value]) => (value === true ? key : `${key}=${quote(String(value))}`));
+  return parts.length > 0 ? ` (${parts.join(", ")})` : "";
+}
+
+/**
+ * Names the options a call passed that the encoding does not take in this direction.
+ *
+ * @param name - Registry name.
+ * @param verb - What the encoding does not do with them, such as `take`.
+ * @param ignored - Option names left out.
+ * @returns {string} A line to append, or nothing.
+ */
+function ignoredNote(name: string, verb: string, ignored: readonly string[]): string {
+  return ignored.length > 0 ? `\nIgnored, ${name} does not ${verb}: ${ignored.join(", ")}` : "";
+}
+
+/**
+ * Reads the `options` argument: an object, or nothing.
+ *
+ * @param value - The argument.
+ * @returns {object} The options.
+ */
+function optionsArgument(value: unknown): object {
+  const options = value ?? {};
+  if (typeof options !== "object" || options === null || Array.isArray(options)) {
+    throw new InvalidOptionError("options", options, "must be an object");
+  }
+  return options;
+}
+
+/**
  * Splits tool options into the ones an encoding declares and the rest. Strict function calling
  * fills every field of the schema, and `options` holds the fields of every encoding, so base91
  * gets a bech32 prefix. The library would refuse it; the tool takes what applies and names the rest.
@@ -207,10 +250,7 @@ export function encodingsEncode(
     INPUT_FORMATS,
     "utf8",
   );
-  const options = params["options"] ?? {};
-  if (typeof options !== "object" || options === null || Array.isArray(options)) {
-    throw new InvalidOptionError("options", options, "must be an object");
-  }
+  const options = optionsArgument(params["options"]);
   const encoding = create(name);
   const info = encoding.info();
   const { taken, ignored } = pickOptions(
@@ -236,7 +276,7 @@ export function encodingsEncode(
     content: [
       {
         type: "text",
-        text: `${info.name} (${bytes.length} bytes):\n${text}${ignored.length > 0 ? `\nIgnored, ${info.name} does not take: ${ignored.join(", ")}` : ""}`,
+        text: `${info.name} (${bytes.length} bytes):\n${text}${ignoredNote(info.name, "take", ignored)}`,
       },
     ],
     details: { encoding: info.name, text, byteLength: bytes.length },
@@ -260,10 +300,15 @@ export function encodingsDecode(
     OUTPUT_FORMATS,
     "auto",
   );
+  const options = optionsArgument(params["options"]);
   const encoding = create(name);
   const info = encoding.info();
+  const { taken, ignored } = pickOptions(
+    info.options.filter((option) => option.decode === true).map((option) => option.name),
+    options,
+  );
   checkQuadratic(info, text.length);
-  const { bytes, details } = encoding.decode(text);
+  const { bytes, details } = encoding.decode(text, taken);
   const asText = readable(bytes);
   let format: Exclude<OutputFormat, "auto">;
   if (wanted === "auto") {
@@ -280,11 +325,15 @@ export function encodingsDecode(
         ? base64.encode(bytes)
         : hex.encode(bytes);
   const extra = detailLine(details);
-  const header = `${info.name} → ${bytes.length} bytes as ${format}${extra ? ` (${extra})` : ""}:`;
+  const header = `${info.name}${optionLabel(taken)} → ${bytes.length} bytes as ${format}${extra ? ` (${extra})` : ""}:`;
+  const skipped = ignoredNote(info.name, "read with", ignored);
   return {
-    content: [{ type: "text", text: `${header}\n${format === "utf8" ? quote(value) : value}` }],
+    content: [
+      { type: "text", text: `${header}\n${format === "utf8" ? quote(value) : value}${skipped}` },
+    ],
     details: {
       encoding: info.name,
+      options: taken,
       format,
       value,
       hex: hex.encode(bytes),
@@ -292,6 +341,20 @@ export function encodingsDecode(
       details,
     },
   };
+}
+
+/**
+ * Names the decode options a candidate needs, a switch turned off as `no name`.
+ *
+ * @param options - The candidate's decode options.
+ * @returns {string} The label with a leading space, or nothing.
+ */
+function readingLabel(options: Readonly<Record<string, string | number | boolean>>): string {
+  const parts = Object.entries(options).map(([key, value]) => {
+    if (typeof value === "boolean") return value ? key : `no ${key}`;
+    return `${key}=${quote(String(value))}`;
+  });
+  return parts.length > 0 ? ` (${parts.join(", ")})` : "";
 }
 
 /**
@@ -309,7 +372,7 @@ function candidateLines(entries: readonly IdentifyCandidate[]): string {
     const guess = candidate.confirmed === false ? " (unconfirmed guess)" : "";
     const why = candidate.reasons.length > 0 ? `; ${candidate.reasons.join(", ")}` : "";
     const extra = detailLine(candidate.details);
-    return `${index + 1}. ${candidate.encoding}${guess} ${candidate.confidence}${why}${extra ? `; ${extra}` : ""}\n   ${candidate.byteLength} bytes, ${shown}`;
+    return `${index + 1}. ${candidate.encoding}${readingLabel(candidate.options ?? {})}${guess} ${candidate.confidence}${why}${extra ? `; ${extra}` : ""}\n   ${candidate.byteLength} bytes, ${shown}`;
   });
   return lines.join("\n");
 }
@@ -323,6 +386,7 @@ function candidateLines(entries: readonly IdentifyCandidate[]): string {
 function shownCandidate(candidate: EncodingCandidate | PeelLayer): IdentifyCandidate {
   return {
     encoding: candidate.encoding,
+    ...(candidate.options === undefined ? {} : { options: { ...candidate.options } }),
     confidence: candidate.confidence,
     reasons: candidate.reasons,
     hex: hex.encode(candidate.bytes),
@@ -404,7 +468,7 @@ export function encodingsInfo(params: Readonly<Record<string, unknown>>): ToolRe
     const info = create(stringArgument("encoding", params["encoding"], MAX_NAME_LENGTH)).info();
     const options = info.options.map(
       (option) =>
-        `  ${option.name} (${option.type}${option.required ? ", required" : ""}${option.default === undefined ? "" : `, default ${JSON.stringify(option.default)}`}): ${option.description}`,
+        `  ${option.name} (${option.type}${option.required ? ", required" : ""}${option.default === undefined ? "" : `, default ${JSON.stringify(option.default)}`}${option.decode ? ", decode too" : ""}): ${option.description}`,
     );
     const lines = [
       `${info.name}: ${info.label}`,

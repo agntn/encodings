@@ -7,14 +7,12 @@ import {
   ascii85,
   base32,
   base32crockford,
-  base32hex,
   base45,
   base58,
   base58check,
   base58flickr,
   base58ripple,
   base64,
-  base64url,
   base85,
   base91,
   bech32,
@@ -54,15 +52,29 @@ describe("RFC 4648 test vectors", () => {
   it.each(RFC4648)("%j", (input, b64, b32, b32h) => {
     expect(base64.encode(text(input))).toBe(b64);
     expect(base32.encode(text(input))).toBe(b32);
-    expect(base32hex.encode(text(input))).toBe(b32h);
+    expect(base32.encode(text(input), { hex: true })).toBe(b32h);
     expect(hex.encode(text(input))).toBe(Buffer.from(input).toString("hex"));
     expect(read(base64.decode(b64))).toBe(input);
     expect(read(base32.decode(b32))).toBe(input);
-    expect(read(base32hex.decode(b32h))).toBe(input);
+    expect(read(base32.decode(b32h, { hex: true }))).toBe(input);
     expect(base32.encode(text(input), { padding: false })).toBe(b32.replaceAll("=", ""));
-    expect(base32hex.encode(text(input), { padding: false })).toBe(b32h.replaceAll("=", ""));
+    expect(base32.encode(text(input), { hex: true, padding: false })).toBe(
+      b32h.replaceAll("=", ""),
+    );
   });
 });
+
+/* base32 with the extended hex alphabet, shaped like the other codecs for the frozen rows. */
+const base32hex = {
+  encode: (bytes: Uint8Array) => base32.encode(bytes, { hex: true }),
+  decode: (encoded: string) => base32.decode(encoded, { hex: true }),
+};
+
+/* base64 with the URL alphabet, unpadded as JWT writes it. */
+const base64url = {
+  encode: (bytes: Uint8Array) => base64.encode(bytes, { url: true, padding: false }),
+  decode: (encoded: string) => base64.decode(encoded, { url: true }),
+};
 
 describe("frozen outputs of independent implementations", () => {
   const codecs = {
@@ -82,7 +94,9 @@ describe("frozen outputs of independent implementations", () => {
   it.each(python)("matches row $hex without padding", (row) => {
     const bytes = hex.decode(row["hex"]!);
     expect(base32.encode(bytes, { padding: false })).toBe(row["base32"]!.replaceAll("=", ""));
-    expect(base32hex.encode(bytes, { padding: false })).toBe(row["base32hex"]!.replaceAll("=", ""));
+    expect(base32.encode(bytes, { hex: true, padding: false })).toBe(
+      row["base32hex"]!.replaceAll("=", ""),
+    );
   });
 
   it.each([...javascript, ...python])("matches row $hex", (row) => {
@@ -160,11 +174,24 @@ describe("base32 and base64 decoding rules", () => {
     expect(read(base32.decode("mzxw6ytboi"))).toBe("foobar");
     expect(read(base64.decode("Zm9v\r\nYmFy"))).toBe("foobar");
     expect(read(base64.decode("Zg"))).toBe("f");
-    expect(read(base64url.decode("Zg=="))).toBe("f");
+    expect(read(base64.decode("Zg==", { url: true }))).toBe("f");
   });
 
-  it("writes base64url without padding and with - and _", () => {
-    expect(base64url.encode(new Uint8Array([0xfb, 0xff]))).toBe("-_8");
+  it("writes and reads the URL alphabet only on request", () => {
+    const bytes = new Uint8Array([0xfb, 0xff]);
+    expect(base64.encode(bytes)).toBe("+/8=");
+    expect(base64.encode(bytes, { url: true })).toBe("-_8=");
+    expect(base64.encode(bytes, { url: true, padding: false })).toBe("-_8");
+    expect(base64.decode("-_8", { url: true })).toEqual(bytes);
+    expect(() => base64.decode("-_8")).toThrow('"-" (U+002D) at index 0 is not in the alphabet');
+    expect(() => base64.decode("+/8", { url: true })).toThrow("not in the alphabet");
+  });
+
+  it("reads the extended hex alphabet only on request", () => {
+    expect(read(base32.decode("CO", { hex: true }))).toBe("f");
+    expect(read(base32.decode("MY"))).toBe("f");
+    expect(base32.decode("CO")).not.toEqual(base32.decode("CO", { hex: true }));
+    expect(() => base32.decode("MY", { hex: true })).toThrow('"Y" (U+0059) at index 1');
   });
 
   it("rejects wrong padding, data after padding and impossible lengths", () => {
@@ -184,7 +211,7 @@ describe("base32 and base64 decoding rules", () => {
   it("writes base32 without padding on request", () => {
     expect(base32.encode(text("f"), { padding: true })).toBe("MY======");
     expect(base32.encode(text("f"), { padding: false })).toBe("MY");
-    expect(base32hex.encode(text("f"), { padding: false })).toBe("CO");
+    expect(base32.encode(text("f"), { hex: true, padding: false })).toBe("CO");
   });
 
   it("round trips a Stellar account ID", () => {

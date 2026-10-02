@@ -23,15 +23,9 @@ export interface Radix2Codec {
   decode(text: string): Uint8Array;
 }
 
-/** Options for the output of an alphabet that pads. */
-export interface Radix2EncodeOptions {
-  /** Pad the last block with `=`. Default: true. */
-  padding?: boolean;
-}
-
-/** A codec over an alphabet that pads, whose output can leave the padding off. */
+/** A radix-2 codec whose output can turn the spec's padding on or off. */
 export interface PaddedCodec extends Radix2Codec {
-  encode(bytes: Uint8Array, options?: Readonly<Radix2EncodeOptions>): string;
+  encode(bytes: Uint8Array, options?: Readonly<{ padding?: boolean }>): string;
 }
 
 /**

@@ -69,6 +69,13 @@ describe("encodings CLI", () => {
     );
     expect(run("encode", "hex", "A", "--upper").stdout).toBe("41\n");
     expect(run("encode", "base32", "f", "--no-padding").stdout).toBe("MY\n");
+    expect(run("encode", "base32", "f", "--hex").stdout).toBe("CO======\n");
+    expect(
+      run("encode", "base64", "+/8", "--input-format", "base64", "--url", "--no-padding").stdout,
+    ).toBe("-_8\n");
+    expect(run("decode", "base32", "CO", "--hex").stdout).toBe("f");
+    expect(run("decode", "base64", "__s", "--url", "-o", "hex").stdout).toBe("fffb\n");
+    expect(run("decode", "base58", "2g", "--hex")).toMatchObject({ code: 1, stdout: "" });
     expect(run("encode", "bech32", "hi", "--prefix", "test").stdout).toMatch(/^test1/u);
   });
 
@@ -108,10 +115,22 @@ describe("encodings CLI", () => {
     });
   });
 
+  it("names the flag a candidate needs to decode", () => {
+    expect(run("identify", "CPNMUOG=", "-n", "1").stdout).toMatch(
+      /^0\.\d{3} {2}base32 --hex {5}"foob"/u,
+    );
+    expect(run("identify", "--peel", "D1IMOR3F41RMUSJCCGM20S35CLM0====").stdout).toMatch(
+      /^0\.\d{3} {2}base32 --hex {5}"hello world, peel"/u,
+    );
+  });
+
   it("lists encodings and shows one", () => {
-    expect(run("list").stdout.trim().split("\n")).toHaveLength(23);
-    expect(run("list", "--family", "base64").stdout.trim().split("\n")).toHaveLength(2);
+    expect(run("list").stdout.trim().split("\n")).toHaveLength(21);
+    expect(run("list", "--family", "base64").stdout.trim().split("\n")).toHaveLength(1);
     expect(run("list", "bech32").stdout).toContain("--prefix  Human-readable part");
+    expect(run("list", "base64").stdout).toContain(
+      "for + and /, safe in URLs and file names (decode too)",
+    );
   });
 
   it("turns library errors into one line on stderr and exit code 1", () => {

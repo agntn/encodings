@@ -1,12 +1,17 @@
 import { equalBytes, toBytes, utf8 } from "./bytes.ts";
 import { InvalidOptionError } from "./errors.ts";
 import { create, encodings } from "./registry.ts";
-import type { Decoded, EncodingInfo } from "./types.ts";
+import type { Decoded, Encoding, EncodingInfo } from "./types.ts";
+
+/** Option values one reading of a text used, such as `{ hex: true }` for base32. */
+type Reading = Readonly<Record<string, string | number | boolean>>;
 
 /** One encoding a text decodes in, with how much the result supports it. */
 export interface EncodingCandidate {
   /** Registry name. */
   encoding: string;
+  /** Decode options this reading needs, when it is not the default one. */
+  options?: Readonly<Record<string, string | number | boolean>>;
   /** Score from 0 to 1. It ranks candidates; it is not a probability. */
   confidence: number;
   /** What raised the score, in the order it was added. */
@@ -84,7 +89,6 @@ const FRAMING: Readonly<Record<string, readonly [RegExp, string]>> = {
   hex: [/^0x/iu, "0x prefix"],
   base64: [/=$/u, "padding fits the block length"],
   base32: [/=$/u, "padding fits the block length"],
-  base32hex: [/=$/u, "padding fits the block length"],
   ascii85: [/^<~[\s\S]*~>$/u, "<~ ~> delimiters"],
   uuencode: [/^begin [0-7]{3,4} /mu, "begin line"],
   "quoted-printable": [/=[0-9A-F]{2}/u, "=XX escapes"],
@@ -179,25 +183,68 @@ function candidate(info: EncodingInfo, text: string, decoded: Decoded): Scored |
 }
 
 /**
- * Decodes the text in one encoding, or says it cannot be read that way.
+ * Every set of boolean `decode` options flipped from their default, such as base32's `hex`,
+ * fewest flips first, starting from the default reading.
+ *
+ * @param info - The encoding's metadata.
+ * @returns {Reading[]} Option values per reading.
+ */
+function readings(info: EncodingInfo): Reading[] {
+  return info.options
+    .filter((option) => option.decode === true && option.type === "boolean")
+    .reduce<Reading[]>(
+      (sets, option) => [
+        ...sets,
+        ...sets.map((set) => ({ ...set, [option.name]: option.default !== true })),
+      ],
+      [{}],
+    )
+    .toSorted((left, right) => Object.keys(left).length - Object.keys(right).length);
+}
+
+/**
+ * Decodes the text, or says it cannot be read that way.
+ *
+ * @param encoding - The encoding.
+ * @param text - The text as given.
+ * @param options - Decode options of this reading.
+ * @returns {Decoded | undefined} The result, or nothing.
+ */
+function read(encoding: Encoding, text: string, options: Reading): Decoded | undefined {
+  try {
+    return encoding.decode(text, options);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Decodes the text in every reading, dropping one whose bytes a reading with fewer flips gave.
  *
  * @param name - Registry name.
  * @param text - The text as given.
  * @param own - The text's own UTF-8 bytes.
- * @returns {Scored | undefined} The scored candidate, or nothing.
+ * @returns {Scored[]} The scored candidates, possibly none.
  */
-function attempt(name: string, text: string, own: Uint8Array): Scored | undefined {
+function attempt(name: string, text: string, own: Uint8Array): Scored[] {
   const encoding = create(name);
   const info = encoding.info();
-  if (info.family === "base58" && text.length > BASE58_MAX_LENGTH) return undefined;
-  let decoded: Decoded;
-  try {
-    decoded = encoding.decode(text);
-  } catch {
-    return undefined;
+  if (info.family === "base58" && text.length > BASE58_MAX_LENGTH) return [];
+  const kept: { options: Reading; decoded: Decoded }[] = [];
+  for (const options of readings(info)) {
+    const decoded = read(encoding, text, options);
+    if (decoded && !kept.some((seen) => equalBytes(seen.decoded.bytes, decoded.bytes))) {
+      kept.push({ options, decoded });
+    }
   }
-  if (decoded.bytes.length === 0 || equalBytes(decoded.bytes, own)) return undefined;
-  return candidate(info, text, decoded);
+  return kept
+    .filter(({ decoded }) => decoded.bytes.length > 0 && !equalBytes(decoded.bytes, own))
+    .flatMap(({ options, decoded }) => {
+      const scored = candidate(info, text, decoded);
+      if (!scored) return [];
+      if (Object.keys(options).length === 0) return [scored];
+      return [{ ...scored, candidate: { ...scored.candidate, options } }];
+    });
 }
 
 /**
@@ -210,8 +257,7 @@ function attempt(name: string, text: string, own: Uint8Array): Scored | undefine
 function rank(text: string, names: readonly string[]): Scored[] {
   const own = toBytes(text);
   return names
-    .map((name) => attempt(name, text, own))
-    .filter((entry) => entry !== undefined)
+    .flatMap((name) => attempt(name, text, own))
     .toSorted((left, right) => right.candidate.confidence - left.candidate.confidence);
 }
 

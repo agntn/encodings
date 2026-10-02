@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vite-plus/test";
-import { InvalidOptionError, encode, identify, peel } from "../src/index.ts";
+import {
+  InvalidOptionError,
+  create,
+  encode,
+  identify,
+  peel,
+  register,
+  type Encoding,
+} from "../src/index.ts";
 
 const top = (text: string) => identify(text)[0];
 
@@ -50,6 +58,71 @@ describe("identify", () => {
     expect(identify("SGVsbG8=").map((candidate) => candidate.encoding)).not.toContain(
       "quoted-printable",
     );
+  });
+
+  it("tries the alphabet options and names the one a reading needs", () => {
+    expect(top("CPNMUOJ1E8======")).toMatchObject({
+      encoding: "base32",
+      options: { hex: true },
+      text: "foobar",
+    });
+    expect(top("c3ViamVjdHM_X2Q-Pg")).toMatchObject({
+      encoding: "base64",
+      options: { url: true },
+      text: "subjects?_d>>",
+    });
+  });
+
+  it("flips switches from their default, together when one alone does not read", () => {
+    const loose: Encoding = {
+      name: "strict-hex",
+      info: () => ({
+        name: "strict-hex",
+        label: "Strict hex",
+        description: "Hex after a tilde, read only with strict off and tilde on",
+        family: "test",
+        standard: "none",
+        alphabet: "~0123456789abcdef",
+        checksum: false,
+        padding: false,
+        options: [
+          {
+            name: "strict",
+            type: "boolean",
+            required: false,
+            default: true,
+            description: "Refuse everything",
+            decode: true,
+          },
+          {
+            name: "tilde",
+            type: "boolean",
+            required: false,
+            default: false,
+            description: "Expect a tilde",
+            decode: true,
+          },
+        ],
+      }),
+      encode: (input) => `~${create("hex").encode(input)}`,
+      decode: (text, options) => {
+        if (options?.["strict"] !== false || options["tilde"] !== true) throw new Error("strict");
+        if (!text.startsWith("~")) throw new Error("no tilde");
+        return create("hex").decode(text.slice(1));
+      },
+    };
+    register(loose);
+    expect(identify("~48656c6c6f", { encodings: ["strict-hex"] })).toMatchObject([
+      { encoding: "strict-hex", options: { strict: false, tilde: true }, text: "Hello" },
+    ]);
+  });
+
+  it("leaves out an option reading that gives the default reading's bytes", () => {
+    const base64 = identify("SGVsbG8gd29ybGQ", { limit: 20 }).filter(
+      (candidate) => candidate.encoding === "base64",
+    );
+    expect(base64).toHaveLength(1);
+    expect(base64[0]).not.toHaveProperty("options");
   });
 
   it("ranks best first and honors the limit", () => {
@@ -121,6 +194,12 @@ describe("peel", () => {
     const address = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa";
     expect(peel(address)).toEqual([
       expect.objectContaining({ encoding: "base58check", confirmed: true }),
+    ]);
+  });
+
+  it("names the options a layer needed", () => {
+    expect(peel("D1IMOR3F41RMUSJCCGM20S35CLM0====")).toMatchObject([
+      { encoding: "base32", options: { hex: true }, confirmed: true, text: "hello world, peel" },
     ]);
   });
 

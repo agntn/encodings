@@ -1,7 +1,7 @@
 import { builtins } from "./builtins.ts";
 import type { BytesInput } from "./bytes.ts";
 import { UnknownEncodingError } from "./errors.ts";
-import type { Decoded, EncodeOptions, Encoding, EncodingInfo } from "./types.ts";
+import type { DecodeOptions, Decoded, EncodeOptions, Encoding, EncodingInfo } from "./types.ts";
 
 let entries: Map<string, Encoding> | undefined;
 
@@ -58,7 +58,6 @@ const ALIASES: Readonly<Record<string, string>> = {
   ripple: "base58-ripple",
   xrp: "base58-ripple",
   b64: "base64",
-  b64url: "base64url",
   a85: "ascii85",
   btoa: "ascii85",
   b85: "base85",
@@ -125,10 +124,11 @@ export function encode(name: string, input: BytesInput, options?: EncodeOptions)
  *
  * @param name - Encoding name.
  * @param text - Encoded text.
+ * @param options - Options the encoding reads with, such as base32's `hex`.
  * @returns {Decoded} The bytes and any non-data parts of the text.
  */
-export function decode(name: string, text: string): Decoded {
-  return create(name).decode(text);
+export function decode(name: string, text: string, options?: DecodeOptions): Decoded {
+  return create(name).decode(text, options);
 }
 
 /**

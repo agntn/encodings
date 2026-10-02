@@ -89,8 +89,10 @@ export const encodeSchema = closed({
         }),
       ),
       delimiters: Type.Optional(Type.Boolean({ description: "ascii85: wrap in <~ and ~>" })),
+      hex: Type.Optional(Type.Boolean({ description: "base32: extended hex alphabet 0-9 A-V" })),
+      url: Type.Optional(Type.Boolean({ description: "base64: - and _ for + and /" })),
       padding: Type.Optional(
-        Type.Boolean({ description: "base32 and base32hex: pad with = (default true)" }),
+        Type.Boolean({ description: "base32 and base64: pad with = (default true)" }),
       ),
       name: Type.Optional(
         Type.String({
@@ -116,6 +118,12 @@ export const decodeSchema = closed({
     Type.Enum(OUTPUT_FORMATS, {
       description:
         "How to show the bytes: auto (UTF-8 when they are readable text, else hex; default), utf8, hex or base64",
+    }),
+  ),
+  options: Type.Optional(
+    closed({
+      hex: Type.Optional(Type.Boolean({ description: "base32: extended hex alphabet 0-9 A-V" })),
+      url: Type.Optional(Type.Boolean({ description: "base64: - and _ for + and /" })),
     }),
   ),
 });
@@ -158,12 +166,13 @@ export const encodeTool = defineTool({
   name: "encodings_encode",
   title: "Encode",
   description:
-    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, base32 and its variants, base45, base58, base58check, base64, base64url, ascii85, z85, base85, base91, bech32, bech32m, uuencode or quoted-printable.",
+    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, base32 and its variants, base45, base58, base58check, base64 (url too), ascii85, z85, base85, base91, bech32, bech32m, uuencode or quoted-printable.",
   snippet: "Use encodings_encode to write text or bytes in base64, base58, bech32 and the like.",
   guidelines: [
     "Text is encoded as UTF-8. For bytes, pass them in hex or base64 and set inputFormat.",
     "bech32 and bech32m need options.prefix. base58check appends the checksum; put the version byte in the input yourself.",
     "Only the options of the chosen encoding apply. Any other option is ignored and named in the reply.",
+    "base32hex is base32 with options.hex, base64url is base64 with options.url.",
   ],
   effect: "read",
   input: encodeSchema,
@@ -178,6 +187,7 @@ export const decodeTool = defineTool({
   snippet: "Use encodings_decode when you know the encoding of a string.",
   guidelines: [
     "Unsure which encoding it is? Call encodings_identify first.",
+    "base32hex is base32 with options.hex, base64url is base64 with options.url. identify names the options a candidate needs.",
     "The answer names the byte count and any prefix, version or file name the text carried.",
   ],
   effect: "read",

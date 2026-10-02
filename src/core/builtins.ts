@@ -1,7 +1,7 @@
-import { base32, base32crockford, base32hex, zbase32 } from "./base32.ts";
+import { base32, base32crockford, zbase32 } from "./base32.ts";
 import { base45 } from "./base45.ts";
 import { BASE58_ALPHABET, base58, base58check, base58flickr, base58ripple } from "./base58.ts";
-import { base64, base64url } from "./base64.ts";
+import { base64 } from "./base64.ts";
 import { ascii85, base85, z85 } from "./base85.ts";
 import { base91 } from "./base91.ts";
 import {
@@ -19,7 +19,14 @@ import { InvalidOptionError } from "./errors.ts";
 import { hex } from "./hex.ts";
 import { octal } from "./octal.ts";
 import { quotedPrintable } from "./quoted-printable.ts";
-import type { Decoded, EncodeOptions, Encoding, EncodingInfo, EncodingOption } from "./types.ts";
+import type {
+  DecodeOptions,
+  Decoded,
+  EncodeOptions,
+  Encoding,
+  EncodingInfo,
+  EncodingOption,
+} from "./types.ts";
 import { uuencode } from "./uuencode.ts";
 
 /** Metadata of a built-in, without the fields every one fills the same way. */
@@ -79,14 +86,14 @@ function checked(options: readonly EncodingOption[], given: EncodeOptions = {}):
  * @param name - Registry name.
  * @param about - Metadata.
  * @param write - Encodes bytes with checked option values.
- * @param read - Decodes text.
+ * @param read - Decodes text with the checked values of the options marked `decode`.
  * @returns {Encoding} The encoding.
  */
 function define(
   name: string,
   about: About,
   write: (bytes: Uint8Array, values: Values) => string,
-  read: (text: string) => Decoded | Uint8Array,
+  read: (text: string, values: Values) => Decoded | Uint8Array,
 ): Encoding {
   const info: EncodingInfo = {
     name,
@@ -100,8 +107,9 @@ function define(
     info: () => structuredClone(info),
     encode: (input: BytesInput, options?: EncodeOptions) =>
       write(toBytes(input), checked(info.options, options)),
-    decode(text: string) {
-      const result = read(text);
+    decode(text: string, options?: DecodeOptions) {
+      const reading = info.options.filter((option) => option.decode === true);
+      const result = read(text, checked(reading, options));
       return result instanceof Uint8Array ? { bytes: result, details: {} } : result;
     },
   };
@@ -258,34 +266,20 @@ export const builtins: readonly Encoding[] = [
     "base32",
     {
       label: "Base32",
-      description: "A-Z and 2-7, padded with = to blocks of eight",
+      description: "A-Z and 2-7, or 0-9 and A-V with hex, padded with = to blocks of eight",
       family: "base32",
-      standard: "RFC 4648 §6",
+      standard: "RFC 4648 §6 and §7",
       alphabet: BASE32_RFC,
       padding: true,
       options: [
         {
-          name: "padding",
+          name: "hex",
           type: "boolean",
           required: false,
-          default: true,
-          description: "Pad the last block with = to eight characters",
+          default: false,
+          description: "Use the extended hex alphabet 0-9 and A-V, which sorts in byte order",
+          decode: true,
         },
-      ],
-    },
-    (bytes, values) => base32.encode(bytes, { padding: values["padding"] === true }),
-    (text) => base32.decode(text),
-  ),
-  define(
-    "base32hex",
-    {
-      label: "Base32hex",
-      description: "Base32 with 0-9 and A-V, so the text sorts in byte order",
-      family: "base32",
-      standard: "RFC 4648 §7",
-      alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV",
-      padding: true,
-      options: [
         {
           name: "padding",
           type: "boolean",
@@ -295,8 +289,9 @@ export const builtins: readonly Encoding[] = [
         },
       ],
     },
-    (bytes, values) => base32hex.encode(bytes, { padding: values["padding"] === true }),
-    (text) => base32hex.decode(text),
+    (bytes, values) =>
+      base32.encode(bytes, { hex: values["hex"] === true, padding: values["padding"] === true }),
+    (text, values) => base32.decode(text, { hex: values["hex"] === true }),
   ),
   define(
     "base32-crockford",
@@ -388,26 +383,32 @@ export const builtins: readonly Encoding[] = [
     "base64",
     {
       label: "Base64",
-      description: "Letters, digits, + and /, padded with =; decoding skips line breaks",
+      description: "Letters, digits, + and /, or - and _ with url, padded with =",
       family: "base64",
-      standard: "RFC 4648 §4",
+      standard: "RFC 4648 §4 and §5",
       alphabet: `${BASE64_RFC}+/`,
       padding: true,
+      options: [
+        {
+          name: "url",
+          type: "boolean",
+          required: false,
+          default: false,
+          description: "Use - and _ for + and /, safe in URLs and file names",
+          decode: true,
+        },
+        {
+          name: "padding",
+          type: "boolean",
+          required: false,
+          default: true,
+          description: "Pad the last block with = to four characters",
+        },
+      ],
     },
-    (bytes) => base64.encode(bytes),
-    (text) => base64.decode(text),
-  ),
-  define(
-    "base64url",
-    {
-      label: "Base64url",
-      description: "Base64 with - and _ for URLs and file names, unpadded as JWT writes it",
-      family: "base64",
-      standard: "RFC 4648 §5",
-      alphabet: `${BASE64_RFC}-_`,
-    },
-    (bytes) => base64url.encode(bytes),
-    (text) => base64url.decode(text),
+    (bytes, values) =>
+      base64.encode(bytes, { url: values["url"] === true, padding: values["padding"] === true }),
+    (text, values) => base64.decode(text, { url: values["url"] === true }),
   ),
   define(
     "ascii85",
