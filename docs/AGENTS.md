@@ -38,6 +38,8 @@ Deployment: Workers Builds with root directory `docs`. It installs `docs/` and n
 
 `@agntn/encodings` is an alias in `nuxt.config.ts` for `../src/index.ts`, and `#tool-operations` for `../src/tool-operations.ts`. Vite bundles the checkout's sources for the browser and Nitro gets the same alias for the prerender, so `dist/` and the root `node_modules` are never touched. Nothing under `src/` imports `node:*`. One npm import does sit in that graph: `src/core/base58.ts` takes `hash256` from `@agntn/hashes/sha2` for Base58Check. That's why `docs/package.json` pins `@agntn/hashes` to the root's version and `nuxt.config.ts` lists it in `vite.resolve.dedupe` and `@agntn/hashes/sha2` in `vite.optimizeDeps.include`. Vite resolves a bare import in `../src` from the repo root upward, never from `docs/node_modules`. A new npm import under `src/` needs the same three entries or it breaks the deploy. Bump the pin together with the root's.
 
+The root `.node-version` is the only place Workers Builds takes Node.js 26 from. Its build image reads `NODE_VERSION`, `.nvmrc` or `.node-version`, never `engines` in `package.json`, and falls back to Node.js 24 without them (Cloudflare build image docs; build `fac3512a` ran on 24.18.0 the one time the file was gone). Keep it.
+
 `pnpm-workspace.yaml` exempts `@agntn/*` from `minimumReleaseAge`, since a clean frozen install rejects a sibling released less than a day ago.
 
 Two resolution traps, both because the repo root is its own pnpm workspace:
