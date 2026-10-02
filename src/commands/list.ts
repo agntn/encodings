@@ -14,6 +14,7 @@ export default defineCommand({
   run({ args }) {
     if (args.encoding) {
       const info = create(args.encoding).info();
+      const flagWidth = Math.max(10, ...info.options.map((option) => option.name.length + 4));
       const lines = [
         `${info.label} (${info.name})`,
         info.description,
@@ -24,7 +25,7 @@ export default defineCommand({
         `padding   ${info.padding ? "yes" : "no"}`,
         ...info.options.map(
           (option) =>
-            `--${option.name}  ${option.description}${option.required ? " (required)" : ""}`,
+            `${`--${option.name}`.padEnd(flagWidth)}${option.description}${option.required ? " (required)" : ""}`,
         ),
       ];
       process.stdout.write(`${lines.join("\n")}\n`);
