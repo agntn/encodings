@@ -183,16 +183,23 @@ function candidate(info: EncodingInfo, text: string, decoded: Decoded): Scored |
 }
 
 /**
- * The boolean `decode` options identify flips one at a time from their default, such as base32's
- * `hex`.
+ * Every set of boolean `decode` options flipped from their default, such as base32's `hex`,
+ * fewest flips first, starting from the default reading.
  *
  * @param info - The encoding's metadata.
- * @returns {Reading[]} Option values per reading besides the default one.
+ * @returns {Reading[]} Option values per reading.
  */
-function switches(info: EncodingInfo): Reading[] {
+function readings(info: EncodingInfo): Reading[] {
   return info.options
     .filter((option) => option.decode === true && option.type === "boolean")
-    .map((option) => ({ [option.name]: option.default !== true }));
+    .reduce<Reading[]>(
+      (sets, option) => [
+        ...sets,
+        ...sets.map((set) => ({ ...set, [option.name]: option.default !== true })),
+      ],
+      [{}],
+    )
+    .toSorted((left, right) => Object.keys(left).length - Object.keys(right).length);
 }
 
 /**
@@ -212,7 +219,7 @@ function read(encoding: Encoding, text: string, options: Reading): Decoded | und
 }
 
 /**
- * Decodes the text by default and with each switch, dropping a switch that repeats those bytes.
+ * Decodes the text in every reading, dropping one whose bytes a reading with fewer flips gave.
  *
  * @param name - Registry name.
  * @param text - The text as given.
@@ -223,14 +230,14 @@ function attempt(name: string, text: string, own: Uint8Array): Scored[] {
   const encoding = create(name);
   const info = encoding.info();
   if (info.family === "base58" && text.length > BASE58_MAX_LENGTH) return [];
-  const plain = read(encoding, text, {});
-  const others = switches(info).flatMap((options) => {
+  const kept: { options: Reading; decoded: Decoded }[] = [];
+  for (const options of readings(info)) {
     const decoded = read(encoding, text, options);
-    return decoded && !(plain && equalBytes(decoded.bytes, plain.bytes))
-      ? [{ options, decoded }]
-      : [];
-  });
-  return [...(plain ? [{ options: {}, decoded: plain }] : []), ...others]
+    if (decoded && !kept.some((seen) => equalBytes(seen.decoded.bytes, decoded.bytes))) {
+      kept.push({ options, decoded });
+    }
+  }
+  return kept
     .filter(({ decoded }) => decoded.bytes.length > 0 && !equalBytes(decoded.bytes, own))
     .flatMap(({ options, decoded }) => {
       const scored = candidate(info, text, decoded);

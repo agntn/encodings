@@ -73,13 +73,13 @@ describe("identify", () => {
     });
   });
 
-  it("flips a switch whose default is true", () => {
+  it("flips switches from their default, together when one alone does not read", () => {
     const loose: Encoding = {
       name: "strict-hex",
       info: () => ({
         name: "strict-hex",
         label: "Strict hex",
-        description: "Hex after a tilde, read only with strict turned off",
+        description: "Hex after a tilde, read only with strict off and tilde on",
         family: "test",
         standard: "none",
         alphabet: "~0123456789abcdef",
@@ -94,17 +94,26 @@ describe("identify", () => {
             description: "Refuse everything",
             decode: true,
           },
+          {
+            name: "tilde",
+            type: "boolean",
+            required: false,
+            default: false,
+            description: "Expect a tilde",
+            decode: true,
+          },
         ],
       }),
       encode: (input) => `~${create("hex").encode(input)}`,
       decode: (text, options) => {
-        if (options?.["strict"] !== false || !text.startsWith("~")) throw new Error("strict");
+        if (options?.["strict"] !== false || options["tilde"] !== true) throw new Error("strict");
+        if (!text.startsWith("~")) throw new Error("no tilde");
         return create("hex").decode(text.slice(1));
       },
     };
     register(loose);
     expect(identify("~48656c6c6f", { encodings: ["strict-hex"] })).toMatchObject([
-      { encoding: "strict-hex", options: { strict: false }, text: "Hello" },
+      { encoding: "strict-hex", options: { strict: false, tilde: true }, text: "Hello" },
     ]);
   });
 
