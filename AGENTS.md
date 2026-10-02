@@ -41,6 +41,7 @@ Keep AGENTS.md updated with project status.
 - Extension tests go through `test/fixtures/`: Pi's own loader and runner for Pi, a strict OMP host double that throws by name on any member the test did not stub. The OMP package root ships TypeScript inside `node_modules`, so Node cannot load its real loader.
 - `pnpm release` and the Publish workflow build before `pnpm test`, as CI does. The `mcp` checks in `test/cli.test.ts` start `dist/cli.mjs`, so testing first ran them against a stale build, or skipped them on a clean runner. `test/release.test.ts` fails when either order flips.
 - The CLI keeps citty's colors out of pipes, files and terminals without color support.
+- `src/cli.ts` reads the arguments before citty does and stops at the first one that starts with a dash but names no option of the command, with one line that points at `--`. citty takes encoded text such as `-_8` for flags, and a flag named `_` overwrites its positionals and crashes it with a `TypeError`.
 - Linting and formatting consume the shared `@agntn/ox` policy.
 - `vp fmt` skips the root `CHANGELOG.md`. changelogen writes two spaces after the ⚠️ of a breaking entry and oxfmt wants one, so the check failed after every breaking release. The pattern is anchored, so a nested `CHANGELOG.md` is still formatted.
 - `pnpm-workspace.yaml` exempts `@agntn/*` from `minimumReleaseAge`. A clean frozen install rejects a lockfile entry younger than a day, so CI failed for a day after every sibling release. The scope pattern also covers the next package and version, which an exact entry does not.

@@ -115,6 +115,39 @@ describe("encodings CLI", () => {
     expect(run("identify", "€€€")).toMatchObject({ code: 1, stdout: "" });
   });
 
+  it("stops at text that starts with a dash and points at --", () => {
+    const hint = "Text that starts with - goes after --, which ends the options.";
+    expect(run("decode", "base64", "-_8")).toMatchObject({
+      code: 1,
+      stdout: "",
+      stderr: `Unknown option -_8 for decode. ${hint}\n`,
+    });
+    expect(run("decode", "ascii85", "-Y7,")).toMatchObject({
+      code: 1,
+      stdout: "",
+      stderr: `Unknown option -Y7, for decode. ${hint}\n`,
+    });
+    expect(run("identify", "--8").stderr).toBe(`Unknown option --8 for identify. ${hint}\n`);
+    expect(run("-_8").stderr).toBe(`Unknown option -_8. ${hint}\n`);
+    expect(run("decode", "base64", "-\u001B]0;x\u0007 ").stderr).toBe(
+      `Unknown option "-\\u001b]0;x\\u0007\\u2028" for decode. ${hint}\n`,
+    );
+    expect(run("decode", "base64", "SGk=", "--outptu", "hex")).toMatchObject({ code: 1 });
+    expect(run("decode", "ascii85", "--", "-Y7,")).toMatchObject({ code: 0, stdout: "'em" });
+    expect(run("decode", "-o", "hex", "--", "ascii85", "-Y7,").stdout).toBe("27656d\n");
+  });
+
+  it("still reads every way of typing a declared option", () => {
+    expect(run("decode", "base64", "SGk=", "-ohex").stdout).toBe("4869\n");
+    expect(run("decode", "base64", "SGk=", "--output=hex").stdout).toBe("4869\n");
+    expect(run("encode", "bech32", "hi", "--prefix", "-x").stdout).toBe("-x1dp5s5yzjlm\n");
+    expect(run("encode", "hex", "6869", "--inputFormat", "hex").stdout).toBe("6869\n");
+    expect(run("encode", "binary", "h", "--no-separate").stdout).toBe("01101000\n");
+    expect(run("identify", "SGk=", "-n", "1").stdout.trim().split("\n")).toHaveLength(1);
+    expect(run("decode", "-h")).toMatchObject({ code: 0 });
+    expect(run("-v")).toMatchObject({ code: 0 });
+  });
+
   it("writes details from the text escaped, so they cannot drive the terminal", () => {
     const ESC = String.fromCodePoint(27);
     const text = `begin 644 a${ESC}]0;pwned${String.fromCodePoint(7)}\n#0V%T\n\`\nend\n`;
