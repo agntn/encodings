@@ -14,6 +14,14 @@ export function shellArg(value: string): string {
   return /^[\w./:@-]+$/u.test(value) ? value : `'${value.replaceAll("'", `'\\''`)}'`;
 }
 
+/** A candidate named like the tool text, `base32 (hex)`, as `optionLabel` does. */
+export function readingName(encoding: string, options: Record<string, unknown> = {}): string {
+  const parts = Object.entries(options)
+    .filter(([, value]) => value !== undefined && value !== false)
+    .map(([key, value]) => (value === true ? key : `${key}=${String(value)}`));
+  return parts.length > 0 ? `${encoding} (${parts.join(", ")})` : encoding;
+}
+
 /** Option values as CLI flags: `--salt 00ff --N 1024`. */
 export function optionFlags(options: Record<string, unknown>): string {
   return Object.entries(options)

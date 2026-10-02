@@ -139,6 +139,11 @@ export default defineNuxtConfig({
   mcp: {
     enabled: false,
   },
+  /** base32hex and base64url became options of base32 and base64; their old pages point there. */
+  routeRules: {
+    "/encodings/base32hex": { redirect: { to: "/encodings/base32#the-hex-alphabet", statusCode: 301 } },
+    "/encodings/base64url": { redirect: { to: "/encodings/base64#the-url-alphabet", statusCode: 301 } },
+  },
   nitro: {
     preset: "cloudflare_module",
     compatibilityDate: "2026-09-03",

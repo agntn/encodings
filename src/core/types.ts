@@ -27,6 +27,8 @@ export interface EncodingOption {
   required: boolean;
   default?: number | string | boolean;
   description: string;
+  /** Whether `decode` takes it too, as an alphabet choice. Default: false, encode only. */
+  decode?: boolean;
 }
 
 /** Metadata about an encoding. */
@@ -47,12 +49,15 @@ export interface EncodingInfo {
   checksum: boolean;
   /** Whether encoding pads the text with `=`. */
   padding: boolean;
-  /** Options `encode` takes. */
+  /** Options `encode` takes; the ones marked `decode` apply to decoding too. */
   options: EncodingOption[];
 }
 
 /** Option values for `encode`, checked against the encoding's descriptors. */
 export type EncodeOptions = Readonly<Record<string, string | number | boolean | undefined>>;
+
+/** Option values for `decode`: the descriptors marked `decode`. */
+export type DecodeOptions = EncodeOptions;
 
 /** Bytes a text decoded to, with what else the text carried. */
 export interface Decoded {
@@ -77,6 +82,7 @@ export interface Encoding {
   /**
    * Reads text in this encoding.
    * @param text - Encoded text.
+   * @param options - Options from `info().options` marked `decode`.
    */
-  decode(text: string): Decoded;
+  decode(text: string, options?: DecodeOptions): Decoded;
 }

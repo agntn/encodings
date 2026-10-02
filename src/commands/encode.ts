@@ -1,8 +1,8 @@
 import { defineCommand } from "citty";
 import { InvalidOptionError } from "../core/errors.ts";
 import { create } from "../core/registry.ts";
-import type { EncodeOptions, Encoding } from "../core/types.ts";
-import { argumentOrStdin, readInput } from "./shared.ts";
+import type { EncodeOptions } from "../core/types.ts";
+import { argumentOrStdin, flaggedOptions, readInput } from "./shared.ts";
 
 /** Flags that set encoding options, by the option name they set. */
 const OPTION_FLAGS = [
@@ -11,41 +11,12 @@ const OPTION_FLAGS = [
   "upper",
   "separate",
   "delimiters",
+  "hex",
+  "url",
   "padding",
   "name",
   "mode",
 ] as const;
-
-/**
- * Reads the option flags the user typed. A flag left out stays out, so the encoding's own
- * default applies, and a flag the encoding does not take fails instead of being ignored.
- *
- * @param encoding - The encoding.
- * @param args - Parsed arguments.
- * @param rawArgs - Arguments as typed.
- * @returns {EncodeOptions} The options.
- */
-function flaggedOptions(
-  encoding: Encoding,
-  args: Readonly<Record<string, unknown>>,
-  rawArgs: readonly string[],
-): EncodeOptions {
-  const declared = new Set(encoding.info().options.map((option) => option.name));
-  const typed = OPTION_FLAGS.filter((name) =>
-    rawArgs.some(
-      (raw) => raw === `--${name}` || raw === `--no-${name}` || raw.startsWith(`--${name}=`),
-    ),
-  );
-  const options: Record<string, string | number | boolean> = {};
-  for (const name of typed) {
-    const value = args[name];
-    if (!declared.has(name)) {
-      throw new InvalidOptionError(name, value, `${encoding.name} does not take it`);
-    }
-    options[name] = name === "limit" ? limitFlag(value) : (value as string | boolean);
-  }
-  return options;
-}
 
 /**
  * Reads `--limit` as an integer.
@@ -87,13 +58,27 @@ export default defineCommand({
     upper: { type: "boolean", description: "hex: write A-F" },
     separate: { type: "boolean", description: "binary: space between bytes (default true)" },
     delimiters: { type: "boolean", description: "ascii85: wrap in <~ and ~>" },
-    padding: { type: "boolean", description: "base32, base32hex: pad with = (default true)" },
+    hex: { type: "boolean", description: "base32: extended hex alphabet 0-9 A-V" },
+    url: { type: "boolean", description: "base64: - and _ for + and /" },
+    padding: { type: "boolean", description: "base32, base64: pad with = (default true)" },
     name: { type: "string", description: "uuencode: file name on the begin line" },
     mode: { type: "string", description: "uuencode: octal mode on the begin line" },
   },
   run({ args, rawArgs }) {
     const encoding = create(args.encoding);
-    const options = flaggedOptions(encoding, args, rawArgs);
+    const typed = flaggedOptions(
+      encoding.name,
+      encoding.info().options.map((option) => option.name),
+      OPTION_FLAGS,
+      args,
+      rawArgs,
+    );
+    const options: EncodeOptions = Object.fromEntries(
+      Object.entries(typed).map(([name, value]) => [
+        name,
+        name === "limit" ? limitFlag(value) : value,
+      ]),
+    );
     const input = readInput(argumentOrStdin(args.input), args["input-format"]);
     const text = encoding.encode(input, options);
     process.stdout.write(text.endsWith("\n") ? text : `${text}\n`);

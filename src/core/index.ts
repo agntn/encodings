@@ -2,6 +2,7 @@ export type { BytesInput } from "./bytes.ts";
 export {
   encodingFamilies,
   type Decoded,
+  type DecodeOptions,
   type EncodeOptions,
   type Encoding,
   type EncodingFamily,
@@ -21,11 +22,23 @@ export { octal } from "./octal.ts";
 export { decimal } from "./decimal.ts";
 export type { NumbersCodec, NumbersEncodeOptions } from "./numbers.ts";
 export { hex, type HexEncodeOptions } from "./hex.ts";
-export { base32, base32crockford, base32hex, zbase32 } from "./base32.ts";
+export {
+  base32,
+  base32crockford,
+  zbase32,
+  type Base32Codec,
+  type Base32EncodeOptions,
+  type Base32Options,
+} from "./base32.ts";
 export { base45 } from "./base45.ts";
 export { base58, base58check, base58flickr, base58ripple, type Base58Codec } from "./base58.ts";
-export { base64, base64url } from "./base64.ts";
-export type { PaddedCodec, Radix2EncodeOptions, Radix2Codec } from "./radix2.ts";
+export {
+  base64,
+  type Base64Codec,
+  type Base64EncodeOptions,
+  type Base64Options,
+} from "./base64.ts";
+export type { Radix2Codec } from "./radix2.ts";
 export { ascii85, base85, z85, type Ascii85EncodeOptions } from "./base85.ts";
 export { base91 } from "./base91.ts";
 export {

@@ -25,7 +25,7 @@ export default defineCommand({
         `padding   ${info.padding ? "yes" : "no"}`,
         ...info.options.map(
           (option) =>
-            `${`--${option.name}`.padEnd(flagWidth)}${option.description}${option.required ? " (required)" : ""}`,
+            `${`--${option.name}`.padEnd(flagWidth)}${option.description}${option.required ? " (required)" : ""}${option.decode ? " (decode too)" : ""}`,
         ),
       ];
       process.stdout.write(`${lines.join("\n")}\n`);

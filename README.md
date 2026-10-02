@@ -18,7 +18,7 @@ Docs and a live playground: [encodings.agntn.dev](https://encodings.agntn.dev).
 
 ## ✨ Features
 
-- 🔤 **All the usual ones.** Binary, octal, decimal, hex, base32 in four flavours, base45, base58 in three alphabets, base64, Ascii85, Z85, base85, basE91, bech32, uuencode, Quoted-Printable.
+- 🔤 **All the usual ones.** Binary, octal, decimal, hex, base32 in four alphabets, base45, base58 in three, base64 in two, Ascii85, Z85, base85, basE91, bech32, uuencode, Quoted-Printable.
 - 🧾 **Written from the specs.** RFC 4648, RFC 9285, BIP173, BIP350. No codec library underneath.
 - ✅ **Checksums checked.** Base58Check and bech32 refuse a typo instead of decoding it.
 - 🪙 **Segwit aware.** A `bc1…` address comes back as its witness version and program.
@@ -103,16 +103,16 @@ That's most of it, really. Strings go in as UTF-8, bytes come out as `Uint8Array
 | Family                      | Encodings                                                 |
 | --------------------------- | --------------------------------------------------------- |
 | binary, octal, decimal, hex | `binary`, `octal`, `decimal`, `hex`                       |
-| base32                      | `base32`, `base32hex`, `base32-crockford`, `z-base-32`    |
+| base32                      | `base32`, `base32-crockford`, `z-base-32`                 |
 | base45                      | `base45`                                                  |
 | base58                      | `base58`, `base58check`, `base58-flickr`, `base58-ripple` |
-| base64                      | `base64`, `base64url`                                     |
+| base64                      | `base64`                                                  |
 | base85                      | `ascii85`, `z85`, `base85`                                |
 | base91                      | `base91`                                                  |
 | bech32                      | `bech32`, `bech32m`                                       |
 | uuencode, quoted-printable  | `uuencode`, `quoted-printable`                            |
 
-Each family is also a subpath, like `@agntn/encodings/base58`. Alphabets, overhead and options per encoding are on [the encodings page](https://encodings.agntn.dev/encodings).
+base32hex and base64url are `{ hex: true }` and `{ url: true }` on `base32` and `base64`, in both directions. Each family is also a subpath, like `@agntn/encodings/base58`. Alphabets, overhead and options per encoding are on [the encodings page](https://encodings.agntn.dev/encodings).
 
 ## 🤖 Agents
 

@@ -36,7 +36,6 @@ describe("@agntn/encodings", () => {
       "decimal",
       "hex",
       "base32",
-      "base32hex",
       "base32-crockford",
       "z-base-32",
       "base45",
@@ -45,7 +44,6 @@ describe("@agntn/encodings", () => {
       "base58-flickr",
       "base58-ripple",
       "base64",
-      "base64url",
       "ascii85",
       "z85",
       "base85",
@@ -72,10 +70,10 @@ describe("family subpaths", () => {
     octal: ["octal"],
     decimal: ["decimal"],
     hex: ["hex"],
-    base32: ["base32", "base32crockford", "base32hex", "zbase32"],
+    base32: ["base32", "base32crockford", "zbase32"],
     base45: ["base45"],
     base58: ["base58", "base58check", "base58flickr", "base58ripple", "createBase58check"],
-    base64: ["base64", "base64url"],
+    base64: ["base64"],
     base85: ["ascii85", "base85", "z85"],
     base91: ["base91"],
     bech32: [
@@ -136,17 +134,29 @@ describe("encode and decode through the registry", () => {
   it("checks options against what the encoding declares", () => {
     expect(encode("hex", "A", { upper: true })).toBe("41");
     expect(encode("hex", "ÿ", { upper: true })).toBe("C3BF");
-    expect(() => encode("base64", "x", { upper: true })).toThrow(
+    expect(() => encode("base58", "x", { upper: true })).toThrow(
       "Invalid option upper=true: this encoding takes no options",
     );
     expect(() => encode("hex", "x", { lower: true })).toThrow("not an option here; use upper");
     expect(() => encode("hex", "x", { upper: "yes" })).toThrow("must be a boolean");
     expect(encode("base32", "f")).toBe("MY======");
     expect(encode("base32", "f", { padding: false })).toBe("MY");
-    expect(encode("base32hex", "f", { padding: false })).toBe("CO");
-    expect(() => encode("base64", "f", { padding: false })).toThrow("takes no options");
+    expect(encode("base32", "f", { hex: true, padding: false })).toBe("CO");
+    expect(encode("base64", new Uint8Array([0xfb, 0xff]), { url: true, padding: false })).toBe(
+      "-_8",
+    );
+    expect(() => encode("base58", "f", { padding: false })).toThrow("takes no options");
     expect(() => encode("bech32", "x")).toThrow(InvalidOptionError);
     expect(() => encode("bech32", "x")).toThrow("prefix=undefined: is required");
+  });
+
+  it("reads with the options marked decode and refuses the rest", () => {
+    expect(decode("base32", "CO", { hex: true }).bytes).toEqual(new Uint8Array([0x66]));
+    expect(decode("base64", "-_8", { url: true }).bytes).toEqual(new Uint8Array([0xfb, 0xff]));
+    expect(() => decode("base64", "-_8")).toThrow("not in the alphabet");
+    expect(() => decode("base32", "MY", { padding: false })).toThrow("not an option here; use hex");
+    expect(() => decode("hex", "41", { upper: true })).toThrow("this encoding takes no options");
+    expect(() => decode("base32", "CO", { hex: "yes" })).toThrow("must be a boolean");
   });
 
   it("returns a segwit address as its program with the version in details", () => {

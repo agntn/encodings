@@ -1,11 +1,25 @@
 import { ASCII_WHITESPACE } from "./bytes.ts";
-import { radix2, type PaddedCodec, type Radix2Codec } from "./radix2.ts";
+import { radix2, type Radix2Codec } from "./radix2.ts";
 
-/**
- * Base32 (RFC 4648 §6): `A`-`Z` and `2`-`7`, padded with `=` to blocks of eight unless
- * `padding` is false. Decoding takes lowercase letters and skips ASCII whitespace.
- */
-export const base32: PaddedCodec = radix2({
+/** Options for reading and writing base32. */
+export interface Base32Options {
+  /** Use the extended hex alphabet of RFC 4648 §7, `0`-`9` and `A`-`V`. Default: false. */
+  hex?: boolean;
+}
+
+/** Options for base32 output. */
+export interface Base32EncodeOptions extends Base32Options {
+  /** Pad the last block with `=` to eight characters. Default: true. */
+  padding?: boolean;
+}
+
+/** RFC 4648 base32 in either of its two alphabets. */
+export interface Base32Codec {
+  encode(bytes: Uint8Array, options?: Readonly<Base32EncodeOptions>): string;
+  decode(text: string, options?: Readonly<Base32Options>): Uint8Array;
+}
+
+const RFC = radix2({
   name: "base32",
   alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",
   padding: true,
@@ -13,17 +27,23 @@ export const base32: PaddedCodec = radix2({
   ignore: ASCII_WHITESPACE,
 });
 
-/**
- * Base32 with the extended hex alphabet (RFC 4648 §7): `0`-`9` and `A`-`V`, so the text sorts
- * in byte order. Padded like base32. NSEC3 writes it with `padding` false.
- */
-export const base32hex: PaddedCodec = radix2({
-  name: "base32hex",
+const EXTENDED_HEX = radix2({
+  name: "base32",
   alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV",
   padding: true,
   caseInsensitive: true,
   ignore: ASCII_WHITESPACE,
 });
+
+/**
+ * Base32 (RFC 4648 §6): `A`-`Z` and `2`-`7`, padded with `=` to blocks of eight. `hex` switches
+ * to the §7 alphabet, which sorts in byte order. Decoding takes lowercase and skips whitespace.
+ */
+export const base32: Base32Codec = {
+  encode: (bytes, options = {}) =>
+    (options.hex ? EXTENDED_HEX : RFC).encode(bytes, { padding: options.padding ?? true }),
+  decode: (text, options = {}) => (options.hex ? EXTENDED_HEX : RFC).decode(text),
+};
 
 /**
  * Crockford's Base32: digits and letters without `I`, `L`, `O` and `U`, unpadded. Decoding

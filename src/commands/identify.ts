@@ -9,7 +9,23 @@ import { readText } from "./shared.ts";
 const PREVIEW_LENGTH = 72;
 
 /**
- * Writes one candidate or layer as a line: confidence, name, decoded value and reasons.
+ * Writes a candidate's decode options as the flags `decode` takes, so the line can be reused.
+ *
+ * @param options - Decode options of the reading, if any.
+ * @returns {string} The flags with leading spaces, or nothing.
+ */
+function flags(options: Readonly<Record<string, string | number | boolean>> = {}): string {
+  return Object.entries(options)
+    .map(([name, value]) => {
+      if (typeof value === "boolean") return value ? ` --${name}` : ` --no-${name}`;
+      return ` --${name}=${quote(String(value))}`;
+    })
+    .join("");
+}
+
+/**
+ * Writes one candidate or layer as a line: confidence, name with its decode flags, decoded value
+ * and reasons.
  *
  * @param candidate - The candidate, or a peeled layer.
  * @returns {string} The line.
@@ -24,7 +40,8 @@ function line(candidate: EncodingCandidate | PeelLayer): string {
     ...candidate.reasons,
   ];
   const why = reasons.length > 0 ? `  (${reasons.join(", ")})` : "";
-  return `${candidate.confidence.toFixed(3)}  ${candidate.encoding.padEnd(16)} ${cut}${why}\n`;
+  const name = `${candidate.encoding}${flags(candidate.options)}`;
+  return `${candidate.confidence.toFixed(3)}  ${name.padEnd(16)} ${cut}${why}\n`;
 }
 
 export default defineCommand({
