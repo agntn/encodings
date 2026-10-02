@@ -21,6 +21,7 @@ const BUILTINS = [
   "base64",
   "base85",
   "base91",
+  "base256",
   "bech32",
   "uuencode",
   "quoted-printable",
@@ -50,6 +51,11 @@ const PRESENTATION: Record<BuiltinEncoding, { icon: string; blurb: string; usedB
     usedBy: "Python, git patches, PDF, ZeroMQ",
   },
   base91: { icon: "i-lucide-package", blurb: "Squeezes printable ASCII hardest" },
+  base256: {
+    icon: "i-lucide-smile",
+    blurb: "One emoji a byte, or any table of symbols a puzzle draws",
+    usedBy: "multiformats, multibase",
+  },
   bech32: {
     icon: "i-lucide-fingerprint",
     blurb: "A BCH checksum that catches four typos",
@@ -71,6 +77,7 @@ const FAMILY_LABELS: Record<(typeof encodingFamilies)[number], string> = {
   base64: "Base64",
   base85: "Base85",
   base91: "basE91",
+  base256: "Base256",
   bech32: "Bech32",
   uuencode: "uuencode",
   "quoted-printable": "Quoted-Printable",
@@ -79,7 +86,7 @@ const FAMILY_LABELS: Record<(typeof encodingFamilies)[number], string> = {
 /** How the landing groups the registry: by how an encoding turns bytes into text. */
 export const GROUPS = [
   { key: "bits", label: "Bit groups", about: "a fixed number of bits per character" },
-  { key: "values", label: "Byte values", about: "each byte as one number, spaced" },
+  { key: "values", label: "Byte values", about: "each byte as one number or symbol" },
   { key: "number", label: "Big number", about: "the whole input as one number in base 58" },
   { key: "blocks", label: "Fixed blocks", about: "a few bytes at a time as a few characters" },
   { key: "words", label: "Checksummed words", about: "5-bit words behind a prefix, with a BCH checksum" },
@@ -99,6 +106,7 @@ const GROUP_OF: Record<BuiltinEncoding, GroupKey> = {
   base45: "blocks",
   base85: "blocks",
   base91: "blocks",
+  base256: "values",
   bech32: "words",
   uuencode: "mail",
   "quoted-printable": "mail",
@@ -195,7 +203,17 @@ export function registryPosition(slug: string): number {
  * @returns {string[]} One entry per character.
  */
 export function alphabetCells(info: EncodingInfo): string[] {
-  return info.alphabet.split("").map((character) => (character === "\t" ? "⇥" : character));
+  return Array.from(info.alphabet, (character) => (character === "\t" ? "⇥" : character));
+}
+
+/**
+ * Characters in an alphabet, counted as code points, so the 256 emoji of base256 count as 256.
+ *
+ * @param {EncodingInfo} info - The encoding's metadata.
+ * @returns {number} The count.
+ */
+export function alphabetSize(info: EncodingInfo): number {
+  return Array.from(info.alphabet).length;
 }
 
 /** Options a page encodes the sample with, where the encoding needs any. */
@@ -207,8 +225,8 @@ export const SAMPLE_OPTIONS: Partial<Record<BuiltinEncoding, Record<string, stri
 const OVERHEAD_BYTES = Uint8Array.from({ length: 600 }, (_, index) => (index * 151 + 7) % 251);
 
 /**
- * How much longer the text is than the bytes, on a long input, as a whole percentage: base64 is
- * 33, hex 100. Whitespace and line breaks don't count, framing does.
+ * How much longer the text is than the bytes, in UTF-8 on a long input, as a whole percentage:
+ * base64 is 33, hex 100, base256 300. Whitespace and line breaks don't count, framing does.
  *
  * @param {EncodingEntry} entry - A built-in.
  * @returns {number} The overhead in percent.
@@ -217,7 +235,8 @@ export function overhead(entry: EncodingEntry): number {
   const options = SAMPLE_OPTIONS[entry.slug] ?? {};
   const limit = entry.info.options.some((option) => option.name === "limit") ? { limit: 10_000 } : {};
   const text = create(entry.slug).encode(OVERHEAD_BYTES, { ...options, ...limit });
-  return Math.round((text.replaceAll(/\s/gu, "").length / OVERHEAD_BYTES.length - 1) * 100);
+  const size = new TextEncoder().encode(text.replaceAll(/\s/gu, "")).length;
+  return Math.round((size / OVERHEAD_BYTES.length - 1) * 100);
 }
 
 /**

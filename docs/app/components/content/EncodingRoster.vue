@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import type { TableColumn } from "@nuxt/ui";
-import { ENCODINGS, checksumOption, overhead, type EncodingEntry } from "../../utils/encodings";
+import {
+  ENCODINGS,
+  alphabetSize,
+  checksumOption,
+  overhead,
+  type EncodingEntry,
+} from "../../utils/encodings";
 import { ROSTER_CLASS, ROSTER_TABLE_UI } from "../../utils/roster";
 
 interface Row {
@@ -27,7 +33,7 @@ const rows = computed<Row[]>(() =>
       entry,
       slug: entry.slug,
       label: entry.info.label,
-      alphabet: entry.info.alphabet.length,
+      alphabet: alphabetSize(entry.info),
       overhead: overhead(entry),
       checksum: entry.info.checksum ? "yes" : checksumOption(entry.info) ? "option" : "no",
       required: entry.info.options.filter((option) => option.required).map((option) => option.name),
@@ -142,7 +148,7 @@ const order = computed(() => {
         >
       </template>
       <template #options-cell="{ row }">
-        <span v-if="row.original.required.length || row.original.optional.length" class="whitespace-nowrap text-muted"
+        <span v-if="row.original.required.length || row.original.optional.length" class="block text-muted"
           ><template v-for="(name, index) in row.original.required" :key="name"
             ><span class="text-highlighted">{{ name }}</span
             ><template v-if="index < row.original.required.length - 1 || row.original.optional.length"

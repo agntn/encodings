@@ -1,3 +1,4 @@
+import { graphemes } from "./bytes.ts";
 import { DecodeError, EncodingError, InvalidOptionError, named } from "./errors.ts";
 
 /** Which bit of a byte the text writes first. */
@@ -33,16 +34,6 @@ interface Layout {
 const WHITESPACE = /^[\t\n\f\r ]+$/u;
 
 const ASCII = /^\p{ASCII}*$/u;
-
-/**
- * Splits text into graphemes, so an emoji with its variation selector stays one symbol.
- *
- * @param text - Any text.
- * @returns {Intl.Segments} The graphemes with their index.
- */
-function graphemes(text: string): Intl.Segments {
-  return new Intl.Segmenter("en", { granularity: "grapheme" }).segment(text);
-}
 
 /**
  * Splits `symbols` into two code points, such as zero-width ones, or else two graphemes.

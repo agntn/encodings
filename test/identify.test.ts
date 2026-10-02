@@ -89,6 +89,18 @@ describe("identify", () => {
     });
   });
 
+  it("puts base256emoji with its multibase prefix ahead of the zero byte the 🚀 also spells", () => {
+    const [best, next] = identify("🚀😝🌈🌷😝");
+    expect(best).toMatchObject({
+      encoding: "base256",
+      options: { multibase: true },
+      text: "gsmg",
+      reasons: ["🚀 multibase prefix", "decodes to readable text"],
+    });
+    expect(next).toMatchObject({ encoding: "base256", text: "\0gsmg" });
+    expect(next!.options).toBeUndefined();
+  });
+
   it("flips switches from their default, together when one alone does not read", () => {
     const loose: Encoding = {
       name: "strict-hex",

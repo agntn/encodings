@@ -16,6 +16,7 @@ import { SAMPLE_INPUT } from "../../composables/useLandingSample";
 import {
   ENCODINGS,
   SAMPLE_OPTIONS,
+  alphabetSize,
   checksumOption,
   encodingEntry,
   familyLabel,
@@ -894,7 +895,7 @@ const identifyLimit = MAX_CANDIDATES;
           >{{ answer.infos.length }} encodings · listing order</span
         >
         <span v-else-if="answer.kind === 'describe'" class="console-meta"
-          >{{ answer.info.family }} · {{ answer.info.alphabet.length }} characters</span
+          >{{ answer.info.family }} · {{ alphabetSize(answer.info) }} characters</span
         >
         <span v-else class="console-meta">{{ answer.name }}</span>
         <span class="console-mark" aria-hidden="true" />
@@ -1218,7 +1219,7 @@ const identifyLimit = MAX_CANDIDATES;
         >
           <NuxtLink :to="`/encodings/${info.name}`" class="playground-list-name">{{ info.name }}</NuxtLink>
           <span class="playground-none">{{ info.family }}</span>
-          <span>{{ info.alphabet.length }} chars</span>
+          <span>{{ alphabetSize(info) }} chars</span>
           <span :class="info.checksum ? 'playground-valid' : 'playground-none'">{{
             info.checksum ? "checksum" : info.padding ? "padded" : "unpadded"
           }}</span>
@@ -1244,7 +1245,7 @@ const identifyLimit = MAX_CANDIDATES;
             <dl :key="scan" class="console-readout-rows console-animate">
               <div>
                 <dt>Alphabet</dt>
-                <dd class="console-accent">{{ answer.info.alphabet.length }} characters</dd>
+                <dd class="console-accent">{{ alphabetSize(answer.info) }} characters</dd>
               </div>
               <div>
                 <dt>Standard</dt>

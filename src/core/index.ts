@@ -58,6 +58,12 @@ export {
 } from "./base85.ts";
 export { base91 } from "./base91.ts";
 export {
+  BASE256_ALPHABETS,
+  base256,
+  type Base256Alphabet,
+  type Base256Options,
+} from "./base256.ts";
+export {
   BECH32_LIMIT,
   bech32,
   bech32m,

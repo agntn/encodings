@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { LandingSample } from "../../composables/useLandingSample";
-import { ENCODINGS, GROUPS, type EncodingEntry } from "../../utils/encodings";
+import { ENCODINGS, GROUPS, alphabetSize, type EncodingEntry } from "../../utils/encodings";
 
 const props = defineProps<{ sample: LandingSample }>();
 const emit = defineEmits<{ pause: [paused: boolean] }>();
@@ -31,7 +31,7 @@ const bands = computed(() =>
 function about(entry: EncodingEntry): string {
   const options = entry.info.options.map((option) => option.name + (option.required ? "" : "?"));
   const guard = entry.info.checksum ? "checksum" : entry.info.padding ? "padded" : "unpadded";
-  const parts = [entry.info.label, `${entry.info.alphabet.length} characters`, guard];
+  const parts = [entry.info.label, `${alphabetSize(entry.info)} characters`, guard];
   return [...parts, ...(options.length ? [options.join(", ")] : [])].join(" · ");
 }
 </script>

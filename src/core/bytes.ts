@@ -71,3 +71,13 @@ export const ASCII_WHITESPACE = /[\t\n\f\r ]/gu;
 export function alphabetIndex(alphabet: string): Map<string, number> {
   return new Map(alphabet.split("").map((character, value) => [character, value] as const));
 }
+
+/**
+ * Splits text into graphemes, so an emoji with its variation selector stays one symbol.
+ *
+ * @param text - Any text.
+ * @returns {Intl.Segments} The graphemes with their index.
+ */
+export function graphemes(text: string): Intl.Segments {
+  return new Intl.Segmenter("en", { granularity: "grapheme" }).segment(text);
+}

@@ -55,6 +55,7 @@ const ALIASES: Readonly<Record<string, string>> = {
   b64: "base64",
   b85: "base85",
   b91: "base91",
+  base256emoji: "base256",
   uu: "uuencode",
   uue: "uuencode",
   qp: "quoted-printable",

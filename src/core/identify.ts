@@ -106,6 +106,11 @@ const FRAMING: Readonly<Record<string, Frame>> = {
     label: "<~ ~> delimiters",
     fits: (reading) => reading["alphabet"] === "ascii85",
   },
+  base256: {
+    test: /^🚀/u,
+    label: "🚀 multibase prefix",
+    fits: (reading) => reading["multibase"] === true,
+  },
   uuencode: { test: /^begin [0-7]{3,4} /mu, label: "begin line" },
   "quoted-printable": { test: /=[0-9A-F]{2}/u, label: "=XX escapes" },
 };
@@ -206,7 +211,7 @@ function candidate(
   score += WEIGHTS.text * share;
   const readable = share >= 0.95;
   if (readable) reasons.push("decodes to readable text");
-  const size = Math.max(2, info.alphabet.length);
+  const size = Math.max(2, Array.from(info.alphabet).length);
   score += WEIGHTS.alphabet * Math.max(0, 1 - Math.log2(size) / 7);
   if (size <= 16) reasons.push(`fits a ${size}-character alphabet`);
   const candidate: EncodingCandidate = {
@@ -360,7 +365,7 @@ export function identify(
  */
 function looksEncoded(text: string, encoding: string): boolean {
   if (!/\d/u.test(text)) return false;
-  return !/\s/u.test(text.trim()) || create(encoding).info().alphabet.length <= 16;
+  return !/\s/u.test(text.trim()) || Array.from(create(encoding).info().alphabet).length <= 16;
 }
 
 /**

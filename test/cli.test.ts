@@ -86,6 +86,9 @@ describe("encodings CLI", () => {
     ).toBe("-_8\n");
     expect(run("decode", "base32", "CO", "--alphabet", "hex").stdout).toBe("f");
     expect(run("decode", "binary", "abaabaaa", "--symbols", "ab").stdout).toBe("H");
+    expect(run("decode", "base256", "🚀😝🌈🌷😝", "--multibase").stdout).toBe("gsmg");
+    expect(run("decode", "base256", "ᚢᚠ", "--sample", "ᚠᚢ", "-o", "hex").stdout).toBe("0100\n");
+    expect(run("encode", "base256", "gsmg", "--multibase").stdout).toBe("🚀😝🌈🌷😝\n");
     expect(run("decode", "binary", "0001001", "--bits=7", "--order", "lsb").stdout).toBe("H");
     expect(run("encode", "binary", "Hi", "--bits", "7", "--symbols", "ab").stdout).toBe(
       "baabaaa bbabaab\n",
@@ -164,7 +167,7 @@ describe("encodings CLI", () => {
   });
 
   it("lists encodings and shows one", () => {
-    expect(run("list").stdout.trim().split("\n")).toHaveLength(13);
+    expect(run("list").stdout.trim().split("\n")).toHaveLength(14);
     expect(run("list", "--family", "base64").stdout.trim().split("\n")).toHaveLength(1);
     expect(run("list", "bech32").stdout).toContain("--prefix  Human-readable part");
     expect(run("list", "base64").stdout).toContain(

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ENCODINGS, familyLabel } from "../../utils/encodings";
+import { ENCODINGS, alphabetSize, familyLabel } from "../../utils/encodings";
 import { TOOLS } from "../../utils/tools";
 
 /**
@@ -21,7 +21,7 @@ const entry = ENCODINGS.find((row) => row.info.label === title || row.slug === t
 const subtitle = entry
   ? [
       `${entry.blurb}.`,
-      `${familyLabel(entry.info.family)}, ${entry.info.alphabet.length} characters${entry.info.checksum ? ", with a checksum" : ""}.`,
+      `${familyLabel(entry.info.family)}, ${alphabetSize(entry.info)} characters${entry.info.checksum ? ", with a checksum" : ""}.`,
       entry.usedBy ? `Used by ${entry.usedBy}.` : "",
     ]
       .filter(Boolean)
