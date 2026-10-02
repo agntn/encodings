@@ -124,7 +124,7 @@
     "@modelcontextprotocol/client": "2.2.0",
     "@oh-my-pi/pi-coding-agent": "18.0.0",
     "@types/node": "26.2.0",
-    "ai": "7.0.66",
+    "ai": "7.0.122",
     "changelogen": "0.6.2",
     "obuild": "0.4.43",
     "typescript": "7.0.2",
