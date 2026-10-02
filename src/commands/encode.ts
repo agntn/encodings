@@ -11,6 +11,7 @@ const OPTION_FLAGS = [
   "upper",
   "separate",
   "delimiters",
+  "padding",
   "name",
   "mode",
 ] as const;
@@ -86,6 +87,7 @@ export default defineCommand({
     upper: { type: "boolean", description: "hex: write A-F" },
     separate: { type: "boolean", description: "binary: space between bytes (default true)" },
     delimiters: { type: "boolean", description: "ascii85: wrap in <~ and ~>" },
+    padding: { type: "boolean", description: "base32, base32hex: pad with = (default true)" },
     name: { type: "string", description: "uuencode: file name on the begin line" },
     mode: { type: "string", description: "uuencode: octal mode on the begin line" },
   },

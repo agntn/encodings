@@ -1,11 +1,11 @@
 import { ASCII_WHITESPACE } from "./bytes.ts";
-import { radix2, type Radix2Codec } from "./radix2.ts";
+import { radix2, type PaddedCodec, type Radix2Codec } from "./radix2.ts";
 
 /**
- * Base32 (RFC 4648 §6): `A`-`Z` and `2`-`7`, padded with `=` to blocks of eight. Decoding takes
- * lowercase letters and skips ASCII whitespace.
+ * Base32 (RFC 4648 §6): `A`-`Z` and `2`-`7`, padded with `=` to blocks of eight unless
+ * `padding` is false. Decoding takes lowercase letters and skips ASCII whitespace.
  */
-export const base32: Radix2Codec = radix2({
+export const base32: PaddedCodec = radix2({
   name: "base32",
   alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",
   padding: true,
@@ -15,9 +15,9 @@ export const base32: Radix2Codec = radix2({
 
 /**
  * Base32 with the extended hex alphabet (RFC 4648 §7): `0`-`9` and `A`-`V`, so the text sorts
- * in byte order. Padded like base32.
+ * in byte order. Padded like base32. NSEC3 writes it with `padding` false.
  */
-export const base32hex: Radix2Codec = radix2({
+export const base32hex: PaddedCodec = radix2({
   name: "base32hex",
   alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV",
   padding: true,

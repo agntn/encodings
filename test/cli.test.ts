@@ -68,6 +68,7 @@ describe("encodings CLI", () => {
       "0100100001101001\n",
     );
     expect(run("encode", "hex", "A", "--upper").stdout).toBe("41\n");
+    expect(run("encode", "base32", "f", "--no-padding").stdout).toBe("MY\n");
     expect(run("encode", "bech32", "hi", "--prefix", "test").stdout).toMatch(/^test1/u);
   });
 

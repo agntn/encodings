@@ -23,6 +23,17 @@ export interface Radix2Codec {
   decode(text: string): Uint8Array;
 }
 
+/** Options for the output of an alphabet that pads. */
+export interface Radix2EncodeOptions {
+  /** Pad the last block with `=`. Default: true. */
+  padding?: boolean;
+}
+
+/** A codec over an alphabet that pads, whose output can leave the padding off. */
+export interface PaddedCodec extends Radix2Codec {
+  encode(bytes: Uint8Array, options?: Readonly<Radix2EncodeOptions>): string;
+}
+
 /**
  * Greatest common divisor, for the block length of an alphabet.
  *
@@ -99,9 +110,9 @@ function withoutPadding(name: string, body: string, blockChars: number): string 
  * group of `log2(alphabet.length)` bits as one character, as RFC 4648 does.
  *
  * @param spec - The alphabet and its rules.
- * @returns {Radix2Codec} The codec.
+ * @returns {PaddedCodec} The codec. `padding` in its options overrides the spec's.
  */
-export function radix2(spec: Radix2Spec): Radix2Codec {
+export function radix2(spec: Radix2Spec): PaddedCodec {
   const { name, alphabet, padding, caseInsensitive = false, aliases = {}, ignore } = spec;
   const bits = Math.log2(alphabet.length);
   if (!Number.isInteger(bits) || bits < 1 || bits > 8) {
@@ -113,7 +124,7 @@ export function radix2(spec: Radix2Spec): Radix2Codec {
   const values = valueMap(alphabet, aliases, caseInsensitive);
 
   return {
-    encode(bytes) {
+    encode(bytes, options = {}) {
       let out = "";
       let buffer = 0;
       let held = 0;
@@ -126,7 +137,7 @@ export function radix2(spec: Radix2Spec): Radix2Codec {
         }
       }
       if (held > 0) out += alphabet[(buffer << (bits - held)) & mask];
-      if (padding) {
+      if (options.padding ?? padding) {
         const rest = out.length % blockChars;
         if (rest > 0) out += "=".repeat(blockChars - rest);
       }
