@@ -1,6 +1,6 @@
 {
   "name": "@agntn/encodings",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Base58, base64, bech32 and a dozen more binary-to-text encodings, written from the specs",
   "keywords": [
     "agent",
