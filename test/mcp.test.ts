@@ -239,7 +239,8 @@ describe("executors without the schema", () => {
       outputFormat: "utf8",
     }).content[0]!.text;
     expect(value).toContain(String.raw`"x\u2028y"`);
-    for (const output of [text, value]) expect(output).not.toMatch(/[\u2028\p{Cf}\u001B]/u);
+    for (const output of [text, value])
+      expect(output.replaceAll("\n", "")).not.toMatch(/[\u2028\p{Cf}\p{Cc}]/u);
   });
 
   it("say so when no encoding reads the text", () => {
