@@ -207,6 +207,16 @@ export function alphabetCells(info: EncodingInfo): string[] {
 }
 
 /**
+ * Characters in a text, counted as code points with whitespace left out, so an emoji is one.
+ *
+ * @param {string} text - Encoded text.
+ * @returns {number} The count.
+ */
+export function characterCount(text: string): number {
+  return Array.from(text.replaceAll(/\s/gu, "")).length;
+}
+
+/**
  * Characters in an alphabet, counted as code points, so the 256 emoji of base256 count as 256.
  *
  * @param {EncodingInfo} info - The encoding's metadata.
@@ -225,8 +235,8 @@ export const SAMPLE_OPTIONS: Partial<Record<BuiltinEncoding, Record<string, stri
 const OVERHEAD_BYTES = Uint8Array.from({ length: 600 }, (_, index) => (index * 151 + 7) % 251);
 
 /**
- * How much longer the text is than the bytes, in UTF-8 on a long input, as a whole percentage:
- * base64 is 33, hex 100, base256 300. Whitespace and line breaks don't count, framing does.
+ * How much longer the text is than the bytes, in characters on a long input, as a whole percentage:
+ * base64 is 33, hex 100, base256 0. Whitespace and line breaks don't count, framing does.
  *
  * @param {EncodingEntry} entry - A built-in.
  * @returns {number} The overhead in percent.
@@ -235,8 +245,7 @@ export function overhead(entry: EncodingEntry): number {
   const options = SAMPLE_OPTIONS[entry.slug] ?? {};
   const limit = entry.info.options.some((option) => option.name === "limit") ? { limit: 10_000 } : {};
   const text = create(entry.slug).encode(OVERHEAD_BYTES, { ...options, ...limit });
-  const size = new TextEncoder().encode(text.replaceAll(/\s/gu, "")).length;
-  return Math.round((size / OVERHEAD_BYTES.length - 1) * 100);
+  return Math.round((characterCount(text) / OVERHEAD_BYTES.length - 1) * 100);
 }
 
 /**

@@ -45,23 +45,26 @@ interface Piece {
   index: number;
 }
 
-/** ASCII whitespace, one grapheme of it: CR LF is a single grapheme. */
-const WHITESPACE = /^[\t\n\f\r ]+$/u;
+/** ASCII whitespace a grapheme starts with, where a mark after a space joins the space. */
+const LEADING_WHITESPACE = /^[\t\n\f\r ]+/u;
+
+/** Code points in the longest symbol a table takes; emoji sequences run to about ten. */
+const MAX_SYMBOL = 16;
 
 /** Text and emoji presentation selectors, which change how a symbol looks, not which it is. */
-const PRESENTATION = /[︎️]/gu;
+const PRESENTATION = /[\uFE0E\uFE0F]/gu;
 
 /** A grapheme of format characters and marks alone, such as zero-width characters in a row. */
 const INVISIBLE = /^[\p{Cf}\p{M}]+$/u;
 
 /**
- * The symbol a piece of text stands for: itself without presentation selectors.
+ * The symbol a piece of text stands for: itself without presentation selectors or leading spaces.
  *
  * @param segment - A code point or a grapheme.
- * @returns {string} The symbol, empty for a lone selector.
+ * @returns {string} The symbol, empty for whitespace or a lone selector.
  */
 function keyOf(segment: string): string {
-  return segment.replaceAll(PRESENTATION, "");
+  return segment.replaceAll(PRESENTATION, "").replace(LEADING_WHITESPACE, "");
 }
 
 /**
@@ -106,9 +109,19 @@ function digitsOf(key: string, checked: Readonly<Table>, index: number): number[
  * @returns {string[]} The symbols in order.
  */
 function symbolsOf(text: string): string[] {
-  return Array.from(graphemes(text), (entry) => entry.segment)
+  return Array.from(graphemes(text), (entry) => entry.segment.replace(LEADING_WHITESPACE, ""))
     .flatMap((segment) => (INVISIBLE.test(segment) ? Array.from(segment) : [segment]))
-    .filter((segment) => keyOf(segment) !== "" && !WHITESPACE.test(segment));
+    .filter((segment) => keyOf(segment) !== "");
+}
+
+/**
+ * The option value an error shows: the text itself, or its length when it runs long.
+ *
+ * @param given - The option value.
+ * @returns {string} The value or its length.
+ */
+function shownValue(given: string): string {
+  return given.length > 64 ? `${given.length} characters` : given;
 }
 
 /**
@@ -124,15 +137,22 @@ function tableOf(option: string, given: string, distinct: boolean): Table {
   const digits: Record<string, number> = {};
   for (const symbol of symbolsOf(given)) {
     const key = keyOf(symbol);
+    if (Array.from(key).length > MAX_SYMBOL) {
+      throw new InvalidOptionError(
+        option,
+        shownValue(given),
+        `has a symbol over ${MAX_SYMBOL} code points`,
+      );
+    }
     if (!Object.hasOwn(digits, key)) {
       digits[key] = spelled.length;
       spelled.push(symbol);
     } else if (distinct) {
-      throw new InvalidOptionError(option, given, `repeats ${nameOf(key)}`);
+      throw new InvalidOptionError(option, shownValue(given), `repeats ${nameOf(key)}`);
     }
   }
   if (spelled.length < 2 || spelled.length > 256) {
-    throw new InvalidOptionError(option, given, "needs 2 to 256 different symbols");
+    throw new InvalidOptionError(option, shownValue(given), "needs 2 to 256 different symbols");
   }
   const longest = Math.max(...spelled.map((symbol) => Array.from(keyOf(symbol)).length));
   return { spelled, digits, clusters: longest > 1, longest };
@@ -225,7 +245,7 @@ function read(text: string, from: number, checked: Readonly<Table>): number[] {
   const out: number[] = [];
   for (const { segment, index } of piecesOf(text, from, checked.clusters)) {
     const key = keyOf(segment);
-    if (key === "" || WHITESPACE.test(key)) continue;
+    if (key === "") continue;
     const digit = Object.hasOwn(checked.digits, key) ? checked.digits[key] : undefined;
     out.push(...(digit === undefined ? digitsOf(key, checked, index) : [digit]));
   }

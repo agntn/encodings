@@ -1,5 +1,11 @@
 import { create, hex } from "@agntn/encodings";
-import { ENCODINGS, SAMPLE_OPTIONS, alphabetCells, type EncodingEntry } from "../utils/encodings";
+import {
+  ENCODINGS,
+  SAMPLE_OPTIONS,
+  alphabetCells,
+  characterCount,
+  type EncodingEntry,
+} from "../utils/encodings";
 
 /** The text every panel encodes: twelve bytes, so Z85 takes it and base32 still pads. */
 export const SAMPLE_INPUT = "hello world!";
@@ -53,14 +59,13 @@ export function encodeSample(entry: EncodingEntry): LandingSample {
   const used = new Set(text.replaceAll(/\t/gu, "⇥"));
   const cells = alphabetCells(entry.info).map((character) => ({ character, used: used.has(character) }));
   const bytes = new TextEncoder().encode(SAMPLE_INPUT);
-  const body = text.replaceAll(/\s/gu, "").length;
   return {
     entry,
     text,
     bytesHex: hex.encode(bytes),
     cells,
     usedCount: cells.filter((cell) => cell.used).length,
-    overhead: Math.round((body / bytes.length - 1) * 100),
+    overhead: Math.round((characterCount(text) / bytes.length - 1) * 100),
     options,
   };
 }

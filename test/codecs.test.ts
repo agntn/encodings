@@ -555,6 +555,17 @@ describe("base256", () => {
     expect(base256.decode("🇵🇱", { symbols })).toEqual(new Uint8Array([2]));
   });
 
+  it("keeps a mark after a space separator a symbol of its own", () => {
+    expect(base256.encode(new Uint8Array([1, 0]), { symbols: "a \u0301" })).toBe("\u0301a");
+  });
+
+  it("refuses a symbol over 16 code points and shows a long value by its length", () => {
+    const sample = `a${"\u0301".repeat(20_000)}b`;
+    expect(() => base256.decode("b", { sample })).toThrow(
+      "Invalid option sample=20002 characters: has a symbol over 16 code points",
+    );
+  });
+
   it("names a huge grapheme by its first code point only", () => {
     const error = (() => {
       try {
