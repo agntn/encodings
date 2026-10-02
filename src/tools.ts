@@ -152,6 +152,7 @@ export const encodeTool = defineTool({
   guidelines: [
     "Text is encoded as UTF-8. For bytes, pass them in hex or base64 and set inputFormat.",
     "bech32 and bech32m need options.prefix. base58check appends the checksum; put the version byte in the input yourself.",
+    "Only the options of the chosen encoding apply. Any other option is ignored and named in the reply.",
   ],
   effect: "read",
   input: encodeSchema,

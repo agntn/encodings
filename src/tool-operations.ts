@@ -163,6 +163,29 @@ function detailLine(details: Readonly<Record<string, string | number>>): string 
 }
 
 /**
+ * Splits tool options into the ones an encoding declares and the rest. Strict function calling
+ * fills every field of the schema, and `options` holds the fields of every encoding, so base91
+ * gets a bech32 prefix. The library would refuse it; the tool takes what applies and names the rest.
+ *
+ * @param names - Option names the chosen encoding declares.
+ * @param options - The options object from the call.
+ * @returns {{ taken: Record<string, string | number | boolean>; ignored: string[] }} Options to pass, names left out.
+ */
+function pickOptions(
+  names: readonly string[],
+  options: object,
+): { taken: Record<string, string | number | boolean>; ignored: string[] } {
+  const declared = new Set(names);
+  const taken: Record<string, string | number | boolean> = {};
+  const ignored: string[] = [];
+  for (const [key, value] of Object.entries(options)) {
+    if (declared.has(key)) taken[key] = value as string | number | boolean;
+    else if (value !== undefined && value !== null) ignored.push(key);
+  }
+  return { taken, ignored };
+}
+
+/**
  * Encodes text or bytes.
  *
  * @param params - Tool arguments.
@@ -185,6 +208,10 @@ export function encodingsEncode(
   }
   const encoding = create(name);
   const info = encoding.info();
+  const { taken, ignored } = pickOptions(
+    info.options.map((option) => option.name),
+    options,
+  );
   const bytes =
     format === "hex"
       ? hex.decode(input)
@@ -192,7 +219,7 @@ export function encodingsEncode(
         ? base64.decode(input)
         : new TextEncoder().encode(input);
   checkQuadratic(info, bytes.length);
-  const text = encoding.encode(bytes, options as Record<string, string | number | boolean>);
+  const text = encoding.encode(bytes, taken);
   if (text.length > MAX_TEXT_LENGTH * 2) {
     throw new InvalidOptionError(
       "input",
@@ -201,7 +228,12 @@ export function encodingsEncode(
     );
   }
   return {
-    content: [{ type: "text", text: `${info.name} (${bytes.length} bytes):\n${text}` }],
+    content: [
+      {
+        type: "text",
+        text: `${info.name} (${bytes.length} bytes):\n${text}${ignored.length > 0 ? `\nIgnored, ${info.name} does not take: ${ignored.join(", ")}` : ""}`,
+      },
+    ],
     details: { encoding: info.name, text, byteLength: bytes.length },
   };
 }

@@ -79,6 +79,29 @@ describe("encodings MCP server", () => {
     ).toContain("test1");
   });
 
+  it("applies the chosen encoding's options and names the rest", async () => {
+    // What a strict function calling model sends: every option, filled in.
+    const everything = {
+      prefix: "bc",
+      limit: 90,
+      upper: true,
+      separate: false,
+      delimiters: false,
+      name: "data",
+      mode: "644",
+    };
+    expect(
+      await call("encodings_encode", { encoding: "base91", input: "Hello", options: everything }),
+    ).toBe(
+      "base91 (5 bytes):\n>OwJh>A\nIgnored, base91 does not take: prefix, limit, upper, separate, delimiters, name, mode",
+    );
+    expect(
+      await call("encodings_encode", { encoding: "hex", input: "Hello", options: everything }),
+    ).toBe(
+      "hex (5 bytes):\n48656C6C6F\nIgnored, hex does not take: prefix, limit, separate, delimiters, name, mode",
+    );
+  });
+
   it("decodes to text, or to hex when the bytes are not text", async () => {
     expect(await call("encodings_decode", { encoding: "base64", text: "SGVsbG8=" })).toBe(
       'base64 → 5 bytes as utf8:\n"Hello"',
