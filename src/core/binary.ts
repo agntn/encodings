@@ -1,4 +1,4 @@
-import { graphemes } from "./bytes.ts";
+import { MAX_SYMBOL, graphemes } from "./bytes.ts";
 import { DecodeError, EncodingError, InvalidOptionError, named } from "./errors.ts";
 
 /** Which bit of a byte the text writes first. */
@@ -49,6 +49,9 @@ function symbolPair(symbols: string): [string, string] {
   const distinct = new Set(characters).size === 2 && characters.length === 2;
   if (!distinct || characters.some((character) => WHITESPACE.test(character))) {
     throw new InvalidOptionError("symbols", symbols, "needs two different non-space characters");
+  }
+  if (characters.some((character) => Array.from(character).length > MAX_SYMBOL)) {
+    throw new InvalidOptionError("symbols", symbols, `has a symbol over ${MAX_SYMBOL} code points`);
   }
   return [zero, one];
 }

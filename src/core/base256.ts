@@ -1,5 +1,5 @@
 import { byAlphabet } from "./alphabets.ts";
-import { graphemes } from "./bytes.ts";
+import { MAX_SYMBOL, graphemes } from "./bytes.ts";
 import { DecodeError, EncodingError, InvalidOptionError, named, quote } from "./errors.ts";
 
 /** The base256 alphabets, in the order `info().options` lists them. */
@@ -47,9 +47,6 @@ interface Piece {
 
 /** ASCII whitespace a grapheme starts with, where a mark after a space joins the space. */
 const LEADING_WHITESPACE = /^[\t\n\f\r ]+/u;
-
-/** Code points in the longest symbol a table takes; emoji sequences run to about ten. */
-const MAX_SYMBOL = 16;
 
 /** Text and emoji presentation selectors, which change how a symbol looks, not which it is. */
 const PRESENTATION = /[\uFE0E\uFE0F]/gu;

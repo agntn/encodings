@@ -255,7 +255,7 @@ describe("binary", () => {
   });
 
   it("refuses symbols, bit counts and bytes it cannot write", () => {
-    for (const symbols of ["0", "aa", "abc", "a ", "\t1", ""]) {
+    for (const symbols of ["0", "aa", "abc", "a ", "\t1", "", `a${"\u0301".repeat(16)}b`]) {
       expect(() => binary.decode("0", { symbols })).toThrow(InvalidOptionError);
     }
     for (const bits of [0, 9, 7.5, Number.NaN]) {
