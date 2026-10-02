@@ -546,6 +546,15 @@ describe("base256", () => {
     expect(base256.decode(text, { symbols })).toEqual(new Uint8Array([1, 2, 0]));
   });
 
+  it("refuses to write symbols that read back as another symbol", () => {
+    const symbols = "🇵 🇱 🇵🇱";
+    expect(() => base256.encode(new Uint8Array([0, 1]), { symbols })).toThrow(
+      "base256: the symbols from index 0 run together and read back as other bytes",
+    );
+    expect(base256.encode(new Uint8Array([2, 0]), { symbols })).toBe("🇵🇱🇵");
+    expect(base256.decode("🇵🇱", { symbols })).toEqual(new Uint8Array([2]));
+  });
+
   it("names a huge grapheme by its first code point only", () => {
     const error = (() => {
       try {

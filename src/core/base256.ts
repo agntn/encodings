@@ -214,6 +214,45 @@ function start(text: string, multibase: boolean): number {
 }
 
 /**
+ * Reads text as digits from a given index.
+ *
+ * @param text - The text.
+ * @param from - Index of the first symbol of data.
+ * @param checked - The table.
+ * @returns {number[]} The digits.
+ */
+function read(text: string, from: number, checked: Readonly<Table>): number[] {
+  const out: number[] = [];
+  for (const { segment, index } of piecesOf(text, from, checked.clusters)) {
+    const key = keyOf(segment);
+    if (key === "" || WHITESPACE.test(key)) continue;
+    const digit = Object.hasOwn(checked.digits, key) ? checked.digits[key] : undefined;
+    out.push(...(digit === undefined ? digitsOf(key, checked, index) : [digit]));
+  }
+  return out;
+}
+
+/**
+ * Refuses text whose symbols run together into other symbols, such as 🇵 and 🇱 next to 🇵🇱 in
+ * one table, so encoding never writes what decodes to other bytes.
+ *
+ * @param bytes - The bytes written.
+ * @param text - The symbols written for them.
+ * @param checked - The table.
+ */
+function checkReadsBack(bytes: ArrayLike<number>, text: string, checked: Readonly<Table>): void {
+  if (!checked.clusters) return;
+  const back = read(text, 0, checked);
+  const at = Array.from(bytes).findIndex((byte, index) => back[index] !== byte);
+  if (at !== -1 || back.length !== bytes.length) {
+    const index = at === -1 ? Math.min(back.length, bytes.length) : at;
+    throw new EncodingError(
+      `base256: the symbols from index ${index} run together and read back as other bytes`,
+    );
+  }
+}
+
+/**
  * Base256: one symbol per byte, multiformats base256emoji by default. A table of N symbols
  * reads digits 0 to N - 1. Decoding skips whitespace and presentation selectors.
  */
@@ -226,7 +265,8 @@ export const base256 = {
    * @returns {string} One symbol per byte.
    */
   encode(bytes: Uint8Array, options: Readonly<Base256Options> = {}): string {
-    const { spelled } = table(options);
+    const checked = table(options);
+    const { spelled } = checked;
     const symbols = Array.from(bytes, (byte, index) => {
       const symbol = spelled[byte];
       if (symbol === undefined) {
@@ -236,7 +276,9 @@ export const base256 = {
       }
       return symbol;
     });
-    return (options.multibase === true ? MULTIBASE : "") + symbols.join("");
+    const text = symbols.join("");
+    checkReadsBack(bytes, text, checked);
+    return (options.multibase === true ? MULTIBASE : "") + text;
   },
 
   /**
@@ -248,14 +290,6 @@ export const base256 = {
    */
   decode(text: string, options: Readonly<Base256Options> = {}): Uint8Array {
     const checked = table(options);
-    const out: number[] = [];
-    const from = start(text, options.multibase === true);
-    for (const { segment, index } of piecesOf(text, from, checked.clusters)) {
-      const key = keyOf(segment);
-      if (key === "" || WHITESPACE.test(key)) continue;
-      const digit = Object.hasOwn(checked.digits, key) ? checked.digits[key] : undefined;
-      out.push(...(digit === undefined ? digitsOf(key, checked, index) : [digit]));
-    }
-    return Uint8Array.from(out);
+    return Uint8Array.from(read(text, start(text, options.multibase === true), checked));
   },
 } as const;
