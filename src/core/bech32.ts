@@ -1,5 +1,5 @@
 import { alphabetIndex } from "./bytes.ts";
-import { ChecksumError, DecodeError, InvalidOptionError, named } from "./errors.ts";
+import { ChecksumError, DecodeError, InvalidOptionError, named, shown } from "./errors.ts";
 
 const CHARSET = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
 const VALUES = alphabetIndex(CHARSET);
@@ -100,6 +100,64 @@ function convertBits(
     return undefined;
   }
   return out;
+}
+
+/**
+ * Whether a value is a 5-bit word.
+ *
+ * @param value - The value.
+ * @returns {boolean} Whether it is an integer from 0 to 31.
+ */
+function isWord(value: number): boolean {
+  return Number.isInteger(value) && value >= 0 && value <= 31;
+}
+
+/**
+ * Regroups bytes into 5-bit words, padding a partial last word with zero bits.
+ *
+ * @param bytes - The bytes.
+ * @returns {number[]} The words, 0 to 31 each.
+ */
+export function toWords(bytes: Uint8Array): number[] {
+  return convertBits(bytes, 8, 5, true)!;
+}
+
+/**
+ * Regroups 5-bit words into bytes under BIP173's rule: at most four padding bits, all zero.
+ *
+ * @param words - The words, checksum removed.
+ * @returns {Uint8Array} The bytes.
+ */
+export function fromWords(words: readonly number[]): Uint8Array {
+  const bad = words.findIndex((word) => !isWord(word));
+  if (bad !== -1) {
+    throw new DecodeError(
+      "bech32",
+      `word ${shown(words[bad])} at index ${bad} is not an integer from 0 to 31`,
+      bad,
+    );
+  }
+  const bytes = fromWordsUnsafe(words);
+  if (bytes) return bytes;
+  const leftover = (words.length * 5) % 8;
+  throw new DecodeError(
+    "bech32",
+    leftover > 4
+      ? `${leftover} bits are left over, and padding is at most 4`
+      : "padding bits after the last byte are not zero",
+  );
+}
+
+/**
+ * Like `fromWords`, for probing: returns nothing where `fromWords` throws.
+ *
+ * @param words - The words, checksum removed.
+ * @returns {Uint8Array | undefined} The bytes, or `undefined` when the words do not spell bytes.
+ */
+export function fromWordsUnsafe(words: readonly number[]): Uint8Array | undefined {
+  if (!words.every(isWord)) return undefined;
+  const bytes = convertBits(words, 5, 8, false);
+  return bytes && Uint8Array.from(bytes);
 }
 
 /**
@@ -206,7 +264,7 @@ function bech32Codec(name: string, constant: number): Bech32Codec {
     encodeWords(prefix, words, limit = BECH32_LIMIT) {
       checkPrefix(prefix);
       const lower = prefix.toLowerCase();
-      if (words.some((word) => !Number.isInteger(word) || word < 0 || word > 31)) {
+      if (!words.every(isWord)) {
         throw new InvalidOptionError("words", "[…]", "every word must be an integer from 0 to 31");
       }
       const length = lower.length + 1 + words.length + 6;
@@ -236,19 +294,19 @@ function bech32Codec(name: string, constant: number): Bech32Codec {
     },
 
     encode(prefix, bytes, limit) {
-      return codec.encodeWords(prefix, convertBits(bytes, 8, 5, true)!, limit);
+      return codec.encodeWords(prefix, toWords(bytes), limit);
     },
 
     decode(text, limit) {
       const { prefix, words } = codec.decodeWords(text, limit);
-      const bytes = convertBits(words, 5, 8, false);
+      const bytes = fromWordsUnsafe(words);
       if (!bytes) {
         throw new DecodeError(
           name,
           "words do not regroup into whole bytes; a segwit address carries a version word first",
         );
       }
-      return { prefix, bytes: Uint8Array.from(bytes) };
+      return { prefix, bytes };
     },
   };
   return codec;
@@ -297,7 +355,7 @@ export const segwit = {
     const problem = witnessProblem(version, program);
     if (problem) throw new InvalidOptionError("program", program.length, problem);
     const codec = version === 0 ? bech32 : bech32m;
-    return codec.encodeWords(prefix, [version, ...convertBits(program, 8, 5, true)!]);
+    return codec.encodeWords(prefix, [version, ...toWords(program)]);
   },
 
   /**
@@ -319,9 +377,8 @@ export const segwit = {
     }
     const [version, ...rest] = decoded.words;
     if (version === undefined) throw new DecodeError("segwit", "no witness version");
-    const program = convertBits(rest, 5, 8, false);
-    if (!program) throw new DecodeError("segwit", "program does not regroup into whole bytes");
-    const bytes = Uint8Array.from(program);
+    const bytes = fromWordsUnsafe(rest);
+    if (!bytes) throw new DecodeError("segwit", "program does not regroup into whole bytes");
     const problem = witnessProblem(version, bytes);
     if (problem) throw new DecodeError("segwit", problem);
     if ((version === 0) !== (variant === "bech32")) {

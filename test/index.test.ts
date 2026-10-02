@@ -73,16 +73,29 @@ describe("family subpaths", () => {
     base64: ["base64", "base64url"],
     base85: ["ascii85", "z85"],
     base91: ["base91"],
-    bech32: ["BECH32_LIMIT", "bech32", "bech32m", "segwit"],
+    bech32: [
+      "BECH32_LIMIT",
+      "bech32",
+      "bech32m",
+      "fromWords",
+      "fromWordsUnsafe",
+      "segwit",
+      "toWords",
+    ],
     uuencode: ["uuencode"],
     "quoted-printable": ["quotedPrintable"],
   };
+
+  const subpathOnly = new Set(["fromWords", "fromWordsUnsafe", "toWords"]);
 
   it.each(Object.entries(expected))("./%s exposes only its codecs", async (family, names) => {
     const module = (await import(`../src/${family}.ts`)) as Record<string, unknown>;
     expect(Object.keys(module).toSorted()).toEqual(names.toSorted());
     const root = (await import("../src/index.ts")) as Record<string, unknown>;
-    for (const name of names) expect(module[name]).toBe(root[name]);
+    for (const name of names) {
+      if (subpathOnly.has(name)) expect(root).not.toHaveProperty(name);
+      else expect(module[name]).toBe(root[name]);
+    }
   });
 });
 
