@@ -329,6 +329,16 @@ describe("executors without the schema", () => {
       "must be an object",
     );
     expect(() => encodingsDecode({ encoding: "hex", text: "" })).toThrow("must be 1 to 100000");
+    expect(() =>
+      encodingsDecode({
+        encoding: "base256",
+        text: "ab",
+        options: { sample: "ab".repeat(50_001) },
+      }),
+    ).toThrow("Invalid option sample=100002 characters: must be 1 to 100000 characters");
+    expect(() =>
+      encodingsEncode({ encoding: "binary", input: "x", options: { symbols: "a".repeat(4097) } }),
+    ).toThrow("must be 1 to 4096 characters");
     expect(() => encodingsIdentify({ text: "x", limit: 99 })).toThrow("from 1 to 20");
     expect(() => encodingsIdentify({ text: "x", peel: "yes" })).toThrow("must be a boolean");
     expect(

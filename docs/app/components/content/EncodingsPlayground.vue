@@ -18,6 +18,7 @@ import {
   SAMPLE_OPTIONS,
   alphabetSize,
   checksumOption,
+  codePoints,
   encodingEntry,
   familyLabel,
   overhead,
@@ -880,7 +881,7 @@ const identifyLimit = MAX_CANDIDATES;
           >
         </UTooltip>
         <span v-if="answer.kind === 'encode'" class="console-meta"
-          >{{ answer.details.byteLength }} bytes · {{ answer.details.text.length }} chars</span
+          >{{ answer.details.byteLength }} bytes · {{ codePoints(answer.details.text) }} chars</span
         >
         <span v-else-if="answer.kind === 'decode'" class="console-meta"
           >{{ answer.details.byteLength }} bytes · {{ answer.details.format }}</span
@@ -926,7 +927,7 @@ const identifyLimit = MAX_CANDIDATES;
               <div>
                 <dt>Size</dt>
                 <dd class="console-accent">
-                  {{ answer.details.byteLength }} bytes → {{ answer.details.text.length }} chars
+                  {{ answer.details.byteLength }} bytes → {{ codePoints(answer.details.text) }} chars
                 </dd>
               </div>
               <div>

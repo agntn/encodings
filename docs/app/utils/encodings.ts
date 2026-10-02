@@ -207,13 +207,23 @@ export function alphabetCells(info: EncodingInfo): string[] {
 }
 
 /**
- * Characters in a text, counted as code points with whitespace left out, so an emoji is one.
+ * Characters in a text, counted as code points, so an emoji is one and not two UTF-16 units.
+ *
+ * @param {string} text - Any text.
+ * @returns {number} The count.
+ */
+export function codePoints(text: string): number {
+  return Array.from(text).length;
+}
+
+/**
+ * Characters in encoded text without its whitespace, for overhead.
  *
  * @param {string} text - Encoded text.
  * @returns {number} The count.
  */
 export function characterCount(text: string): number {
-  return Array.from(text.replaceAll(/\s/gu, "")).length;
+  return codePoints(text.replaceAll(/\s/gu, ""));
 }
 
 /**
@@ -223,7 +233,7 @@ export function characterCount(text: string): number {
  * @returns {number} The count.
  */
 export function alphabetSize(info: EncodingInfo): number {
-  return Array.from(info.alphabet).length;
+  return codePoints(info.alphabet);
 }
 
 /** Options a page encodes the sample with, where the encoding needs any. */

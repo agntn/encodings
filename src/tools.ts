@@ -14,6 +14,7 @@ import {
   MAX_CANDIDATES,
   MAX_NAME_LENGTH,
   MAX_PREFIX_LENGTH,
+  MAX_SYMBOLS_LENGTH,
   MAX_TEXT_LENGTH,
   OUTPUT_FORMATS,
 } from "./tool-contract.ts";
@@ -65,7 +66,7 @@ const m = Type.Optional(Type.Boolean({ description: "bech32: Bech32m checksum (s
 const symbols = Type.Optional(
   Type.String({
     minLength: 2,
-    maxLength: 4096,
+    maxLength: MAX_SYMBOLS_LENGTH,
     description:
       "binary: the character for 0, then the one for 1, such as ab (default 01). base256: the symbols for 0 upward in place of the alphabet, 2 to 256; fewer read as digits",
   }),
