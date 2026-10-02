@@ -1,6 +1,6 @@
-import { hash256 } from "@agntn/hashes/sha2";
+import { sha256 } from "@agntn/hashes/sha2";
 import { alphabetIndex, concat, equalBytes } from "./bytes.ts";
-import { ChecksumError, DecodeError, named } from "./errors.ts";
+import { ChecksumError, DecodeError, InvalidOptionError, named } from "./errors.ts";
 
 /** A codec over one base58 alphabet. */
 export interface Base58Codec {
@@ -97,44 +97,51 @@ export const base58ripple: Base58Codec = base58Codec(
 );
 
 /**
+ * Builds Base58Check over another hash or alphabet, the way Decred and the XRP Ledger use it.
+ *
+ * @param hash - The checksum hash, such as `blake256` from `@agntn/hashes/blake256`.
+ * @param alphabet - The 58 characters in value order. Bitcoin's when left out.
+ * @returns {Base58Codec} The codec. Its errors name `base58check`.
+ */
+export function createBase58check(
+  hash: (bytes: Uint8Array) => Uint8Array,
+  alphabet: string = BASE58_ALPHABET,
+): Base58Codec {
+  if (alphabet.length !== 58 || new Set(alphabet).size !== 58) {
+    throw new InvalidOptionError("alphabet", alphabet, "needs 58 distinct characters");
+  }
+  const codec = base58Codec("base58check", alphabet);
+
+  function checksum(payload: Uint8Array): Uint8Array {
+    const digest = hash(hash(payload));
+    if (digest.length < 4) {
+      throw new InvalidOptionError("hash", digest.length, "must return at least 4 bytes");
+    }
+    return digest.subarray(0, 4);
+  }
+
+  return {
+    encode(payload) {
+      return codec.encode(concat(payload, checksum(payload)));
+    },
+
+    decode(text) {
+      const bytes = codec.decode(text);
+      if (bytes.length < 4) {
+        throw new DecodeError("base58check", `${bytes.length} bytes leave no room for a checksum`);
+      }
+      const payload = bytes.subarray(0, -4);
+      if (!equalBytes(bytes.subarray(-4), checksum(payload))) {
+        throw new ChecksumError("base58check");
+      }
+      return payload;
+    },
+  };
+}
+
+/**
  * Base58Check, Bitcoin's form for addresses, WIF keys and extended keys: the payload and the
  * first four bytes of its double SHA-256, in Bitcoin's base58. The payload starts with the
  * version byte or bytes; this codec keeps them in it and checks nothing but the checksum.
  */
-export const base58check: Base58Codec = {
-  /**
-   * Appends the checksum and writes the result in base58.
-   *
-   * @param payload - Version bytes and data.
-   * @returns {string} The Base58Check text.
-   */
-  encode(payload: Uint8Array): string {
-    return base58.encode(concat(payload, hash256(payload).subarray(0, 4)));
-  },
-
-  /**
-   * Reads base58, checks the four-byte checksum and returns what it covers.
-   *
-   * @param text - Base58Check text.
-   * @returns {Uint8Array} The payload, version bytes included.
-   */
-  decode(text: string): Uint8Array {
-    let bytes: Uint8Array;
-    try {
-      bytes = base58.decode(text);
-    } catch (error) {
-      if (error instanceof DecodeError) {
-        throw new DecodeError("base58check", error.message.replace(/^base58: /u, ""), error.index);
-      }
-      throw error;
-    }
-    if (bytes.length < 4) {
-      throw new DecodeError("base58check", `${bytes.length} bytes leave no room for a checksum`);
-    }
-    const payload = bytes.subarray(0, -4);
-    if (!equalBytes(bytes.subarray(-4), hash256(payload).subarray(0, 4))) {
-      throw new ChecksumError("base58check");
-    }
-    return payload;
-  },
-};
+export const base58check: Base58Codec = createBase58check(sha256);

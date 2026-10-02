@@ -3,6 +3,7 @@ import {
   ChecksumError,
   DecodeError,
   EncodingError,
+  InvalidOptionError,
   ascii85,
   base32,
   base32crockford,
@@ -25,8 +26,11 @@ import {
   z85,
   zbase32,
 } from "../src/index.ts";
+import { blake256 } from "@agntn/hashes/blake256";
+import { sha256 } from "@agntn/hashes/sha2";
+import { createBase58check } from "../src/base58.ts";
 import { fromWords, fromWordsUnsafe, toWords } from "../src/bech32.ts";
-import { javascript, python } from "./fixtures/references.ts";
+import { base58checkVariants, javascript, python } from "./fixtures/references.ts";
 
 const text = (value: string) => new TextEncoder().encode(value);
 const read = (bytes: Uint8Array) => new TextDecoder().decode(bytes);
@@ -191,6 +195,59 @@ describe("base58check", () => {
     expect(() => base58check.decode("1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNb")).toThrow(ChecksumError);
     expect(() => base58check.decode("1")).toThrow("leave no room for a checksum");
     expect(() => base58check.decode("0")).toThrow(/^base58check: "0"/u);
+  });
+});
+
+describe("createBase58check", () => {
+  const RIPPLE = "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz";
+  const decred = createBase58check(blake256);
+  const ripple = createBase58check(sha256, RIPPLE);
+
+  it("reads a Decred address, whose checksum is double BLAKE-256", () => {
+    const address = "DsUZxxoHJSty8DCfwfartwTYbuhmVct7tJu";
+    expect(() => base58check.decode(address)).toThrow(ChecksumError);
+    const payload = decred.decode(address);
+    expect(hex.encode(payload)).toBe("073f2789d58cfa0957d206f025c2af056fc8a77cebb0");
+    expect(decred.encode(payload)).toBe(address);
+  });
+
+  it("checks an XRP Ledger address in the Ripple alphabet", () => {
+    const payload = ripple.decode("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+    expect(hex.encode(payload)).toBe("00b5f762798a53d543a014caf8b297cff8f2f937e8");
+    expect(base58ripple.decode("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTi")).toHaveLength(25);
+    expect(() => ripple.decode("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTi")).toThrow(ChecksumError);
+  });
+
+  it("matches @scure/base and @noble/hashes", () => {
+    for (const row of base58checkVariants) {
+      const bytes = hex.decode(row["hex"]!);
+      expect(decred.encode(bytes)).toBe(row["blake256"]);
+      expect(ripple.encode(bytes)).toBe(row["ripple"]);
+      expect(decred.decode(row["blake256"]!)).toEqual(bytes);
+      expect(ripple.decode(row["ripple"]!)).toEqual(bytes);
+    }
+  });
+
+  it("gives what Bitcoin's base58check gives for SHA-256", () => {
+    const wif = "KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgd9M7rFU73sVHnoWn";
+    expect(createBase58check(sha256).decode(wif)).toEqual(base58check.decode(wif));
+  });
+
+  it("names its errors base58check, with the index of a bad character", () => {
+    expect(() => ripple.decode("r0")).toThrow('base58check: "0" (U+0030) at index 1');
+    expect(() => decred.decode("1")).toThrow("leave no room for a checksum");
+  });
+
+  it("refuses an alphabet that is not 58 distinct characters, and a hash under 4 bytes", () => {
+    expect(() => createBase58check(sha256, RIPPLE.slice(1))).toThrow(InvalidOptionError);
+    expect(() => createBase58check(sha256, `${RIPPLE.slice(1)}p`)).toThrow(
+      "needs 58 distinct characters",
+    );
+    expect(() => createBase58check(sha256, `${RIPPLE.slice(1)}\u{1F600}`)).toThrow(
+      InvalidOptionError,
+    );
+    const short = createBase58check((bytes) => sha256(bytes).subarray(0, 3));
+    expect(() => short.encode(new Uint8Array(1))).toThrow("must return at least 4 bytes");
   });
 });
 

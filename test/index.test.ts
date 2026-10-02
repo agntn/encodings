@@ -69,7 +69,7 @@ describe("family subpaths", () => {
     hex: ["hex"],
     base32: ["base32", "base32crockford", "base32hex", "zbase32"],
     base45: ["base45"],
-    base58: ["base58", "base58check", "base58flickr", "base58ripple"],
+    base58: ["base58", "base58check", "base58flickr", "base58ripple", "createBase58check"],
     base64: ["base64", "base64url"],
     base85: ["ascii85", "z85"],
     base91: ["base91"],
@@ -86,7 +86,7 @@ describe("family subpaths", () => {
     "quoted-printable": ["quotedPrintable"],
   };
 
-  const subpathOnly = new Set(["fromWords", "fromWordsUnsafe", "toWords"]);
+  const subpathOnly = new Set(["createBase58check", "fromWords", "fromWordsUnsafe", "toWords"]);
 
   it.each(Object.entries(expected))("./%s exposes only its codecs", async (family, names) => {
     const module = (await import(`../src/${family}.ts`)) as Record<string, unknown>;
