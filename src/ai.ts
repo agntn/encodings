@@ -4,12 +4,15 @@ import { toAiTool, type AiToolOutput } from "@agntn/tools/ai";
 import type { Static } from "@agntn/tools";
 import type { Tool } from "ai";
 import type {
+  CharsetConvertDetails,
   DecodeDetails,
   EncodeDetails,
   IdentifyDetails,
   InfoDetails,
 } from "./tool-operations.ts";
 import {
+  charsetConvertSchema,
+  charsetConvertTool,
   decodeSchema,
   decodeTool,
   encodeSchema,
@@ -40,10 +43,16 @@ export const encodingsInfoTool: Tool<
   AiToolOutput<InfoDetails>
 > = toAiTool(infoTool);
 
+export const encodingsCharsetConvertTool: Tool<
+  Static<typeof charsetConvertSchema>,
+  AiToolOutput<CharsetConvertDetails>
+> = toAiTool(charsetConvertTool);
+
 /** Every encoding tool, keyed by the name MCP, Pi and OMP use for it. */
 export const encodingAiTools = {
   encodings_encode: encodingsEncodeTool,
   encodings_decode: encodingsDecodeTool,
   encodings_identify: encodingsIdentifyTool,
   encodings_info: encodingsInfoTool,
+  encodings_charset_convert: encodingsCharsetConvertTool,
 };

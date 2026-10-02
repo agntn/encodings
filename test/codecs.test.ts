@@ -14,6 +14,8 @@ import {
   bech32,
   bech32m,
   binary,
+  charsets,
+  CODE_PAGES,
   decimal,
   hex,
   octal,
@@ -26,7 +28,7 @@ import { crc16Xmodem } from "@agntn/hashes/crc";
 import { sha256 } from "@agntn/hashes/sha2";
 import { createBase58check, type Base58Options } from "../src/base58.ts";
 import { fromWords, fromWordsUnsafe, toWords } from "../src/bech32.ts";
-import { base58checkVariants, javascript, python } from "./fixtures/references.ts";
+import { base58checkVariants, codePages, gsmg, javascript, python } from "./fixtures/references.ts";
 
 const text = (value: string) => new TextEncoder().encode(value);
 const read = (bytes: Uint8Array) => new TextDecoder().decode(bytes);
@@ -763,6 +765,63 @@ describe("quoted-printable (RFC 2045 §6.7)", () => {
   it("rejects a broken escape", () => {
     expect(() => quotedPrintable.decode("a=4")).toThrow("not followed by two hex digits");
     expect(() => quotedPrintable.decode("a=ZZ")).toThrow("not followed by two hex digits");
+  });
+});
+
+describe("charsets", () => {
+  const all = Uint8Array.from({ length: 256 }, (_, index) => index);
+
+  it.each(Object.entries(codePages))("%s reads every byte as glibc iconv does", (page, utf8) => {
+    const codepage = page as (typeof CODE_PAGES)[number];
+    expect(charsets.toText(all, { codepage })).toBe(read(hex.decode(utf8)));
+  });
+
+  it("reads Windows-1252 as the WHATWG Encoding Standard does, and Latin-1 byte for byte", () => {
+    expect(charsets.toText(all, { codepage: "windows1252" })).toBe(
+      new TextDecoder("windows-1252").decode(all),
+    );
+    expect(charsets.toText(all, { codepage: "latin1" })).toBe(
+      String.fromCodePoint(...Array.from(all)),
+    );
+  });
+
+  it.each(CODE_PAGES)("%s gives each byte its own character and reads it back", (codepage) => {
+    const table = charsets.toText(all, { codepage });
+    expect(new Set(table).size).toBe(256);
+    expect(charsets.fromText(table, { codepage })).toEqual(all);
+  });
+
+  it("writes GSMG phase 3.2.1 in IBM 1141 and 273 as its letters", () => {
+    for (const codepage of ["ibm1141", "ibm273"] as const) {
+      expect(read(charsets.fromText(gsmg.shown, { codepage }))).toBe(gsmg.letters);
+    }
+  });
+
+  it("puts the euro sign on 0x9F of 1140 and 1141 only", () => {
+    const at = (codepage: (typeof CODE_PAGES)[number]) =>
+      charsets.toText(Uint8Array.of(0x9f), { codepage });
+    expect([at("ibm037"), at("ibm1140"), at("ibm273"), at("ibm1141")]).toEqual([
+      "¤",
+      "€",
+      "¤",
+      "€",
+    ]);
+    expect(charsets.fromText("€", { codepage: "ibm1141" })).toEqual(Uint8Array.of(0x9f));
+  });
+
+  it("names a character the code page lacks, and a code page that is not one", () => {
+    expect(() => charsets.fromText("a€b", { codepage: "ibm037" })).toThrow(DecodeError);
+    expect(() => charsets.fromText("a€b", { codepage: "ibm037" })).toThrow(
+      'ibm037: "€" (U+20AC) at index 1 has no byte',
+    );
+    expect(() => charsets.fromText("😀x", { codepage: "latin1" })).toThrow(
+      '"😀" (U+1F600) at index 0',
+    );
+    const codepage = "cp037" as (typeof CODE_PAGES)[number];
+    expect(() => charsets.toText(all, { codepage })).toThrow(InvalidOptionError);
+    expect(() => charsets.toText(all, { codepage: "constructor" as typeof codepage })).toThrow(
+      "use one of ibm037",
+    );
   });
 });
 

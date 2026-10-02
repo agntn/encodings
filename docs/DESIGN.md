@@ -11,7 +11,7 @@ The instruments encodings owns:
 | [LandingRotatingCode.vue](app/components/content/LandingRotatingCode.vue) | "Same call, every encoding" | `encode`, `decode`, the round trip and `identify` for the sample, as a file |
 | [LandingIdentify.vue](app/components/content/LandingIdentify.vue) | "A guess that shows its work" | identify console: the sample's text through `encodings_identify`, the top three candidates and a tick per encoding that reads it |
 | [LandingRegistry.vue](app/components/content/LandingRegistry.vue) | the registry section | every encoding as a grid of cells, one band per group (bit groups, big number, fixed blocks, checksummed words, mail), the walk's encoding and its family on the nodes |
-| [LandingToolCall.vue](app/components/content/LandingToolCall.vue) | "Four tools, one executor" | one `encodings_decode` call, full text in the dialog |
+| [LandingToolCall.vue](app/components/content/LandingToolCall.vue) | "N tools, one executor", N from `TOOLS` | one `encodings_decode` call, full text in the dialog |
 | [LandingCustom.vue](app/components/content/LandingCustom.vue) | "Your own encoding is one object" | `octal.ts`, a custom encoding as a file, folded |
 | [LandingStart.vue](app/components/content/LandingStart.vue) | closing section | install, notes, first calls as a file |
 | [EncodingFacts.vue](app/components/content/EncodingFacts.vue) | every encoding page (`::encoding-facts`) | encoding dossier: ID bar with position, reticle, readout, sample out and back, alphabet, options, access |

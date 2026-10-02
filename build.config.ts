@@ -18,6 +18,9 @@ export const familyEntries = [
   "quoted-printable",
 ] as const;
 
+/** Subpaths with no registry entry: code pages read bytes as text in another character set. */
+export const standaloneEntries = ["charsets"] as const;
+
 export default defineBuildConfig({
   entries: [
     {
@@ -29,7 +32,7 @@ export default defineBuildConfig({
         "./src/ai.ts",
         "./src/mcp.ts",
         "./src/tools.ts",
-        ...familyEntries.map((name) => `./src/${name}.ts`),
+        ...[...familyEntries, ...standaloneEntries].map((name) => `./src/${name}.ts`),
       ],
     },
   ],

@@ -75,6 +75,7 @@ export {
 } from "./bech32.ts";
 export { uuencode, type UuencodeOptions } from "./uuencode.ts";
 export { quotedPrintable } from "./quoted-printable.ts";
+export { CODE_PAGES, charsets, type CharsetOptions, type CodePage } from "./charsets.ts";
 export {
   create,
   decode,

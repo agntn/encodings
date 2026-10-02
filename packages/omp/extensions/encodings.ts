@@ -86,6 +86,14 @@ const renderers: Readonly<Record<string, OmpRenderers>> = {
       return Array.isArray(encodings) ? [`${encodings.length} encodings`] : [];
     },
   },
+  encodings_charset_convert: {
+    describeCall: (args) =>
+      `${preview(args["from"])} → ${preview(args["to"])} ${preview(args["text"])}`,
+    describeResult: (result) => {
+      const text = detail(result, "text");
+      return text === undefined ? [] : [preview(text)];
+    },
+  },
 };
 
 /**

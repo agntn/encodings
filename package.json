@@ -101,6 +101,10 @@
       "types": "./dist/quoted-printable.d.mts",
       "import": "./dist/quoted-printable.mjs"
     },
+    "./charsets": {
+      "types": "./dist/charsets.d.mts",
+      "import": "./dist/charsets.mjs"
+    },
     "./ai": {
       "types": "./dist/ai.d.mts",
       "import": "./dist/ai.mjs"

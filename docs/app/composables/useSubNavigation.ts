@@ -6,6 +6,7 @@ const NAV_ICONS: Record<string, string> = {
   "/guide/encoding": "i-lucide-arrow-right-left",
   "/guide/checksums": "i-lucide-shield-check",
   "/guide/identify": "i-lucide-scan-search",
+  "/guide/code-pages": "i-lucide-languages",
   "/guide/cli": "i-lucide-terminal",
   "/guide/agents": "i-lucide-bot",
   "/guide/custom": "i-lucide-plus",

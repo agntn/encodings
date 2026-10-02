@@ -23,7 +23,8 @@ Docs and a live playground: [encodings.agntn.dev](https://encodings.agntn.dev).
 - ✅ **Checksums checked.** Base58Check and bech32 refuse a typo instead of decoding it.
 - 🪙 **Segwit aware.** A `bc1…` address comes back as its witness version and program.
 - 🔍 **`identify`.** Tries every encoding, ranks the ones that work, and tells you why. Three layers deep? `peel` takes them off one by one.
-- 🤖 **Agent tools.** Four of them, same over MCP, Pi, OMP and the AI SDK.
+- 🖥️ **Code pages too.** EBCDIC, Latin-1 and Windows-1252. Mojibake goes back to what it was.
+- 🤖 **Agent tools.** The same ones over MCP, Pi, OMP and the AI SDK.
 - 📦 **One subpath per family.** Need base58 only? Import base58 only.
 - 🌐 **Runs anywhere.** Nothing from `node:*`, no network. The docs site runs it in your tab.
 - 🧩 **Bring your own.** An encoding is one object. Register it and `identify` knows it too.
@@ -74,13 +75,14 @@ Exit code 1. No key, no config, no network.
 
 ### Commands
 
-| Command                               | Does                                                   |
-| ------------------------------------- | ------------------------------------------------------ |
-| `encodings encode <encoding> <input>` | Write text or bytes in an encoding                     |
-| `encodings decode <encoding> <text>`  | Read it back into bytes                                |
-| `encodings identify <text>`           | Rank the encodings it decodes in, or `--peel` them off |
-| `encodings list [encoding]`           | All of them, one family, or one with its alphabet      |
-| `encodings mcp`                       | MCP server over stdio                                  |
+| Command                                   | Does                                                     |
+| ----------------------------------------- | -------------------------------------------------------- |
+| `encodings encode <encoding> <input>`     | Write text or bytes in an encoding                       |
+| `encodings decode <encoding> <text>`      | Read it back into bytes                                  |
+| `encodings identify <text>`               | Rank the encodings it decodes in, or `--peel` them off   |
+| `encodings convert <input> --from <page>` | Read it as bytes in one code page, write them in another |
+| `encodings list [encoding]`               | All of them, one family, or one with its alphabet        |
+| `encodings mcp`                           | MCP server over stdio                                    |
 
 `-` reads stdin, `--input-format hex` encodes bytes. Flags per encoding: [CLI guide](https://encodings.agntn.dev/guide/cli).
 
@@ -116,6 +118,8 @@ That's most of it, really. Strings go in as UTF-8, bytes come out as `Uint8Array
 
 Base58Check is `base58` with `check`. z-base-32 is `base32` with `alphabet: "z"`. Got a puzzle in card suits or runes? `base256` takes your own table as `symbols`, or reads its order off a `sample`, and gives you the digits. Decoding takes the same options, so a variant reads back the way it was written. Each family is also a subpath, like `@agntn/encodings/base58`. Alphabets, overhead and options per encoding are on [the encodings page](https://encodings.agntn.dev/encodings).
 
+EBCDIC isn't an encoding, it's a different alphabet for the same bytes. So `charsets` sits outside the registry, on `@agntn/encodings/charsets`. `charsets.toText(bytes, { codepage: "ibm037" })` and back with `fromText`. [Code pages](https://encodings.agntn.dev/guide/code-pages).
+
 ## 🤖 Agents
 
 ```bash
@@ -131,7 +135,7 @@ omp install @agntn/encodings
 }
 ```
 
-The tools are `encodings_encode`, `encodings_decode`, `encodings_identify` and `encodings_info`. Same ones in `@agntn/encodings/ai`. Typo in an argument name? You hear about it. Decoded bytes come back as text only when they're clean text, hex otherwise. [Agents guide](https://encodings.agntn.dev/guide/agents).
+The tools are `encodings_encode`, `encodings_decode`, `encodings_identify`, `encodings_info` and `encodings_charset_convert`. Same ones in `@agntn/encodings/ai`. Typo in an argument name? You hear about it. Decoded bytes come back as text only when they're clean text, hex otherwise. [Agents guide](https://encodings.agntn.dev/guide/agents).
 
 ## 🚫 What this does not do
 

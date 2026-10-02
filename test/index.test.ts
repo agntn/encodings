@@ -81,6 +81,7 @@ describe("family subpaths", () => {
     ],
     uuencode: ["uuencode"],
     "quoted-printable": ["quotedPrintable"],
+    charsets: ["CODE_PAGES", "charsets"],
   };
 
   const subpathOnly = new Set(["createBase58check", "fromWords", "fromWordsUnsafe", "toWords"]);

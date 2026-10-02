@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { EncodingError, create, encodingFamilies, type EncodingInfo } from "@agntn/encodings";
 import {
+  CHARSET_FORMATS,
   INPUT_FORMATS,
   MAX_CANDIDATES,
   OUTPUT_FORMATS,
+  encodingsCharsetConvert,
   encodingsDecode,
   encodingsEncode,
   encodingsIdentify,
   encodingsInfo,
+  type CharsetConvertDetails,
   type DecodeDetails,
   type EncodeDetails,
   type IdentifyDetails,
@@ -27,7 +30,8 @@ import { optionFlags, readingName, shellArg } from "../../utils/format";
 import { jsonTokens, shellTokens } from "../../utils/tokens";
 import type { ToolName } from "../../utils/tools";
 
-type Operation = "encode" | "decode" | "identify" | "info";
+type Operation = "encode" | "decode" | "identify" | "info" | "convert";
+type CharsetFormat = (typeof CHARSET_FORMATS)[number];
 
 const OPERATIONS: ReadonlyArray<{ key: Operation; label: string; tool: ToolName; about: string }> = [
   {
@@ -54,6 +58,20 @@ const OPERATIONS: ReadonlyArray<{ key: Operation; label: string; tool: ToolName;
     tool: "encodings_info",
     about: "The registry: every encoding, one family, or one with its alphabet and options.",
   },
+  {
+    key: "convert",
+    label: "Convert",
+    tool: "encodings_charset_convert",
+    about: "Text read as bytes in one code page and written in another. EBCDIC, Latin-1, mojibake.",
+  },
+];
+
+/** Conversions worth a click: EBCDIC bytes, text shown in the wrong page, and back into EBCDIC. */
+const CONVERT_SAMPLES: ReadonlyArray<{ label: string; text: string; from: CharsetFormat; to: CharsetFormat; icon: string }> = [
+  { label: "ebcdic", text: "c8c5d3d3d640e6d6d9d3c4", from: "hex", to: "ibm037", icon: "i-lucide-server" },
+  { label: "mojibake", text: "ÎÈ,Îø%_", from: "ibm1141", to: "utf8", icon: "i-lucide-languages" },
+  { label: "umlauts", text: "Grüße", from: "ibm273", to: "hex", icon: "i-lucide-type" },
+  { label: "utf-8 as 1252", text: "cafÃ©", from: "windows1252", to: "utf8", icon: "i-lucide-globe" },
 ];
 
 /** Strings worth identifying, each a different kind of evidence. */
@@ -102,6 +120,9 @@ const limitArg = computed(() => {
     : undefined;
 });
 const describe = ref("");
+const convertText = ref(CONVERT_SAMPLES[0]!.text);
+const convertFrom = ref<CharsetFormat>(CONVERT_SAMPLES[0]!.from);
+const convertTo = ref<CharsetFormat>(CONVERT_SAMPLES[0]!.to);
 const family = ref("");
 /** Option values as typed, by option name; only the encoding's own reach the call. */
 const values = reactive<Record<string, string | boolean>>({});
@@ -117,6 +138,7 @@ const encodingItems = computed(() =>
 );
 const inputFormatItems = INPUT_FORMATS.map((value) => ({ label: value, value }));
 const outputFormatItems = OUTPUT_FORMATS.map((value) => ({ label: value, value }));
+const charsetItems = CHARSET_FORMATS.map((value) => ({ label: value, value }));
 const describeItems = [
   { label: "every encoding", value: "" },
   ...ENCODINGS.map((row) => ({ label: row.slug, value: row.slug, icon: row.icon })),
@@ -169,6 +191,12 @@ const toolArgs = computed((): Record<string, unknown> => {
     case "info":
       if (describe.value) return { encoding: describe.value };
       return family.value ? { family: family.value } : {};
+    case "convert":
+      return {
+        text: convertText.value,
+        from: convertFrom.value,
+        ...(convertTo.value === "utf8" ? {} : { to: convertTo.value }),
+      };
   }
 });
 
@@ -197,13 +225,25 @@ interface DescribeAnswer {
   info: EncodingInfo;
   text: string;
 }
+interface ConvertAnswer {
+  kind: "convert";
+  details: CharsetConvertDetails;
+  text: string;
+}
 interface ErrorAnswer {
   kind: "error";
   name: string;
   message: string;
   text: string;
 }
-type Answer = EncodeAnswer | DecodeAnswer | IdentifyAnswer | ListAnswer | DescribeAnswer | ErrorAnswer;
+type Answer =
+  | EncodeAnswer
+  | DecodeAnswer
+  | IdentifyAnswer
+  | ListAnswer
+  | DescribeAnswer
+  | ConvertAnswer
+  | ErrorAnswer;
 
 const current = computed(() => OPERATIONS.find((row) => row.key === operation.value)!);
 const position = computed(() => OPERATIONS.findIndex((row) => row.key === operation.value) + 1);
@@ -229,6 +269,10 @@ function run(op: Operation, args: Record<string, unknown>): Answer {
     if (op === "identify") {
       const result = encodingsIdentify(args);
       return { kind: "identify", details: result.details, text: result.content[0]!.text };
+    }
+    if (op === "convert") {
+      const result = encodingsCharsetConvert(args);
+      return { kind: "convert", details: result.details, text: result.content[0]!.text };
     }
     if (op === "decode") {
       const result = encodingsDecode(args);
@@ -294,6 +338,10 @@ const cliLine = computed(() => {
     case "info":
       if (describe.value) return `encodings list ${describe.value}`;
       return family.value ? `encodings list --family ${family.value}` : "encodings list";
+    case "convert": {
+      const to = convertTo.value === "utf8" ? "" : ` --to ${convertTo.value}`;
+      return `encodings convert ${shellArg(convertText.value)} --from ${convertFrom.value}${to}`;
+    }
   }
 });
 
@@ -311,6 +359,9 @@ const call = computed(() => {
   }
   if (request.value.op === "identify") {
     return `${answered.value.tool}(${JSON.stringify(args.text)}${args.peel === true ? ", { peel: true }" : ""})`;
+  }
+  if (request.value.op === "convert") {
+    return `${answered.value.tool}(${JSON.stringify(args.text)}, "${String(args.from)} → ${String(args.to ?? "utf8")}")`;
   }
   const value = request.value.op === "decode" ? args.text : args.input;
   return `${answered.value.tool}("${String(args.encoding)}", ${JSON.stringify(value)})`;
@@ -353,6 +404,27 @@ function loadSample(slug: string, extra: Record<string, string | boolean> = {}) 
   input.value = SAMPLE_INPUT;
   inputFormat.value = "utf8";
   text.value = create(slug).encode(SAMPLE_INPUT, sample);
+}
+
+/**
+ * Loads a conversion sample into the form.
+ *
+ * @param {(typeof CONVERT_SAMPLES)[number]} sample - The sample.
+ */
+function loadConversion(sample: (typeof CONVERT_SAMPLES)[number]) {
+  convertText.value = sample.text;
+  convertFrom.value = sample.from;
+  convertTo.value = sample.to;
+}
+
+/**
+ * Whether a conversion chip is the form as it stands: its text and both pages.
+ *
+ * @param {(typeof CONVERT_SAMPLES)[number]} sample - The sample.
+ * @returns {boolean} Whether it is the one on screen.
+ */
+function conversionPressed(sample: (typeof CONVERT_SAMPLES)[number]): boolean {
+  return convertText.value === sample.text && convertFrom.value === sample.from && convertTo.value === sample.to;
 }
 
 /**
@@ -419,6 +491,13 @@ const innermost = computed(() => layers.value?.at(-1)?.layer);
 
 const { copied, copy } = useCopied();
 
+/** A link leaves `to` out when it is `utf8`, so a missing one reads as `utf8`. */
+function readConversion(query: Record<string, unknown>) {
+  const known = (value: unknown) => (CHARSET_FORMATS as readonly unknown[]).includes(value);
+  if (known(query.from)) convertFrom.value = query.from as CharsetFormat;
+  convertTo.value = known(query.to) ? (query.to as CharsetFormat) : "utf8";
+}
+
 /** Query in, state out. Only values the form knows are read, the rest of the query is ignored. */
 function readQuery(query: Record<string, unknown>) {
   const op = String(query.op ?? "");
@@ -433,8 +512,10 @@ function readQuery(query: Record<string, unknown>) {
   if (typeof query.input === "string") input.value = query.input;
   if (typeof query.text === "string") {
     if (op === "identify") unknown.value = query.text;
+    else if (op === "convert") convertText.value = query.text;
     else text.value = query.text;
   }
+  if (op === "convert" && typeof query.text === "string") readConversion(query);
   if (typeof query.peel === "string") peeling.value = query.peel === "true";
   if (typeof query.limit === "string") limit.value = query.limit;
   const inFormat = String(query.inputFormat ?? "");
@@ -587,6 +668,55 @@ const identifyLimit = MAX_CANDIDATES;
                     variant="none"
                     :search-input="false"
                     :disabled="describe !== ''"
+                    class="w-full"
+                  />
+                </dd>
+              </div>
+            </dl>
+            <dl v-else-if="operation === 'convert'" class="console-readout-rows">
+              <div>
+                <dt><label for="playground-convert-text">text</label></dt>
+                <dd>
+                  <UTextarea
+                    id="playground-convert-text"
+                    v-model="convertText"
+                    variant="none"
+                    :rows="1"
+                    autoresize
+                    :maxrows="6"
+                    placeholder="text, or bytes in hex or base64"
+                    spellcheck="false"
+                    autocomplete="off"
+                    class="w-full"
+                  />
+                </dd>
+              </div>
+              <div>
+                <dt><label for="playground-convert-from">from</label></dt>
+                <dd>
+                  <USelectMenu
+                    id="playground-convert-from"
+                    v-model="convertFrom"
+                    :items="charsetItems"
+                    value-key="value"
+                    variant="none"
+                    :search-input="false"
+                    aria-label="from"
+                    class="w-full"
+                  />
+                </dd>
+              </div>
+              <div>
+                <dt><label for="playground-convert-to">to</label></dt>
+                <dd>
+                  <USelectMenu
+                    id="playground-convert-to"
+                    v-model="convertTo"
+                    :items="charsetItems"
+                    value-key="value"
+                    variant="none"
+                    :search-input="false"
+                    aria-label="to"
                     class="w-full"
                   />
                 </dd>
@@ -773,6 +903,23 @@ const identifyLimit = MAX_CANDIDATES;
             />
           </div>
           <div
+            v-else-if="operation === 'convert'"
+            class="playground-chips"
+            role="group"
+            aria-label="Sample conversions"
+          >
+            <UButton
+              v-for="sample in CONVERT_SAMPLES"
+              :key="sample.label"
+              :color="conversionPressed(sample) ? 'primary' : 'neutral'"
+              variant="chip"
+              :icon="sample.icon"
+              :label="sample.label"
+              :aria-pressed="conversionPressed(sample)"
+              @click="loadConversion(sample)"
+            />
+          </div>
+          <div
             v-else-if="operation !== 'info'"
             class="playground-chips"
             role="group"
@@ -799,6 +946,10 @@ const identifyLimit = MAX_CANDIDATES;
               >Each sample is a different kind of evidence: padding, a checksum, a segwit program,
               JSON in base64 with the URL alphabet, delimiters, escapes, base64 inside hex. Decode a candidate
               and it carries the text along. Peel takes off one layer after another.</template
+            >
+            <template v-else-if="operation === 'convert'"
+              >From turns the text into bytes, to writes them back. Mojibake is text shown in the
+              wrong page, so from is the page it shows in. Which one? Nothing says, so try a few.</template
             >
             <template v-else-if="operation === 'info'"
               >Pick an encoding to see its alphabet and options the way a model sees them before
@@ -894,6 +1045,9 @@ const identifyLimit = MAX_CANDIDATES;
         >
         <span v-else-if="answer.kind === 'list'" class="console-meta"
           >{{ answer.infos.length }} encodings · listing order</span
+        >
+        <span v-else-if="answer.kind === 'convert'" class="console-meta"
+          >{{ answer.details.byteLength }} bytes · {{ answer.details.from }} → {{ answer.details.to }}</span
         >
         <span v-else-if="answer.kind === 'describe'" class="console-meta"
           >{{ answer.info.family }} · {{ alphabetSize(answer.info) }} characters</span
@@ -1226,6 +1380,63 @@ const identifyLimit = MAX_CANDIDATES;
           }}</span>
         </li>
       </ol>
+
+      <template v-else-if="answer.kind === 'convert'">
+        <div class="console-band console-subject-band">
+          <div :key="scan" class="console-scan" aria-hidden="true" />
+          <div class="console-identity-block">
+            <ConsoleReticle :key="answer.details.to" icon="i-lucide-languages" />
+            <div class="console-name">
+              <span class="console-label"
+                >Convert / <span class="console-label-key">{{ answer.details.from }} → {{ answer.details.to }}</span></span
+              >
+              <h3>{{ answer.details.byteLength }} bytes, read again</h3>
+              <p class="console-about">
+                Same bytes, different letters. Hex below is what sits between the two pages.
+              </p>
+            </div>
+          </div>
+          <div class="console-readout">
+            <svg class="console-link" viewBox="0 0 32 40" fill="none" aria-hidden="true">
+              <circle cx="3" cy="12" r="2.5" />
+              <path d="M5.5 12H14L22 20H32" />
+            </svg>
+            <dl :key="scan" class="console-readout-rows console-animate">
+              <div>
+                <dt>Bytes</dt>
+                <dd class="console-accent">{{ answer.details.byteLength }}</dd>
+              </div>
+              <div>
+                <dt>Pages</dt>
+                <dd>{{ answer.details.from }} → {{ answer.details.to }}</dd>
+              </div>
+              <div>
+                <dt>Hex</dt>
+                <dd>
+                  <UTooltip :text="answer.details.hex">
+                    <span class="playground-line" tabindex="0">{{ answer.details.hex || "empty" }}</span>
+                  </UTooltip>
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+        <div class="console-band">
+          <p class="console-label console-rule-title">
+            <span>Text <span aria-hidden="true">[ {{ answer.details.to }} ]</span></span>
+            <span class="console-mark" aria-hidden="true" />
+            <UButton
+              color="neutral"
+              variant="subtle"
+              :icon="copied === 'out' ? 'i-lucide-check' : 'i-lucide-copy'"
+              :label="copied === 'out' ? 'copied' : 'copy'"
+              :aria-label="copied === 'out' ? 'Copied' : 'Copy the converted text'"
+              @click="copy('out', answer.details.text)"
+            />
+          </p>
+          <pre :key="scan" class="console-snippet playground-output"><code>{{ answer.details.text }}</code></pre>
+        </div>
+      </template>
 
       <template v-else-if="answer.kind === 'describe'">
         <div class="console-band console-subject-band">
