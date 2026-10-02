@@ -9,11 +9,11 @@
 
 import { base64 } from "./core/base64.ts";
 import { utf8 } from "./core/bytes.ts";
-import { InvalidOptionError, quote } from "./core/errors.ts";
+import { InvalidOptionError, quote, token } from "./core/errors.ts";
 import { hex } from "./core/hex.ts";
 import { identify, peel, type EncodingCandidate, type PeelLayer } from "./core/identify.ts";
 import { create, encodingInfos } from "./core/registry.ts";
-import type { EncodingInfo } from "./core/types.ts";
+import type { EncodingInfo, EncodingOption } from "./core/types.ts";
 import {
   INPUT_FORMATS,
   MAX_BASE58_LENGTH,
@@ -180,7 +180,7 @@ function detailLine(details: Readonly<Record<string, string | number>>): string 
 function optionLabel(options: Readonly<Record<string, unknown>>): string {
   const parts = Object.entries(options)
     .filter(([, value]) => value !== undefined && value !== false)
-    .map(([key, value]) => (value === true ? key : `${key}=${quote(String(value))}`));
+    .map(([key, value]) => (value === true ? key : `${key}=${token(String(value))}`));
   return parts.length > 0 ? ` (${parts.join(", ")})` : "";
 }
 
@@ -213,22 +213,26 @@ function optionsArgument(value: unknown): object {
 /**
  * Splits tool options into the ones an encoding declares and the rest. Strict function calling
  * fills every field of the schema, and `options` holds the fields of every encoding, so base91
- * gets a bech32 prefix. The library would refuse it; the tool takes what applies and names the rest.
+ * gets a bech32 prefix and base58 a base32 alphabet. The library would refuse them; the tool
+ * takes what applies and names the rest, an alphabet of another encoding as `alphabet=z`.
  *
- * @param names - Option names the chosen encoding declares.
+ * @param declared - Options the chosen encoding declares in this direction.
  * @param options - The options object from the call.
  * @returns {{ taken: Record<string, string | number | boolean>; ignored: string[] }} Options to pass, names left out.
  */
 function pickOptions(
-  names: readonly string[],
+  declared: readonly EncodingOption[],
   options: object,
 ): { taken: Record<string, string | number | boolean>; ignored: string[] } {
-  const declared = new Set(names);
   const taken: Record<string, string | number | boolean> = {};
   const ignored: string[] = [];
   for (const [key, value] of Object.entries(options)) {
-    if (declared.has(key)) taken[key] = value as string | number | boolean;
-    else if (value !== undefined && value !== null) ignored.push(key);
+    if (value === undefined || value === null) continue;
+    const option = declared.find((entry) => entry.name === key);
+    if (!option) ignored.push(token(key));
+    else if (option.choices && !option.choices.includes(String(value))) {
+      ignored.push(`${token(key)}=${token(String(value))}`);
+    } else taken[key] = value as string | number | boolean;
   }
   return { taken, ignored };
 }
@@ -253,10 +257,7 @@ export function encodingsEncode(
   const options = optionsArgument(params["options"]);
   const encoding = create(name);
   const info = encoding.info();
-  const { taken, ignored } = pickOptions(
-    info.options.map((option) => option.name),
-    options,
-  );
+  const { taken, ignored } = pickOptions(info.options, options);
   const bytes =
     format === "hex"
       ? hex.decode(input)
@@ -304,7 +305,7 @@ export function encodingsDecode(
   const encoding = create(name);
   const info = encoding.info();
   const { taken, ignored } = pickOptions(
-    info.options.filter((option) => option.decode === true).map((option) => option.name),
+    info.options.filter((option) => option.decode === true),
     options,
   );
   checkQuadratic(info, text.length);
@@ -352,7 +353,7 @@ export function encodingsDecode(
 function readingLabel(options: Readonly<Record<string, string | number | boolean>>): string {
   const parts = Object.entries(options).map(([key, value]) => {
     if (typeof value === "boolean") return value ? key : `no ${key}`;
-    return `${key}=${quote(String(value))}`;
+    return `${key}=${token(String(value))}`;
   });
   return parts.length > 0 ? ` (${parts.join(", ")})` : "";
 }

@@ -5,6 +5,7 @@ import {
   ENCODINGS,
   SAMPLE_OPTIONS,
   alphabetCells,
+  checksumOption,
   codecExport,
   encodingEntry,
   familyLabel,
@@ -66,6 +67,8 @@ const call = computed(() => {
 const guard = computed(() => {
   if (!entry.value) return "";
   if (entry.value.info.checksum) return "checked on decode";
+  const option = checksumOption(entry.value.info);
+  if (option) return `with ${option}`;
   return entry.value.info.padding ? "= to a whole block" : "none";
 });
 
@@ -129,7 +132,7 @@ const title = computed(() => `encodings_info("${props.name}")`);
             </dd>
           </div>
           <div>
-            <dt>{{ entry.info.checksum ? "Checksum" : "Padding" }}</dt>
+            <dt>{{ entry.info.checksum || checksumOption(entry.info) ? "Checksum" : "Padding" }}</dt>
             <dd>
               <span class="facts-line" :class="{ 'facts-none': guard === 'none' }">{{ guard }}</span>
             </dd>

@@ -14,7 +14,7 @@ export function shellArg(value: string): string {
   return /^[\w./:@-]+$/u.test(value) ? value : `'${value.replaceAll("'", `'\\''`)}'`;
 }
 
-/** A candidate named like the tool text, `base32 (hex)`, as `optionLabel` does. */
+/** A candidate named like the tool text, `base32 (alphabet=hex)`, as `optionLabel` does. */
 export function readingName(encoding: string, options: Record<string, unknown> = {}): string {
   const parts = Object.entries(options)
     .filter(([, value]) => value !== undefined && value !== false)

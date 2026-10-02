@@ -51,15 +51,8 @@ const ALIASES: Readonly<Record<string, string>> = {
   base16: "hex",
   hexadecimal: "hex",
   b32: "base32",
-  crockford: "base32-crockford",
   b58: "base58",
-  b58check: "base58check",
-  flickr: "base58-flickr",
-  ripple: "base58-ripple",
-  xrp: "base58-ripple",
   b64: "base64",
-  a85: "ascii85",
-  btoa: "ascii85",
   b85: "base85",
   b91: "base91",
   uu: "uuencode",
@@ -110,7 +103,7 @@ export function create(name: string): Encoding {
 /**
  * Writes text or bytes in an encoding.
  *
- * @param name - Encoding name, such as `base58check`.
+ * @param name - Encoding name, such as `base58`.
  * @param input - Text, read as UTF-8, or bytes.
  * @param options - Options the encoding takes, such as bech32's `prefix`.
  * @returns {string} The encoded text.
@@ -124,7 +117,7 @@ export function encode(name: string, input: BytesInput, options?: EncodeOptions)
  *
  * @param name - Encoding name.
  * @param text - Encoded text.
- * @param options - Options the encoding reads with, such as base32's `hex`.
+ * @param options - Options the encoding reads with, such as base32's `alphabet`.
  * @returns {Decoded} The bytes and any non-data parts of the text.
  */
 export function decode(name: string, text: string, options?: DecodeOptions): Decoded {

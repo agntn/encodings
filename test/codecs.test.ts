@@ -4,14 +4,9 @@ import {
   DecodeError,
   EncodingError,
   InvalidOptionError,
-  ascii85,
   base32,
-  base32crockford,
   base45,
   base58,
-  base58check,
-  base58flickr,
-  base58ripple,
   base64,
   base85,
   base91,
@@ -24,13 +19,11 @@ import {
   quotedPrintable,
   segwit,
   uuencode,
-  z85,
-  zbase32,
 } from "../src/index.ts";
 import { blake256 } from "@agntn/hashes/blake256";
 import { crc16Xmodem } from "@agntn/hashes/crc";
 import { sha256 } from "@agntn/hashes/sha2";
-import { createBase58check } from "../src/base58.ts";
+import { createBase58check, type Base58Options } from "../src/base58.ts";
 import { fromWords, fromWordsUnsafe, toWords } from "../src/bech32.ts";
 import { base58checkVariants, javascript, python } from "./fixtures/references.ts";
 
@@ -52,13 +45,13 @@ describe("RFC 4648 test vectors", () => {
   it.each(RFC4648)("%j", (input, b64, b32, b32h) => {
     expect(base64.encode(text(input))).toBe(b64);
     expect(base32.encode(text(input))).toBe(b32);
-    expect(base32.encode(text(input), { hex: true })).toBe(b32h);
+    expect(base32.encode(text(input), { alphabet: "hex" })).toBe(b32h);
     expect(hex.encode(text(input))).toBe(Buffer.from(input).toString("hex"));
     expect(read(base64.decode(b64))).toBe(input);
     expect(read(base32.decode(b32))).toBe(input);
-    expect(read(base32.decode(b32h, { hex: true }))).toBe(input);
+    expect(read(base32.decode(b32h, { alphabet: "hex" }))).toBe(input);
     expect(base32.encode(text(input), { padding: false })).toBe(b32.replaceAll("=", ""));
-    expect(base32.encode(text(input), { hex: true, padding: false })).toBe(
+    expect(base32.encode(text(input), { alphabet: "hex", padding: false })).toBe(
       b32h.replaceAll("=", ""),
     );
   });
@@ -66,14 +59,57 @@ describe("RFC 4648 test vectors", () => {
 
 /* base32 with the extended hex alphabet, shaped like the other codecs for the frozen rows. */
 const base32hex = {
-  encode: (bytes: Uint8Array) => base32.encode(bytes, { hex: true }),
-  decode: (encoded: string) => base32.decode(encoded, { hex: true }),
+  encode: (bytes: Uint8Array) => base32.encode(bytes, { alphabet: "hex" }),
+  decode: (encoded: string) => base32.decode(encoded, { alphabet: "hex" }),
+};
+
+/* base32 with Crockford's alphabet. */
+const base32crockford = {
+  encode: (bytes: Uint8Array) => base32.encode(bytes, { alphabet: "crockford" }),
+  decode: (encoded: string) => base32.decode(encoded, { alphabet: "crockford" }),
+};
+
+/* base32 with the z-base-32 alphabet. */
+const zbase32 = {
+  encode: (bytes: Uint8Array) => base32.encode(bytes, { alphabet: "z" }),
+  decode: (encoded: string) => base32.decode(encoded, { alphabet: "z" }),
+};
+
+/* base58 with the Base58Check checksum. */
+const base58check = {
+  encode: (bytes: Uint8Array) => base58.encode(bytes, { check: true }),
+  decode: (encoded: string) => base58.decode(encoded, { check: true }),
+};
+
+/* base58 with Flickr's alphabet. */
+const base58flickr = {
+  encode: (bytes: Uint8Array) => base58.encode(bytes, { alphabet: "flickr" }),
+  decode: (encoded: string) => base58.decode(encoded, { alphabet: "flickr" }),
+};
+
+/* base58 with the XRP Ledger's alphabet. */
+const base58ripple = {
+  encode: (bytes: Uint8Array) => base58.encode(bytes, { alphabet: "ripple" }),
+  decode: (encoded: string) => base58.decode(encoded, { alphabet: "ripple" }),
+};
+
+/* base85 with the Ascii85 alphabet. */
+const ascii85 = {
+  encode: (bytes: Uint8Array, options: Readonly<{ delimiters?: boolean }> = {}) =>
+    base85.encode(bytes, { alphabet: "ascii85", ...options }),
+  decode: (encoded: string) => base85.decode(encoded, { alphabet: "ascii85" }),
+};
+
+/* base85 with the Z85 alphabet. */
+const z85 = {
+  encode: (bytes: Uint8Array) => base85.encode(bytes, { alphabet: "z85" }),
+  decode: (encoded: string) => base85.decode(encoded, { alphabet: "z85" }),
 };
 
 /* base64 with the URL alphabet, unpadded as JWT writes it. */
 const base64url = {
-  encode: (bytes: Uint8Array) => base64.encode(bytes, { url: true, padding: false }),
-  decode: (encoded: string) => base64.decode(encoded, { url: true }),
+  encode: (bytes: Uint8Array) => base64.encode(bytes, { alphabet: "url", padding: false }),
+  decode: (encoded: string) => base64.decode(encoded, { alphabet: "url" }),
 };
 
 describe("frozen outputs of independent implementations", () => {
@@ -94,7 +130,7 @@ describe("frozen outputs of independent implementations", () => {
   it.each(python)("matches row $hex without padding", (row) => {
     const bytes = hex.decode(row["hex"]!);
     expect(base32.encode(bytes, { padding: false })).toBe(row["base32"]!.replaceAll("=", ""));
-    expect(base32.encode(bytes, { hex: true, padding: false })).toBe(
+    expect(base32.encode(bytes, { alphabet: "hex", padding: false })).toBe(
       row["base32hex"]!.replaceAll("=", ""),
     );
   });
@@ -174,24 +210,24 @@ describe("base32 and base64 decoding rules", () => {
     expect(read(base32.decode("mzxw6ytboi"))).toBe("foobar");
     expect(read(base64.decode("Zm9v\r\nYmFy"))).toBe("foobar");
     expect(read(base64.decode("Zg"))).toBe("f");
-    expect(read(base64.decode("Zg==", { url: true }))).toBe("f");
+    expect(read(base64.decode("Zg==", { alphabet: "url" }))).toBe("f");
   });
 
   it("writes and reads the URL alphabet only on request", () => {
     const bytes = new Uint8Array([0xfb, 0xff]);
     expect(base64.encode(bytes)).toBe("+/8=");
-    expect(base64.encode(bytes, { url: true })).toBe("-_8=");
-    expect(base64.encode(bytes, { url: true, padding: false })).toBe("-_8");
-    expect(base64.decode("-_8", { url: true })).toEqual(bytes);
+    expect(base64.encode(bytes, { alphabet: "url" })).toBe("-_8=");
+    expect(base64.encode(bytes, { alphabet: "url", padding: false })).toBe("-_8");
+    expect(base64.decode("-_8", { alphabet: "url" })).toEqual(bytes);
     expect(() => base64.decode("-_8")).toThrow('"-" (U+002D) at index 0 is not in the alphabet');
-    expect(() => base64.decode("+/8", { url: true })).toThrow("not in the alphabet");
+    expect(() => base64.decode("+/8", { alphabet: "url" })).toThrow("not in the alphabet");
   });
 
   it("reads the extended hex alphabet only on request", () => {
-    expect(read(base32.decode("CO", { hex: true }))).toBe("f");
+    expect(read(base32.decode("CO", { alphabet: "hex" }))).toBe("f");
     expect(read(base32.decode("MY"))).toBe("f");
-    expect(base32.decode("CO")).not.toEqual(base32.decode("CO", { hex: true }));
-    expect(() => base32.decode("MY", { hex: true })).toThrow('"Y" (U+0059) at index 1');
+    expect(base32.decode("CO")).not.toEqual(base32.decode("CO", { alphabet: "hex" }));
+    expect(() => base32.decode("MY", { alphabet: "hex" })).toThrow('"Y" (U+0059) at index 1');
   });
 
   it("rejects wrong padding, data after padding and impossible lengths", () => {
@@ -211,7 +247,13 @@ describe("base32 and base64 decoding rules", () => {
   it("writes base32 without padding on request", () => {
     expect(base32.encode(text("f"), { padding: true })).toBe("MY======");
     expect(base32.encode(text("f"), { padding: false })).toBe("MY");
-    expect(base32.encode(text("f"), { hex: true, padding: false })).toBe("CO");
+    expect(base32.encode(text("f"), { alphabet: "hex", padding: false })).toBe("CO");
+  });
+
+  it("pads only the two RFC 4648 alphabets", () => {
+    expect(base32.encode(text("f"), { alphabet: "crockford", padding: true })).toBe("CR");
+    expect(base32.encode(text("f"), { alphabet: "z", padding: true })).toBe("ca");
+    expect(base32.encode(text("f"), { alphabet: "hex" })).toBe("CO======");
   });
 
   it("round trips a Stellar account ID", () => {
@@ -260,7 +302,7 @@ describe("base58", () => {
   });
 });
 
-describe("base58check", () => {
+describe("base58 with check", () => {
   it("reads the genesis block address and writes it back", () => {
     const payload = base58check.decode("1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa");
     expect(hex.encode(payload)).toBe("0062e907b15cbf27d5425399ebf6f0fb50ebb88f18");
@@ -277,7 +319,14 @@ describe("base58check", () => {
   it("names a checksum mismatch and a text too short for one", () => {
     expect(() => base58check.decode("1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNb")).toThrow(ChecksumError);
     expect(() => base58check.decode("1")).toThrow("leave no room for a checksum");
-    expect(() => base58check.decode("0")).toThrow(/^base58check: "0"/u);
+    expect(() => base58check.decode("0")).toThrow(/^base58: "0"/u);
+  });
+
+  it("refuses an alphabet it does not have, even one named like an Object member", () => {
+    const odd = { alphabet: "toString" } as unknown as Base58Options;
+    expect(() => base58.encode(new Uint8Array(1), odd)).toThrow(
+      "Invalid option alphabet=toString: use one of bitcoin, flickr, ripple",
+    );
   });
 });
 
@@ -299,6 +348,9 @@ describe("createBase58check", () => {
     expect(hex.encode(payload)).toBe("00b5f762798a53d543a014caf8b297cff8f2f937e8");
     expect(base58ripple.decode("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTi")).toHaveLength(25);
     expect(() => ripple.decode("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTi")).toThrow(ChecksumError);
+    const options = { alphabet: "ripple", check: true } as const;
+    expect(base58.decode("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", options)).toEqual(payload);
+    expect(base58.encode(payload, options)).toBe("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
   });
 
   it("matches @scure/base and @noble/hashes", () => {

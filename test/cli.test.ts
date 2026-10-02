@@ -58,10 +58,11 @@ describe("encodings CLI", () => {
     expect(
       run(
         "encode",
-        "base58check",
+        "base58",
         "0062e907b15cbf27d5425399ebf6f0fb50ebb88f18",
         "--input-format",
         "hex",
+        "--check",
       ).stdout,
     ).toBe("1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa\n");
     expect(runWith("Hi", "encode", "binary", "-", "--no-separate").stdout).toBe(
@@ -69,13 +70,36 @@ describe("encodings CLI", () => {
     );
     expect(run("encode", "hex", "A", "--upper").stdout).toBe("41\n");
     expect(run("encode", "base32", "f", "--no-padding").stdout).toBe("MY\n");
-    expect(run("encode", "base32", "f", "--hex").stdout).toBe("CO======\n");
+    expect(run("encode", "base32", "f", "--alphabet", "hex").stdout).toBe("CO======\n");
+    expect(run("encode", "base32", "f", "--alphabet=crockford").stdout).toBe("CR\n");
     expect(
-      run("encode", "base64", "+/8", "--input-format", "base64", "--url", "--no-padding").stdout,
+      run(
+        "encode",
+        "base64",
+        "+/8",
+        "--input-format",
+        "base64",
+        "--alphabet",
+        "url",
+        "--no-padding",
+      ).stdout,
     ).toBe("-_8\n");
-    expect(run("decode", "base32", "CO", "--hex").stdout).toBe("f");
-    expect(run("decode", "base64", "__s", "--url", "-o", "hex").stdout).toBe("fffb\n");
-    expect(run("decode", "base58", "2g", "--hex")).toMatchObject({ code: 1, stdout: "" });
+    expect(run("decode", "base32", "CO", "--alphabet", "hex").stdout).toBe("f");
+    expect(run("decode", "base64", "__s", "--alphabet", "url", "-o", "hex").stdout).toBe("fffb\n");
+    expect(run("decode", "base85", "<~z~>", "--alphabet", "ascii85", "-o", "hex").stdout).toBe(
+      "00000000\n",
+    );
+    expect(run("decode", "base58", "2g", "--alphabet", "z")).toMatchObject({
+      code: 1,
+      stdout: "",
+      stderr: "Invalid option alphabet=z: use one of bitcoin, flickr, ripple\n",
+    });
+    expect(run("decode", "base32", "CO", "--check")).toMatchObject({
+      code: 1,
+      stderr: "Invalid option check=true: base32 does not take it\n",
+    });
+    const taproot = run("encode", "bech32", "hi", "--prefix", "test", "--m").stdout.trim();
+    expect(run("decode", "bech32", taproot, "--m").stdout).toBe("hi");
     expect(run("encode", "bech32", "hi", "--prefix", "test").stdout).toMatch(/^test1/u);
   });
 
@@ -94,14 +118,14 @@ describe("encodings CLI", () => {
   it("ranks candidates, one per line", () => {
     const { code, stdout } = run("identify", "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa", "-n", "2");
     expect(code).toBe(0);
-    expect(stdout.split("\n")[0]).toMatch(/^0\.\d{3} {2}base58check {6}/u);
+    expect(stdout.split("\n")[0]).toMatch(/^0\.\d{3} {2}base58 --check {14}/u);
     expect(stdout.trim().split("\n")).toHaveLength(2);
   });
 
   it("peels layers, outermost first, and says when there is none", () => {
     const { code, stdout } = run("identify", "--peel", "553246736447566b58312b786c723668");
     expect(code).toBe(0);
-    expect(stdout.split("\n")[0]).toMatch(/^0\.\d{3} {2}hex {14}"U2FsdGVkX1\+xlr6h"/u);
+    expect(stdout.split("\n")[0]).toMatch(/^0\.\d{3} {2}hex {25}"U2FsdGVkX1\+xlr6h"/u);
     expect(stdout.split("\n")[1]).toMatch(/^0\.\d{3} {2}base64 .*\(unconfirmed guess\)$/u);
     expect(
       run("identify", "--peel", "553246736447566b58312b786c723668", "-n", "1")
@@ -117,35 +141,35 @@ describe("encodings CLI", () => {
 
   it("names the flag a candidate needs to decode", () => {
     expect(run("identify", "CPNMUOG=", "-n", "1").stdout).toMatch(
-      /^0\.\d{3} {2}base32 --hex {5}"foob"/u,
+      /^0\.\d{3} {2}base32 --alphabet=hex {7}"foob"/u,
     );
     expect(run("identify", "--peel", "D1IMOR3F41RMUSJCCGM20S35CLM0====").stdout).toMatch(
-      /^0\.\d{3} {2}base32 --hex {5}"hello world, peel"/u,
+      /^0\.\d{3} {2}base32 --alphabet=hex {7}"hello world, peel"/u,
     );
   });
 
   it("lists encodings and shows one", () => {
-    expect(run("list").stdout.trim().split("\n")).toHaveLength(21);
+    expect(run("list").stdout.trim().split("\n")).toHaveLength(13);
     expect(run("list", "--family", "base64").stdout.trim().split("\n")).toHaveLength(1);
     expect(run("list", "bech32").stdout).toContain("--prefix  Human-readable part");
     expect(run("list", "base64").stdout).toContain(
-      "for + and /, safe in URLs and file names (decode too)",
+      "url (- and _, safe in URLs and file names) (decode too)",
     );
   });
 
   it("turns library errors into one line on stderr and exit code 1", () => {
-    expect(run("decode", "base58check", "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNb")).toMatchObject({
+    expect(run("decode", "base58", "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNb", "--check")).toMatchObject({
       code: 1,
       stdout: "",
-      stderr: "base58check: checksum does not match\n",
+      stderr: "base58: checksum does not match\n",
     });
     expect(run("encode", "base64", "x", "--prefix", "bc")).toMatchObject({
       code: 1,
       stderr: "Invalid option prefix=bc: base64 does not take it\n",
     });
-    expect(run("encode", "z85", "hi")).toMatchObject({
+    expect(run("encode", "base85", "hi", "--alphabet", "z85")).toMatchObject({
       code: 1,
-      stderr: "z85: 2 bytes are not a multiple of 4\n",
+      stderr: "base85: 2 bytes are not a multiple of 4, as Z85 needs\n",
     });
     expect(run("encode", "base62", "x").stderr).toMatch(/^Unknown encoding: base62\. Available: /u);
     expect(run("identify", "€€€")).toMatchObject({ code: 1, stdout: "" });
@@ -158,7 +182,7 @@ describe("encodings CLI", () => {
       stdout: "",
       stderr: `Unknown option -_8 for decode. ${hint}\n`,
     });
-    expect(run("decode", "ascii85", "-Y7,")).toMatchObject({
+    expect(run("decode", "base85", "--alphabet", "ascii85", "-Y7,")).toMatchObject({
       code: 1,
       stdout: "",
       stderr: `Unknown option -Y7, for decode. ${hint}\n`,
@@ -169,8 +193,13 @@ describe("encodings CLI", () => {
       `Unknown option "-\\u001b]0;x\\u0007\\u2028" for decode. ${hint}\n`,
     );
     expect(run("decode", "base64", "SGk=", "--outptu", "hex")).toMatchObject({ code: 1 });
-    expect(run("decode", "ascii85", "--", "-Y7,")).toMatchObject({ code: 0, stdout: "'em" });
-    expect(run("decode", "-o", "hex", "--", "ascii85", "-Y7,").stdout).toBe("27656d\n");
+    expect(run("decode", "base85", "--alphabet", "ascii85", "--", "-Y7,")).toMatchObject({
+      code: 0,
+      stdout: "'em",
+    });
+    expect(run("decode", "-o", "hex", "--alphabet", "ascii85", "--", "base85", "-Y7,").stdout).toBe(
+      "27656d\n",
+    );
   });
 
   it("still reads every way of typing a declared option", () => {

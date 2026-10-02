@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TableColumn } from "@nuxt/ui";
-import { ENCODINGS, overhead, type EncodingEntry } from "../../utils/encodings";
+import { ENCODINGS, checksumOption, overhead, type EncodingEntry } from "../../utils/encodings";
 import { ROSTER_CLASS, ROSTER_TABLE_UI } from "../../utils/roster";
 
 interface Row {
@@ -29,7 +29,7 @@ const rows = computed<Row[]>(() =>
       label: entry.info.label,
       alphabet: entry.info.alphabet.length,
       overhead: overhead(entry),
-      checksum: entry.info.checksum ? "yes" : "no",
+      checksum: entry.info.checksum ? "yes" : checksumOption(entry.info) ? "option" : "no",
       required: entry.info.options.filter((option) => option.required).map((option) => option.name),
       optional: entry.info.options.filter((option) => !option.required).map((option) => option.name),
       standard: entry.info.standard,

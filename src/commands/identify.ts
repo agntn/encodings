@@ -1,12 +1,15 @@
 import { defineCommand } from "citty";
 import { utf8 } from "../core/bytes.ts";
-import { InvalidOptionError, quote } from "../core/errors.ts";
+import { InvalidOptionError, quote, token } from "../core/errors.ts";
 import { hex } from "../core/hex.ts";
 import { identify, peel, type EncodingCandidate, type PeelLayer } from "../core/identify.ts";
 import { readText } from "./shared.ts";
 
 /** Characters of a decoded value shown per candidate. */
 const PREVIEW_LENGTH = 72;
+
+/** Width of the name column: fits `base32 --alphabet=crockford`, the longest built-in reading. */
+const NAME_WIDTH = 27;
 
 /**
  * Writes a candidate's decode options as the flags `decode` takes, so the line can be reused.
@@ -18,7 +21,7 @@ function flags(options: Readonly<Record<string, string | number | boolean>> = {}
   return Object.entries(options)
     .map(([name, value]) => {
       if (typeof value === "boolean") return value ? ` --${name}` : ` --no-${name}`;
-      return ` --${name}=${quote(String(value))}`;
+      return ` --${name}=${token(String(value))}`;
     })
     .join("");
 }
@@ -41,7 +44,7 @@ function line(candidate: EncodingCandidate | PeelLayer): string {
   ];
   const why = reasons.length > 0 ? `  (${reasons.join(", ")})` : "";
   const name = `${candidate.encoding}${flags(candidate.options)}`;
-  return `${candidate.confidence.toFixed(3)}  ${name.padEnd(16)} ${cut}${why}\n`;
+  return `${candidate.confidence.toFixed(3)}  ${name.padEnd(NAME_WIDTH)} ${cut}${why}\n`;
 }
 
 export default defineCommand({

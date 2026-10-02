@@ -16,20 +16,12 @@ const BUILTINS = [
   "decimal",
   "hex",
   "base32",
-  "base32-crockford",
-  "z-base-32",
   "base45",
   "base58",
-  "base58check",
-  "base58-flickr",
-  "base58-ripple",
   "base64",
-  "ascii85",
-  "z85",
   "base85",
   "base91",
   "bech32",
-  "bech32m",
   "uuencode",
   "quoted-printable",
 ] as const;
@@ -42,39 +34,27 @@ const PRESENTATION: Record<BuiltinEncoding, { icon: string; blurb: string; usedB
   hex: { icon: "i-lucide-hash", blurb: "Two digits a byte. The one everybody reads" },
   base32: {
     icon: "i-lucide-case-upper",
-    blurb: "Letters and 2 to 7, survives a case-blind file system",
-    usedBy: "TOTP secrets, Onion v3",
-  },
-  "base32-crockford": {
-    icon: "i-lucide-spell-check",
-    blurb: "Base32 for people: no I, L, O or U to misread",
-    usedBy: "ULID",
-  },
-  "z-base-32": {
-    icon: "i-lucide-megaphone",
-    blurb: "Base32 ordered so you can read it out loud",
-    usedBy: "Lightning, Mnet",
+    blurb: "Five bits a character, in four alphabets. Survives a case-blind file system",
+    usedBy: "TOTP secrets, Onion v3, ULID, Lightning",
   },
   base45: { icon: "i-lucide-qr-code", blurb: "Fits the alphanumeric mode of a QR code", usedBy: "EU COVID certificates" },
-  base58: { icon: "i-token-sol", blurb: "No 0, O, I or l. Nothing to confuse", usedBy: "Solana, IPFS CIDv0" },
-  base58check: {
+  base58: {
     icon: "i-token-btc",
-    blurb: "Base58 with four bytes of double SHA-256 on the end",
-    usedBy: "Bitcoin, Litecoin, Dogecoin",
+    blurb: "No 0, O, I or l. With check, the Bitcoin address you know",
+    usedBy: "Bitcoin, Solana, IPFS CIDv0, XRP Ledger",
   },
-  "base58-flickr": { icon: "i-lucide-image", blurb: "Base58 with the cases swapped", usedBy: "flic.kr" },
-  "base58-ripple": { icon: "i-token-xrp", blurb: "Base58 shuffled so addresses start with r", usedBy: "XRP Ledger" },
   base64: { icon: "i-lucide-file-code", blurb: "Three bytes as four characters. MIME, data URLs, PEM" },
-  ascii85: { icon: "i-lucide-file-text", blurb: "Four bytes as five, z for zeros", usedBy: "PostScript, PDF" },
-  z85: { icon: "i-lucide-code-xml", blurb: "Base85 safe to paste into source code", usedBy: "ZeroMQ" },
-  base85: { icon: "i-lucide-git-compare", blurb: "The RFC 1924 alphabet in four byte groups", usedBy: "Python, Mercurial, git patches" },
+  base85: {
+    icon: "i-lucide-git-compare",
+    blurb: "Four bytes as five characters, in three alphabets",
+    usedBy: "Python, git patches, PDF, ZeroMQ",
+  },
   base91: { icon: "i-lucide-package", blurb: "Squeezes printable ASCII hardest" },
   bech32: {
     icon: "i-lucide-fingerprint",
     blurb: "A BCH checksum that catches four typos",
-    usedBy: "SegWit v0, Lightning, Nostr, Cosmos",
+    usedBy: "SegWit, Taproot, Lightning, Nostr, Cosmos",
   },
-  bech32m: { icon: "i-token-btc", blurb: "Bech32 with the length bug fixed", usedBy: "Taproot" },
   uuencode: { icon: "i-lucide-mail", blurb: "How Usenet mailed binaries before MIME" },
   "quoted-printable": { icon: "i-lucide-quote", blurb: "Mostly text stays text, the rest gets =XX", usedBy: "Email" },
 };
@@ -114,20 +94,12 @@ const GROUP_OF: Record<BuiltinEncoding, GroupKey> = {
   decimal: "values",
   hex: "bits",
   base32: "bits",
-  "base32-crockford": "bits",
-  "z-base-32": "bits",
   base64: "bits",
   base58: "number",
-  base58check: "number",
-  "base58-flickr": "number",
-  "base58-ripple": "number",
   base45: "blocks",
-  ascii85: "blocks",
-  z85: "blocks",
   base85: "blocks",
   base91: "blocks",
   bech32: "words",
-  bech32m: "words",
   uuencode: "mail",
   "quoted-printable": "mail",
 };
@@ -190,8 +162,20 @@ export function familySize(family: EncodingFamily): number {
   return ENCODINGS.filter((encoding) => encoding.info.family === family).length;
 }
 
-/** The built-ins whose text carries a checksum, counted from `info().checksum`. */
-export const CHECKSUM_COUNT = ENCODINGS.filter((encoding) => encoding.info.checksum).length;
+/**
+ * The option that adds a checksum to an encoding's text, such as base58's `check`.
+ *
+ * @param {EncodingInfo} info - The encoding's metadata.
+ * @returns {string | undefined} The option name, or nothing when there is none.
+ */
+export function checksumOption(info: EncodingInfo): string | undefined {
+  return info.options.find((option) => option.checksum === true)?.name;
+}
+
+/** The built-ins whose text carries a checksum, always or with an option such as base58's `check`. */
+export const CHECKSUM_COUNT = ENCODINGS.filter(
+  (encoding) => encoding.info.checksum || checksumOption(encoding.info) !== undefined,
+).length;
 
 /**
  * One encoding's place in the registry, 1-based, the way an ID bar numbers it.
@@ -217,7 +201,6 @@ export function alphabetCells(info: EncodingInfo): string[] {
 /** Options a page encodes the sample with, where the encoding needs any. */
 export const SAMPLE_OPTIONS: Partial<Record<BuiltinEncoding, Record<string, string | number | boolean>>> = {
   bech32: { prefix: "hi" },
-  bech32m: { prefix: "hi" },
 };
 
 /** Pseudo-random bytes the overhead is measured on: enough that padding and leading zeros wash out. */
@@ -238,14 +221,13 @@ export function overhead(entry: EncodingEntry): number {
 }
 
 /**
- * The codec object a family subpath exports for an encoding: `base58check` from
- * `@agntn/encodings/base58`, `zbase32` for z-base-32, `quotedPrintable` for quoted-printable.
+ * The codec object a family subpath exports for an encoding: `base58` from
+ * `@agntn/encodings/base58`, `quotedPrintable` for quoted-printable.
  *
  * @param {EncodingEntry} entry - A built-in.
  * @returns {string} The export name.
  */
 export function codecExport(entry: EncodingEntry): string {
-  if (entry.slug === "z-base-32") return "zbase32";
   if (entry.slug === "quoted-printable") return "quotedPrintable";
   return entry.slug.replaceAll("-", "");
 }

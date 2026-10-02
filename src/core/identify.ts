@@ -1,9 +1,9 @@
 import { equalBytes, toBytes, utf8 } from "./bytes.ts";
 import { InvalidOptionError } from "./errors.ts";
 import { create, encodings } from "./registry.ts";
-import type { Decoded, Encoding, EncodingInfo } from "./types.ts";
+import type { Decoded, Encoding, EncodingInfo, EncodingOption } from "./types.ts";
 
-/** Option values one reading of a text used, such as `{ hex: true }` for base32. */
+/** Option values one reading of a text used, such as `{ alphabet: "hex" }` for base32. */
 type Reading = Readonly<Record<string, string | number | boolean>>;
 
 /** One encoding a text decodes in, with how much the result supports it. */
@@ -84,42 +84,74 @@ function printable(text: string): number {
   return total === 0 ? 0 : count / total;
 }
 
-/** Framing only one encoding writes: a test on the trimmed text and what to call it. */
-const FRAMING: Readonly<Record<string, readonly [RegExp, string]>> = {
-  hex: [/^0x/iu, "0x prefix"],
-  base64: [/=$/u, "padding fits the block length"],
-  base32: [/=$/u, "padding fits the block length"],
-  ascii85: [/^<~[\s\S]*~>$/u, "<~ ~> delimiters"],
-  uuencode: [/^begin [0-7]{3,4} /mu, "begin line"],
-  "quoted-printable": [/=[0-9A-F]{2}/u, "=XX escapes"],
+/** Framing only one encoding writes: a test on the trimmed text, its name, and the readings it fits. */
+interface Frame {
+  test: RegExp;
+  label: string;
+  /** Whether the reading writes this framing; every reading when left out. */
+  fits?: (reading: Reading) => boolean;
+}
+
+/** Framing by registry name. */
+const FRAMING: Readonly<Record<string, Frame>> = {
+  hex: { test: /^0x/iu, label: "0x prefix" },
+  base64: { test: /=$/u, label: "padding fits the block length" },
+  base32: {
+    test: /=$/u,
+    label: "padding fits the block length",
+    fits: (reading) => reading["alphabet"] === undefined || reading["alphabet"] === "hex",
+  },
+  base85: {
+    test: /^<~[\s\S]*~>$/u,
+    label: "<~ ~> delimiters",
+    fits: (reading) => reading["alphabet"] === "ascii85",
+  },
+  uuencode: { test: /^begin [0-7]{3,4} /mu, label: "begin line" },
+  "quoted-printable": { test: /=[0-9A-F]{2}/u, label: "=XX escapes" },
 };
 
 /**
- * Framing in the text that only this encoding writes.
+ * Framing in the text that only this encoding, read this way, writes.
  *
  * @param encoding - Registry name.
+ * @param reading - Decode options of the reading.
  * @param text - The text as given.
  * @returns {string | undefined} What was found, or nothing.
  */
-function framing(encoding: string, text: string): string | undefined {
+function framing(encoding: string, reading: Reading, text: string): string | undefined {
   const rule = FRAMING[encoding];
-  return rule && rule[0].test(text.trim()) ? rule[1] : undefined;
+  if (!rule || !(rule.fits?.(reading) ?? true)) return undefined;
+  return rule.test.test(text.trim()) ? rule.label : undefined;
+}
+
+/**
+ * Whether a reading verified a checksum: the encoding always carries one, or the reading turned
+ * on an option that adds one, such as base58's `check`.
+ *
+ * @param info - The encoding's metadata.
+ * @param reading - Decode options of the reading.
+ * @returns {boolean} Whether a checksum matched.
+ */
+function checksummed(info: EncodingInfo, reading: Reading): boolean {
+  return (
+    info.checksum ||
+    info.options.some(
+      (option) => option.checksum === true && (reading[option.name] ?? option.default) === true,
+    )
+  );
 }
 
 /**
  * Scores what the text carries besides its decoded bytes: a checksum and framing.
  *
- * @param info - The encoding's metadata.
+ * @param checksum - Whether a checksum matched.
  * @param frame - Framing found in the text, if any.
  * @returns {{ score: number; reasons: string[] }} The score and what raised it.
  */
-function marks(
-  info: EncodingInfo,
-  frame: string | undefined,
-): { score: number; reasons: string[] } {
+function marks(checksum: boolean, frame: string | undefined): { score: number; reasons: string[] } {
   const reasons: string[] = [];
   let score = 0;
-  if (info.checksum) {
+  if (checksum) {
     score += WEIGHTS.checksum;
     reasons.push("checksum matches");
   }
@@ -133,19 +165,19 @@ function marks(
 /**
  * Whether a decoding backs a layer of `peel`: a checksum, framing or enough readable text.
  *
- * @param info - The encoding's metadata.
+ * @param checksum - Whether a checksum matched.
  * @param frame - Framing found in the text, if any.
  * @param readable - Whether the bytes read as text.
  * @param length - How many bytes it decoded to.
  * @returns {boolean} Whether something confirms it.
  */
 function backed(
-  info: EncodingInfo,
+  checksum: boolean,
   frame: string | undefined,
   readable: boolean,
   length: number,
 ): boolean {
-  return info.checksum || frame !== undefined || (readable && length >= MIN_TEXT_BYTES);
+  return checksum || frame !== undefined || (readable && length >= MIN_TEXT_BYTES);
 }
 
 /**
@@ -153,14 +185,21 @@ function backed(
  * text is valid Quoted-Printable, and without an escape it only lost a trailing `=`.
  *
  * @param info - The encoding's metadata.
+ * @param reading - Decode options of the reading.
  * @param text - The text as given.
  * @param decoded - What the encoding decoded it to.
  * @returns {Scored | undefined} The candidate, or nothing when this decoding says nothing.
  */
-function candidate(info: EncodingInfo, text: string, decoded: Decoded): Scored | undefined {
-  const frame = framing(info.name, text);
+function candidate(
+  info: EncodingInfo,
+  reading: Reading,
+  text: string,
+  decoded: Decoded,
+): Scored | undefined {
+  const frame = framing(info.name, reading, text);
   if (info.name === "quoted-printable" && !frame) return undefined;
-  const { reasons, score: marked } = marks(info, frame);
+  const checksum = checksummed(info, reading);
+  const { reasons, score: marked } = marks(checksum, frame);
   let score = marked;
   const asText = utf8(decoded.bytes);
   const share = asText === undefined ? 0 : printable(asText);
@@ -178,24 +217,38 @@ function candidate(info: EncodingInfo, text: string, decoded: Decoded): Scored |
     ...(asText === undefined ? {} : { text: asText }),
     details: decoded.details,
   };
-  const confirmed = backed(info, frame, readable, decoded.bytes.length);
+  const confirmed = backed(checksum, frame, readable, decoded.bytes.length);
   return { candidate, confirmed, readable };
 }
 
 /**
- * Every set of boolean `decode` options flipped from their default, such as base32's `hex`,
- * fewest flips first, starting from the default reading.
+ * The values of a `decode` option other than its default: the other choices of a choice, the
+ * flipped value of a switch.
+ *
+ * @param option - The option.
+ * @returns {(string | boolean)[]} The values to try.
+ */
+function alternatives(option: EncodingOption): (string | boolean)[] {
+  if (option.choices) return option.choices.filter((choice) => choice !== option.default);
+  return option.type === "boolean" ? [option.default !== true] : [];
+}
+
+/**
+ * Every combination of `decode` options changed from their default, such as base32's
+ * `alphabet` or base58's `check`, fewest changes first, starting from the default reading.
  *
  * @param info - The encoding's metadata.
  * @returns {Reading[]} Option values per reading.
  */
 function readings(info: EncodingInfo): Reading[] {
   return info.options
-    .filter((option) => option.decode === true && option.type === "boolean")
+    .filter((option) => option.decode === true)
     .reduce<Reading[]>(
       (sets, option) => [
         ...sets,
-        ...sets.map((set) => ({ ...set, [option.name]: option.default !== true })),
+        ...alternatives(option).flatMap((value) =>
+          sets.map((set) => ({ ...set, [option.name]: value })),
+        ),
       ],
       [{}],
     )
@@ -219,7 +272,7 @@ function read(encoding: Encoding, text: string, options: Reading): Decoded | und
 }
 
 /**
- * Decodes the text in every reading, dropping one whose bytes a reading with fewer flips gave.
+ * Decodes the text in every reading, dropping one whose bytes a reading with fewer changes gave.
  *
  * @param name - Registry name.
  * @param text - The text as given.
@@ -240,7 +293,7 @@ function attempt(name: string, text: string, own: Uint8Array): Scored[] {
   return kept
     .filter(({ decoded }) => decoded.bytes.length > 0 && !equalBytes(decoded.bytes, own))
     .flatMap(({ options, decoded }) => {
-      const scored = candidate(info, text, decoded);
+      const scored = candidate(info, options, text, decoded);
       if (!scored) return [];
       if (Object.keys(options).length === 0) return [scored];
       return [{ ...scored, candidate: { ...scored.candidate, options } }];

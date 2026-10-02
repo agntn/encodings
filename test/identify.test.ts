@@ -23,7 +23,7 @@ describe("identify", () => {
     ["JBSWY3DPEBLW64TMMQ======", "base32", "Hello World"],
     ["QED8WEX0", "base45", "ietf!"],
     ["StV1DL6CwTryKyV", "base58", "hello world"],
-    ["<~87cURD_*#4DfTZ)+T~>", "ascii85", "Hello, World!"],
+    ["<~87cURD_*#4DfTZ)+T~>", "base85", "Hello, World!"],
     [">OwJh>}AQ;r@@Y?F", "base91", "Hello, World!"],
     ["caf=C3=A9", "quoted-printable", "café"],
     ["begin 644 cat.txt\n#0V%T\n`\nend\n", "uuencode", "Cat"],
@@ -32,12 +32,14 @@ describe("identify", () => {
   });
 
   it.each([
-    ["1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa", "base58check"],
-    ["bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4", "bech32"],
-    ["bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqzk5jj0", "bech32m"],
-  ])("trusts a matching checksum over everything else in %s", (text, encoding) => {
+    ["1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa", "base58", { check: true }],
+    ["rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "base58", { alphabet: "ripple", check: true }],
+    ["bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4", "bech32", undefined],
+    ["bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqzk5jj0", "bech32", { m: true }],
+  ])("trusts a matching checksum over everything else in %s", (text, encoding, options) => {
     const best = top(text)!;
     expect(best.encoding).toBe(encoding);
+    expect(best.options).toEqual(options);
     expect(best.reasons).toContain("checksum matches");
     expect(best.confidence).toBeGreaterThan(0.5);
   });
@@ -63,13 +65,22 @@ describe("identify", () => {
   it("tries the alphabet options and names the one a reading needs", () => {
     expect(top("CPNMUOJ1E8======")).toMatchObject({
       encoding: "base32",
-      options: { hex: true },
+      options: { alphabet: "hex" },
       text: "foobar",
     });
     expect(top("c3ViamVjdHM_X2Q-Pg")).toMatchObject({
       encoding: "base64",
-      options: { url: true },
+      options: { alphabet: "url" },
       text: "subjects?_d>>",
+    });
+    expect(top("<~87cURD_*#4DfTZ)+T~>")).toMatchObject({
+      options: { alphabet: "ascii85" },
+      reasons: ["<~ ~> delimiters", "decodes to readable text"],
+    });
+    expect(top("pb1sa5dxrb5s6huccooo")).toMatchObject({
+      encoding: "base32",
+      options: { alphabet: "z" },
+      text: "hello world!",
     });
   });
 
@@ -186,20 +197,28 @@ describe("peel", () => {
   });
 
   it("does not let short text back a layer on its own", () => {
-    expect(identify("hello")[0]).toMatchObject({ encoding: "z85" });
+    expect(identify("hello")[0]).toMatchObject({
+      encoding: "base85",
+      options: { alphabet: "z85" },
+    });
     expect(peel(encode("base64", "hello", {}))).toHaveLength(1);
   });
 
   it("trusts a checksum on bytes that are not text", () => {
     const address = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa";
     expect(peel(address)).toEqual([
-      expect.objectContaining({ encoding: "base58check", confirmed: true }),
+      expect.objectContaining({ encoding: "base58", options: { check: true }, confirmed: true }),
     ]);
   });
 
   it("names the options a layer needed", () => {
     expect(peel("D1IMOR3F41RMUSJCCGM20S35CLM0====")).toMatchObject([
-      { encoding: "base32", options: { hex: true }, confirmed: true, text: "hello world, peel" },
+      {
+        encoding: "base32",
+        options: { alphabet: "hex" },
+        confirmed: true,
+        text: "hello world, peel",
+      },
     ]);
   });
 

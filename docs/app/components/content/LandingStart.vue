@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { base58check, decode, encode, hex, identify } from "@agntn/encodings";
+import { base58, decode, encode, hex, identify } from "@agntn/encodings";
 import { engines } from "../../../../package.json";
 import { tokens } from "../../utils/tokens";
 
@@ -18,16 +18,16 @@ interface Line {
 /** The comments are the library's own answers, computed here, so the snippet can't drift from it. */
 const GENESIS = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa";
 const BASE64 = encode("base64", "gm");
-const PAYLOAD = hex.encode(base58check.decode(GENESIS));
+const PAYLOAD = hex.encode(base58.decode(GENESIS, { check: true }));
 const SEGWIT = decode("bech32", "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4").details;
 const GUESS = identify(GENESIS)[0]?.encoding;
 const LINES: readonly Line[] = [
   { shell: true, text: INSTALL },
   { text: "" },
-  { text: 'import { base58check, decode, encode, identify } from "@agntn/encodings";' },
+  { text: 'import { base58, decode, encode, identify } from "@agntn/encodings";' },
   { text: "" },
   { text: `encode("base64", "gm");  // "${BASE64}"` },
-  { text: `base58check.decode("${GENESIS}");  // ${PAYLOAD.length / 2} bytes, version 0x${PAYLOAD.slice(0, 2)}` },
+  { text: `base58.decode("${GENESIS}", { check: true });  // ${PAYLOAD.length / 2} bytes, version 0x${PAYLOAD.slice(0, 2)}` },
   { text: `decode("bech32", "bc1qw508…").details;  // { prefix: "${SEGWIT["prefix"]}", witnessVersion: ${SEGWIT["witnessVersion"]} }` },
   { text: `identify("${GENESIS}")[0].encoding;  // "${GUESS}"` },
 ];

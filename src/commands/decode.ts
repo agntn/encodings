@@ -6,7 +6,7 @@ import { create } from "../core/registry.ts";
 import { flaggedOptions, readText } from "./shared.ts";
 
 /** Flags that set decode options, by the option name they set. */
-const OPTION_FLAGS = ["hex", "url"] as const;
+const OPTION_FLAGS = ["alphabet", "check", "m"] as const;
 
 export default defineCommand({
   meta: {
@@ -16,7 +16,7 @@ export default defineCommand({
   args: {
     encoding: {
       type: "positional",
-      description: "Encoding, such as base64, base58check or bech32 (encodings list)",
+      description: "Encoding, such as base64, base58 or bech32 (encodings list)",
       required: true,
     },
     text: {
@@ -30,8 +30,12 @@ export default defineCommand({
       description: "How to write the bytes: raw (default), hex or base64",
       default: "raw",
     },
-    hex: { type: "boolean", description: "base32: extended hex alphabet 0-9 A-V" },
-    url: { type: "boolean", description: "base64: - and _ for + and /" },
+    alphabet: {
+      type: "string",
+      description: "base32, base58, base64, base85: alphabet (encodings list <encoding>)",
+    },
+    check: { type: "boolean", description: "base58: Base58Check, verify and strip the checksum" },
+    m: { type: "boolean", description: "bech32: Bech32m checksum (segwit v1+)" },
   },
   run({ args, rawArgs }) {
     const encoding = create(args.encoding);

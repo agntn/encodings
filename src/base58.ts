@@ -1,8 +1,9 @@
 export {
+  BASE58_ALPHABETS,
   base58,
-  base58check,
-  base58flickr,
-  base58ripple,
   createBase58check,
+  type Base58Alphabet,
+  type Base58CheckCodec,
   type Base58Codec,
+  type Base58Options,
 } from "./core/base58.ts";

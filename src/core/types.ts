@@ -29,11 +29,15 @@ export interface EncodingOption {
   description: string;
   /** Whether `decode` takes it too, as an alphabet choice. Default: false, encode only. */
   decode?: boolean;
+  /** The values a string option takes, such as the names of an encoding's alphabets. */
+  choices?: string[];
+  /** Whether turning it on makes the text carry a checksum that decoding verifies. */
+  checksum?: boolean;
 }
 
 /** Metadata about an encoding. */
 export interface EncodingInfo {
-  /** Registry name, such as `base58check`. */
+  /** Registry name, such as `base58`. */
   name: string;
   /** Human-readable label. */
   label: string;
@@ -45,7 +49,7 @@ export interface EncodingInfo {
   standard: string;
   /** Characters the encoded text is made of, padding and framing aside. */
   alphabet: string;
-  /** Whether the text carries a checksum that decoding verifies. */
+  /** Whether the text always carries a checksum that decoding verifies. */
   checksum: boolean;
   /** Whether encoding pads the text with `=`. */
   padding: boolean;

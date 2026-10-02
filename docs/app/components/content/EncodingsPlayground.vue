@@ -13,7 +13,14 @@ import {
   type IdentifyDetails,
 } from "#tool-operations";
 import { SAMPLE_INPUT } from "../../composables/useLandingSample";
-import { ENCODINGS, SAMPLE_OPTIONS, encodingEntry, familyLabel, overhead } from "../../utils/encodings";
+import {
+  ENCODINGS,
+  SAMPLE_OPTIONS,
+  checksumOption,
+  encodingEntry,
+  familyLabel,
+  overhead,
+} from "../../utils/encodings";
 import { optionFlags, readingName, shellArg } from "../../utils/format";
 import { jsonTokens, shellTokens } from "../../utils/tokens";
 import type { ToolName } from "../../utils/tools";
@@ -58,8 +65,17 @@ const IDENTIFY_SAMPLES: ReadonlyArray<{ label: string; text: string; icon: strin
   { label: "layered", text: "5958523059574e7249474630494752686432343d", icon: "i-lucide-layers" },
 ];
 
-/** The encodings the chips load, one per family worth showing. */
-const CHIPS = ["base64", "base58check", "bech32", "hex", "base32", "ascii85", "base91", "base45"] as const;
+/** What the chips load: an encoding, with the options that make it the variant people know. */
+const CHIPS: ReadonlyArray<{ label: string; slug: string; options?: Record<string, string | boolean> }> = [
+  { label: "base64", slug: "base64" },
+  { label: "base58check", slug: "base58", options: { check: true } },
+  { label: "bech32", slug: "bech32" },
+  { label: "hex", slug: "hex" },
+  { label: "base32", slug: "base32" },
+  { label: "ascii85", slug: "base85", options: { alphabet: "ascii85" } },
+  { label: "base91", slug: "base91" },
+  { label: "base45", slug: "base45" },
+];
 
 const route = useRoute();
 const router = useRouter();
@@ -244,6 +260,12 @@ const answered = computed(() => OPERATIONS.find((row) => row.key === request.val
 const answeredEntry = computed(
   () => encodingEntry(String(request.value.args.encoding ?? "")) ?? entry.value,
 );
+/** Whether the answered call carried a checksum: always, or through an option such as `check`. */
+const answeredChecksum = computed(() => {
+  const option = checksumOption(answeredEntry.value.info);
+  const sent = request.value.args.options as Record<string, unknown> | undefined;
+  return answeredEntry.value.info.checksum || (option !== undefined && sent?.[option] === true);
+});
 
 /** The same call as one CLI line. */
 const cliLine = computed(() => {
@@ -316,15 +338,31 @@ watch(
  * Picks an encoding and loads the sample for the operation on screen.
  *
  * @param {string} slug - A built-in name.
+ * @param {Record<string, string | boolean>} [extra] - Options the sample is written with, such as `check`.
  */
-function loadSample(slug: string) {
+function loadSample(slug: string, extra: Record<string, string | boolean> = {}) {
   encodingName.value = slug;
   for (const key of Object.keys(values)) delete values[key];
-  const sample = (SAMPLE_OPTIONS as Record<string, Record<string, string | number | boolean>>)[slug] ?? {};
+  const sample = {
+    ...(SAMPLE_OPTIONS as Record<string, Record<string, string | number | boolean>>)[slug],
+    ...extra,
+  };
   for (const [key, value] of Object.entries(sample)) values[key] = typeof value === "boolean" ? value : String(value);
   input.value = SAMPLE_INPUT;
   inputFormat.value = "utf8";
   text.value = create(slug).encode(SAMPLE_INPUT, sample);
+}
+
+/**
+ * Whether a chip names the form as it stands: its encoding, and every option it sets.
+ *
+ * @param {(typeof CHIPS)[number]} chip - A chip.
+ * @returns {boolean} Whether it is the one on screen.
+ */
+function chipPressed(chip: (typeof CHIPS)[number]): boolean {
+  if (entry.value.slug !== chip.slug) return false;
+  const set = Object.entries(values).filter(([, value]) => value !== "" && value !== false);
+  return set.length === Object.keys(chip.options ?? {}).length && set.every(([key, value]) => chip.options?.[key] === value);
 }
 
 /**
@@ -335,7 +373,10 @@ function loadSample(slug: string) {
  */
 function selectEncoding(slug: string) {
   const previous = encodingName.value;
-  const previousSample = create(previous).encode(SAMPLE_INPUT, SAMPLE_OPTIONS[previous as keyof typeof SAMPLE_OPTIONS] ?? {});
+  const previousSample = create(previous).encode(SAMPLE_INPUT, {
+    ...SAMPLE_OPTIONS[previous as keyof typeof SAMPLE_OPTIONS],
+    ...options.value,
+  });
   if (operation.value === "decode" && text.value !== previousSample) {
     encodingName.value = slug;
     return;
@@ -688,6 +729,17 @@ const identifyLimit = MAX_CANDIDATES;
                     :label="option.description"
                     @update:model-value="values[option.name] = $event === true"
                   />
+                  <USelectMenu
+                    v-else-if="option.choices"
+                    :id="`playground-option-${option.name}`"
+                    :model-value="(values[option.name] as string | undefined) || String(option.default)"
+                    :items="option.choices.map((choice) => ({ label: choice, value: choice }))"
+                    value-key="value"
+                    variant="none"
+                    :search-input="false"
+                    class="w-full"
+                    @update:model-value="values[option.name] = $event === option.default ? '' : String($event)"
+                  />
                   <UInput
                     v-else
                     :id="`playground-option-${option.name}`"
@@ -728,14 +780,14 @@ const identifyLimit = MAX_CANDIDATES;
             aria-label="Sample encodings"
           >
             <UButton
-              v-for="slug in CHIPS"
-              :key="slug"
-              :color="entry.slug === slug ? 'primary' : 'neutral'"
+              v-for="chip in CHIPS"
+              :key="chip.label"
+              :color="chipPressed(chip) ? 'primary' : 'neutral'"
               variant="chip"
-              :icon="encodingEntry(slug)?.icon"
-              :label="slug"
-              :aria-pressed="entry.slug === slug"
-              @click="loadSample(slug)"
+              :icon="encodingEntry(chip.slug)?.icon"
+              :label="chip.label"
+              :aria-pressed="chipPressed(chip)"
+              @click="loadSample(chip.slug, chip.options)"
             />
           </div>
 
@@ -746,7 +798,7 @@ const identifyLimit = MAX_CANDIDATES;
             >
             <template v-else-if="operation === 'identify'"
               >Each sample is a different kind of evidence: padding, a checksum, a segwit program,
-              JSON hiding in base64url, delimiters, escapes, base64 inside hex. Decode a candidate
+              JSON in base64 with the URL alphabet, delimiters, escapes, base64 inside hex. Decode a candidate
               and it carries the text along. Peel takes off one layer after another.</template
             >
             <template v-else-if="operation === 'info'"
@@ -884,10 +936,10 @@ const identifyLimit = MAX_CANDIDATES;
                 <dd>+{{ overhead(answeredEntry) }}% on random bytes</dd>
               </div>
               <div>
-                <dt>{{ answeredEntry.info.checksum ? "Checksum" : "Padding" }}</dt>
+                <dt>{{ answeredChecksum ? "Checksum" : "Padding" }}</dt>
                 <dd>
                   {{
-                    answeredEntry.info.checksum
+                    answeredChecksum
                       ? "checked on decode"
                       : answeredEntry.info.padding
                         ? "= to a whole block"
@@ -927,7 +979,7 @@ const identifyLimit = MAX_CANDIDATES;
               <h3>{{ answeredEntry.info.label }}</h3>
               <p class="console-about">
                 {{
-                  answeredEntry.info.checksum
+                  answeredChecksum
                     ? "The checksum matched, so these are the bytes the writer meant."
                     : `${answeredEntry.blurb}.`
                 }}
@@ -1269,7 +1321,7 @@ const identifyLimit = MAX_CANDIDATES;
                   ? '/guide/identify'
                   : answered.key === 'info'
                     ? '/encodings'
-                    : answeredEntry.info.checksum
+                    : answeredChecksum
                       ? '/guide/checksums'
                       : '/guide/encoding'
               "
