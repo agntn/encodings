@@ -252,7 +252,7 @@ export const builtins: readonly Encoding[] = [
     "z-base-32",
     {
       label: "z-base-32",
-      description: "Lowercase Base32 ordered for people to read and say; Tahoe-LAFS, Lightning",
+      description: "Lowercase Base32 ordered for people to read and say; Mnet, Lightning",
       family: "base32",
       standard: "Zooko O'Whielacronx, human-oriented base-32 encoding (2002)",
       alphabet: "ybndrfg8ejkmcpqxot1uwisza345h769",

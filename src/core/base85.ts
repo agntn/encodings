@@ -144,7 +144,8 @@ const Z85_ALPHABET =
 const Z85_VALUES = alphabetIndex(Z85_ALPHABET);
 
 /**
- * Z85 (ZeroMQ RFC 32): base 85 with an alphabet safe in source code and XML. The spec covers
+ * Z85 (ZeroMQ RFC 32): base 85 with an alphabet safe in a string literal of source code, no
+ * quote or backslash; not in XML, which `<` and `&` break. The spec covers
  * only whole groups, so encoding takes a multiple of four bytes and decoding a multiple of five
  * characters.
  */

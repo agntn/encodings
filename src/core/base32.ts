@@ -41,8 +41,8 @@ export const base32crockford: Radix2Codec = radix2({
 
 /**
  * z-base-32 (Zooko O'Whielacronx, 2002): a lowercase alphabet ordered so the commonest
- * characters are the easiest to read and say, unpadded. Used by Mnet, Tahoe-LAFS and
- * Lightning node message signatures.
+ * characters are the easiest to read and say, unpadded. Written for Mnet; Lightning node
+ * message signatures use it.
  */
 export const zbase32: Radix2Codec = radix2({
   name: "z-base-32",
