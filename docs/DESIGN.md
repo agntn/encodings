@@ -43,8 +43,8 @@ Labels, families, standards, alphabets, checksums and options come from `create(
 Departures from the shared rules, recorded for the shared package:
 
 - The hero instrument is an alphabet, not a record dossier: the domain is text made of a fixed set of characters, so the first screen shows which of them one sample uses. It works for every encoding, base58 and basE91 included, where a picture of regrouped bits would not.
-- The registry groups by mechanism, not by family. Eleven families with mostly one member each would make eleven bands of single cells.
-- One docs section for the encodings, no tabs per family: twenty entries, under the point where a section splits.
+- The registry groups by mechanism, not by family. Most families have one member, so a band per family would be a band of single cells.
+- One docs section for the encodings, no tabs per family: a couple dozen entries, under the point where a section splits.
 - No network call anywhere: every instrument computes in the browser from the library, and every footer that names locality says `no network`.
 - The version comes from the root `package.json`; there's no data version.
 - The OG images ship local Figtree and Fira Code TTFs, the keys mechanism.

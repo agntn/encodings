@@ -2,13 +2,13 @@
 
 Keep AGENTS.md updated with project status.
 
-`@agntn/encodings` encodes, decodes and identifies binary-to-text encodings: hex, binary, base32 (RFC 4648, hex, Crockford, z-base-32), base45, base58 (Bitcoin, Flickr, Ripple), Base58Check, base64, base64url, Ascii85, Z85, basE91, bech32, bech32m, uuencode and Quoted-Printable. A library, the `encodings` CLI, an MCP server, Pi and OMP extensions and AI SDK tools. Docs at encodings.agntn.dev, from `docs/` (see `docs/AGENTS.md`).
+`@agntn/encodings` encodes, decodes and identifies binary-to-text encodings: hex, binary, octal, decimal, base32 (RFC 4648, hex, Crockford, z-base-32), base45, base58 (Bitcoin, Flickr, Ripple), Base58Check, base64, base64url, Ascii85, Z85, base85 (RFC 1924 alphabet), basE91, bech32, bech32m, uuencode and Quoted-Printable. A library, the `encodings` CLI, an MCP server, Pi and OMP extensions and AI SDK tools. Docs at encodings.agntn.dev, from `docs/` (see `docs/AGENTS.md`).
 
 ## Domain
 
-- Every codec is written here from its spec: RFC 4648, RFC 9285, BIP173, BIP350, ZeroMQ RFC 32, the basE91 reference C code, POSIX uuencode, RFC 2045. No `@scure/base`, `bs58` or other codec library, by design. The one dependency is `@agntn/hashes` for the double SHA-256 of Base58Check, imported from its `./sha2` subpath.
+- Every codec is written here from its spec: RFC 4648, RFC 9285, RFC 1924, BIP173, BIP350, ZeroMQ RFC 32, the basE91 reference C code, POSIX uuencode, RFC 2045. No `@scure/base`, `bs58` or other codec library, by design. The one dependency is `@agntn/hashes` for the double SHA-256 of Base58Check, imported from its `./sha2` subpath.
 - Codec objects (`base58`, `bech32`, `quotedPrintable`, ...) work on bytes. The registry (`create`, `encode`, `decode`, `encodings`, `register`, `resolveEncoding`) wraps them as `Encoding`, reads strings as UTF-8, checks options against `info().options` and returns `{ bytes, details }`.
-- `src/core/radix2.ts` is the one engine for power-of-two alphabets (base32 family, base64 family). Hex and binary have their own small codecs; base58, base45, base85 and base91 do their own arithmetic.
+- `src/core/radix2.ts` is the one engine for power-of-two alphabets (base32 family, base64 family). Hex and binary have their own small codecs, octal and decimal share `createNumbers` in `src/core/numbers.ts`; base58, base45, base85 and base91 do their own arithmetic.
 - Decoding is strict where the spec is (bad characters, wrong padding, impossible lengths, checksums, values out of range) and lenient where real text is wrapped: base32 and base64 skip ASCII whitespace, hex takes either case, spaces and `0x`, Crockford reads its look-alikes, Ascii85 takes `<~ ~>` or not, Quoted-Printable takes a bare CR. Each rule has a test in `test/codecs.test.ts`.
 - Errors: `EncodingError` is the base. `DecodeError` (with `encoding` and `index`), `ChecksumError`, `UnknownEncodingError`, `InvalidOptionError`. The CLI prints any `EncodingError` as one line with exit 1 and the MCP adapter turns it into a tool error, so a codec never throws a plain `RangeError` for bad input (Z85 did once).
 - `named()` and `shown()` in `src/core/errors.ts` keep invisible and line-breaking characters out of messages: a character outside letters, marks, numbers, punctuation, symbols and space is named by code point only, and `quote()` escapes C1 controls, U+2028, U+2029 and every `Cf` character as UTF-16 `\u` escapes. Tool text and CLI stderr go through them for every value that came from the input.
@@ -17,9 +17,10 @@ Keep AGENTS.md updated with project status.
 - `bech32` and `bech32m` in the registry prefer the segwit reading: a valid segwit address of that variant comes back as its program with `witnessVersion` in `details`, anything else as the bytes its words carry. `segwit.decode` alone takes either variant and checks the version against it.
 - `base32` and `base32hex` take `padding` (default true), in the codec and in the registry. `false` writes them unpadded, as Stellar StrKey and TOTP secrets are. `radix2` accepts it for every alphabet, but only those two are typed `PaddedCodec`: Crockford and z-base-32 have no padding to turn on, and base64 never asked.
 - `identify` scores what it can show: a checksum that matched, framing only one encoding writes, decoded text, a small alphabet. It drops candidates that decode to nothing or to the input itself, and Quoted-Printable without an `=XX` escape. It skips the base58 family above 1024 characters, since base58 is quadratic. The confidence ranks; it is not a probability.
+- `peel` repeats `identify` one layer at a time. A layer is confirmed by a checksum, framing or at least 8 bytes of readable text (shorter text comes out of plain words by chance), and peeling goes on only from a confirmed text layer. When nothing is confirmed, the best candidate comes last with `confirmed: false`, but only if the text holds a digit and no whitespace (or the guess has an alphabet of 16 or fewer), so plain text ends the peel instead of a base32 guess. `encodings_identify` takes it as `peel` and `limit` then counts layers; the CLI as `identify --peel`.
 - `encodings_encode` passes the codec only the options its encoding declares and names the rest in the reply. A model with strict function calling (OMP on `openai-codex`) fills every field of the schema, and `options` holds the fields of all encodings, so base91 used to get a bech32 `prefix` and fail. The library and the CLI still refuse an option the encoding does not take.
-- Tool limits live in `src/tool-contract.ts` and are checked twice, in the schema and in the executor: text up to 100000 characters, base58 up to 10000, 20 identify candidates. `src/tool-operations.ts` re-exports them for the docs playground.
-- Test vectors: the RFC and BIP vectors in `test/codecs.test.ts`, and outputs of independent implementations frozen in `test/fixtures/references.ts` (base-x 5.0.1, node-base91 0.3.4, base32-encode 2.0.0, CPython 3.12.13 `base64`/`binascii`/`quopri`, base45 0.4.4, pyzmq 27.2.0). A new codec gets the same: a spec vector and a frozen outside reference where one exists.
+- Tool limits live in `src/tool-contract.ts` and are checked twice, in the schema and in the executor: text up to 100000 characters, base58 up to 10000, 20 identify candidates or peeled layers. `src/tool-operations.ts` re-exports them for the docs playground.
+- Test vectors: the RFC and BIP vectors in `test/codecs.test.ts`, and outputs of independent implementations frozen in `test/fixtures/references.ts` (base-x 5.0.1, node-base91 0.3.4, base32-encode 2.0.0, CPython 3.12.13 `base64` (including `b85encode`)/`binascii`/`quopri`, base45 0.4.4, pyzmq 27.2.0). A new codec gets the same: a spec vector and a frozen outside reference where one exists.
 - `test/bundle.test.ts` builds the current source and bundles every family subpath with rolldown; it fails when one pulls in another family or the registry.
 
 ## Status
@@ -74,7 +75,7 @@ Keep AGENTS.md updated with project status.
 
 ```
 src/core/                - codecs, registry, identify, errors, types
-src/<family>.ts          - one subpath per family: binary, hex, base32, base45, base58, base64, base85, base91, bech32, uuencode, quoted-printable
+src/<family>.ts          - one subpath per family: binary, octal, decimal, hex, base32, base45, base58, base64, base85, base91, bech32, uuencode, quoted-printable
 src/tools.ts             - the four tool definitions; tool-operations.ts runs them, tool-contract.ts holds the limits
 src/commands/            - encode, decode, identify, list, mcp
 docs/                    - Docus site for encodings.agntn.dev

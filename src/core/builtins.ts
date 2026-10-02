@@ -2,7 +2,7 @@ import { base32, base32crockford, base32hex, zbase32 } from "./base32.ts";
 import { base45 } from "./base45.ts";
 import { BASE58_ALPHABET, base58, base58check, base58flickr, base58ripple } from "./base58.ts";
 import { base64, base64url } from "./base64.ts";
-import { ascii85, z85 } from "./base85.ts";
+import { ascii85, base85, z85 } from "./base85.ts";
 import { base91 } from "./base91.ts";
 import {
   BECH32_LIMIT,
@@ -14,8 +14,10 @@ import {
 } from "./bech32.ts";
 import { binary } from "./binary.ts";
 import { toBytes, type BytesInput } from "./bytes.ts";
+import { decimal } from "./decimal.ts";
 import { InvalidOptionError } from "./errors.ts";
 import { hex } from "./hex.ts";
+import { octal } from "./octal.ts";
 import { quotedPrintable } from "./quoted-printable.ts";
 import type { Decoded, EncodeOptions, Encoding, EncodingInfo, EncodingOption } from "./types.ts";
 import { uuencode } from "./uuencode.ts";
@@ -188,6 +190,48 @@ export const builtins: readonly Encoding[] = [
     },
     (bytes, values) => binary.encode(bytes, { separate: values["separate"] === true }),
     (text) => binary.decode(text),
+  ),
+  define(
+    "octal",
+    {
+      label: "Octal",
+      description: "One octal number from 0 to 377 per byte, spaced; decoding also takes commas",
+      family: "octal",
+      standard: "Byte values in base 8",
+      alphabet: "01234567",
+      options: [
+        {
+          name: "separate",
+          type: "boolean",
+          required: false,
+          default: true,
+          description: "Put a space between bytes; without it each byte takes three digits",
+        },
+      ],
+    },
+    (bytes, values) => octal.encode(bytes, { separate: values["separate"] === true }),
+    (text) => octal.decode(text),
+  ),
+  define(
+    "decimal",
+    {
+      label: "Decimal",
+      description: "One decimal number from 0 to 255 per byte, spaced; decoding also takes commas",
+      family: "decimal",
+      standard: "Byte values in base 10",
+      alphabet: "0123456789",
+      options: [
+        {
+          name: "separate",
+          type: "boolean",
+          required: false,
+          default: true,
+          description: "Put a space between bytes; without it each byte takes three digits",
+        },
+      ],
+    },
+    (bytes, values) => decimal.encode(bytes, { separate: values["separate"] === true }),
+    (text) => decimal.decode(text),
   ),
   define(
     "hex",
@@ -399,6 +443,20 @@ export const builtins: readonly Encoding[] = [
     },
     (bytes) => z85.encode(bytes),
     (text) => z85.decode(text),
+  ),
+  define(
+    "base85",
+    {
+      label: "Base85",
+      description:
+        "Base 85 with the RFC 1924 alphabet in 4-byte groups, as git and Python write it",
+      family: "base85",
+      standard: "RFC 1924 alphabet, git binary patch grouping",
+      alphabet:
+        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~",
+    },
+    (bytes) => base85.encode(bytes),
+    (text) => base85.decode(text),
   ),
   define(
     "base91",

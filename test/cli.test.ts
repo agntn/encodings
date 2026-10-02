@@ -91,8 +91,25 @@ describe("encodings CLI", () => {
     expect(stdout.trim().split("\n")).toHaveLength(2);
   });
 
+  it("peels layers, outermost first, and says when there is none", () => {
+    const { code, stdout } = run("identify", "--peel", "553246736447566b58312b786c723668");
+    expect(code).toBe(0);
+    expect(stdout.split("\n")[0]).toMatch(/^0\.\d{3} {2}hex {14}"U2FsdGVkX1\+xlr6h"/u);
+    expect(stdout.split("\n")[1]).toMatch(/^0\.\d{3} {2}base64 .*\(unconfirmed guess\)$/u);
+    expect(
+      run("identify", "--peel", "553246736447566b58312b786c723668", "-n", "1")
+        .stdout.trim()
+        .split("\n"),
+    ).toHaveLength(1);
+    expect(run("identify", "--peel", "Hello world")).toMatchObject({
+      code: 1,
+      stderr:
+        "No layer to take off: nothing decodes this text to readable text or past a checksum.\n",
+    });
+  });
+
   it("lists encodings and shows one", () => {
-    expect(run("list").stdout.trim().split("\n")).toHaveLength(20);
+    expect(run("list").stdout.trim().split("\n")).toHaveLength(23);
     expect(run("list", "--family", "base64").stdout.trim().split("\n")).toHaveLength(2);
     expect(run("list", "bech32").stdout).toContain("--prefix  Human-readable part");
   });

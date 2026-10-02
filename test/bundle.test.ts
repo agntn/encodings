@@ -11,13 +11,15 @@ let packed = "";
 /** A string only that family's code carries, so finding it elsewhere means a leak. */
 const markers: Record<(typeof familyEntries)[number], string> = {
   binary: "is not a bit",
+  octal: "is not an octal digit",
+  decimal: "is not a decimal digit",
   hex: "is not a hex digit",
   base32: "ybndrfg8ejkmcpqxot1uwisza345h769",
   base45: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:",
   base58: "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz",
   base64: "-_",
   base85: ".-:+=^!/*?&<>()[]{}@%$#",
-  base91: '_`{|}~"',
+  base91: "@[]^_`{|}~",
   bech32: "qpzry9x8gf2tvdw0s3jn54khce6mua7l",
   uuencode: "begin-base64",
   "quoted-printable": "must be escaped",

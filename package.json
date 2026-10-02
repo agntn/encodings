@@ -48,6 +48,14 @@
       "types": "./dist/binary.d.mts",
       "import": "./dist/binary.mjs"
     },
+    "./octal": {
+      "types": "./dist/octal.d.mts",
+      "import": "./dist/octal.mjs"
+    },
+    "./decimal": {
+      "types": "./dist/decimal.d.mts",
+      "import": "./dist/decimal.mjs"
+    },
     "./hex": {
       "types": "./dist/hex.d.mts",
       "import": "./dist/hex.mjs"

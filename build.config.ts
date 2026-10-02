@@ -3,6 +3,8 @@ import { defineBuildConfig } from "obuild/config";
 /** One subpath per family, so a caller that needs base58 loads base58 without the registry. */
 export const familyEntries = [
   "binary",
+  "octal",
+  "decimal",
   "hex",
   "base32",
   "base45",

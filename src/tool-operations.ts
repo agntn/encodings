@@ -11,7 +11,7 @@ import { base64 } from "./core/base64.ts";
 import { utf8 } from "./core/bytes.ts";
 import { InvalidOptionError, quote } from "./core/errors.ts";
 import { hex } from "./core/hex.ts";
-import { identify } from "./core/identify.ts";
+import { identify, peel, type EncodingCandidate, type PeelLayer } from "./core/identify.ts";
 import { create, encodingInfos } from "./core/registry.ts";
 import type { EncodingInfo } from "./core/types.ts";
 import {
@@ -66,10 +66,15 @@ export interface IdentifyCandidate {
   byteLength: number;
   text?: string;
   details: Record<string, string | number>;
+  /** On a peeled layer: whether a checksum, framing or readable text backs it. */
+  confirmed?: boolean;
 }
 
 export interface IdentifyDetails {
+  /** Candidates, best first; empty with `peel`. */
   candidates: IdentifyCandidate[];
+  /** With `peel`: the layers taken off, outermost first. */
+  layers?: IdentifyCandidate[];
 }
 
 export interface InfoDetails {
@@ -290,16 +295,53 @@ export function encodingsDecode(
 }
 
 /**
- * Ranks the encodings a text decodes in.
+ * Writes candidates or layers as numbered lines, each with its decoded value.
  *
- * @param params - Tool arguments.
- * @returns {ToolResult<IdentifyDetails>} Candidates, best first.
+ * @param entries - Candidates or layers, in order.
+ * @returns {string} The lines.
  */
-export function encodingsIdentify(
-  params: Readonly<Record<string, unknown>>,
-): ToolResult<IdentifyDetails> {
-  const text = stringArgument("text", params["text"], MAX_TEXT_LENGTH);
-  const limit = params["limit"] ?? 5;
+function candidateLines(entries: readonly IdentifyCandidate[]): string {
+  const lines = entries.map((candidate, index) => {
+    const shown =
+      candidate.text === undefined
+        ? `hex ${candidate.hex.slice(0, PREVIEW_LENGTH)}${candidate.hex.length > PREVIEW_LENGTH ? "…" : ""}`
+        : `text ${quote(candidate.text.slice(0, PREVIEW_LENGTH))}${candidate.text.length > PREVIEW_LENGTH ? "…" : ""}`;
+    const guess = candidate.confirmed === false ? " (unconfirmed guess)" : "";
+    const why = candidate.reasons.length > 0 ? `; ${candidate.reasons.join(", ")}` : "";
+    const extra = detailLine(candidate.details);
+    return `${index + 1}. ${candidate.encoding}${guess} ${candidate.confidence}${why}${extra ? `; ${extra}` : ""}\n   ${candidate.byteLength} bytes, ${shown}`;
+  });
+  return lines.join("\n");
+}
+
+/**
+ * Shows a candidate or layer the way every tool surface reads it.
+ *
+ * @param candidate - The candidate, with `confirmed` when it is a peeled layer.
+ * @returns {IdentifyCandidate} Hex, byte count and the text when it is readable.
+ */
+function shownCandidate(candidate: EncodingCandidate | PeelLayer): IdentifyCandidate {
+  return {
+    encoding: candidate.encoding,
+    confidence: candidate.confidence,
+    reasons: candidate.reasons,
+    hex: hex.encode(candidate.bytes),
+    byteLength: candidate.bytes.length,
+    ...(readable(candidate.bytes) === undefined ? {} : { text: candidate.text! }),
+    details: candidate.details,
+    ...("confirmed" in candidate ? { confirmed: candidate.confirmed } : {}),
+  };
+}
+
+/**
+ * Checks the `limit` of `encodings_identify`: candidates, or layers with `peel`.
+ *
+ * @param value - The value as passed.
+ * @param peeling - Whether `peel` is set, which raises the default.
+ * @returns {number} The limit.
+ */
+function identifyLimit(value: unknown, peeling: boolean): number {
+  const limit = value ?? (peeling ? 10 : 5);
   if (
     typeof limit !== "number" ||
     !Number.isInteger(limit) ||
@@ -308,31 +350,47 @@ export function encodingsIdentify(
   ) {
     throw new InvalidOptionError("limit", limit, `must be an integer from 1 to ${MAX_CANDIDATES}`);
   }
-  const candidates: IdentifyCandidate[] = identify(text, { limit }).map((candidate) => ({
-    encoding: candidate.encoding,
-    confidence: candidate.confidence,
-    reasons: candidate.reasons,
-    hex: hex.encode(candidate.bytes),
-    byteLength: candidate.bytes.length,
-    ...(readable(candidate.bytes) === undefined ? {} : { text: candidate.text! }),
-    details: candidate.details,
-  }));
-  if (candidates.length === 0) {
-    return {
-      content: [{ type: "text", text: "No encoding decodes this text to anything but itself." }],
-      details: { candidates },
-    };
+  return limit;
+}
+
+/**
+ * Takes the encodings off a text layer by layer.
+ *
+ * @param text - The text.
+ * @param limit - Most layers.
+ * @returns {ToolResult<IdentifyDetails>} Layers, outermost first.
+ */
+function peeled(text: string, limit: number): ToolResult<IdentifyDetails> {
+  const layers = peel(text, { limit }).map((layer) => shownCandidate(layer));
+  const body =
+    layers.length === 0
+      ? "No layer to take off: nothing decodes this text to readable text or past a checksum."
+      : `${layers.length} layer${layers.length === 1 ? "" : "s"}, outermost first:\n${candidateLines(layers)}`;
+  return { content: [{ type: "text", text: body }], details: { candidates: [], layers } };
+}
+
+/**
+ * Ranks the encodings a text decodes in, or with `peel` takes them off layer by layer.
+ *
+ * @param params - Tool arguments.
+ * @returns {ToolResult<IdentifyDetails>} Candidates best first, or layers outermost first.
+ */
+export function encodingsIdentify(
+  params: Readonly<Record<string, unknown>>,
+): ToolResult<IdentifyDetails> {
+  const text = stringArgument("text", params["text"], MAX_TEXT_LENGTH);
+  const peeling = params["peel"] ?? false;
+  if (typeof peeling !== "boolean") {
+    throw new InvalidOptionError("peel", peeling, "must be a boolean");
   }
-  const lines = candidates.map((candidate, index) => {
-    const shown =
-      candidate.text === undefined
-        ? `hex ${candidate.hex.slice(0, PREVIEW_LENGTH)}${candidate.hex.length > PREVIEW_LENGTH ? "…" : ""}`
-        : `text ${quote(candidate.text.slice(0, PREVIEW_LENGTH))}${candidate.text.length > PREVIEW_LENGTH ? "…" : ""}`;
-    const why = candidate.reasons.length > 0 ? `; ${candidate.reasons.join(", ")}` : "";
-    const extra = detailLine(candidate.details);
-    return `${index + 1}. ${candidate.encoding} ${candidate.confidence}${why}${extra ? `; ${extra}` : ""}\n   ${candidate.byteLength} bytes, ${shown}`;
-  });
-  return { content: [{ type: "text", text: lines.join("\n") }], details: { candidates } };
+  const limit = identifyLimit(params["limit"], peeling);
+  if (peeling) return peeled(text, limit);
+  const candidates = identify(text, { limit }).map((candidate) => shownCandidate(candidate));
+  const body =
+    candidates.length === 0
+      ? "No encoding decodes this text to anything but itself."
+      : candidateLines(candidates);
+  return { content: [{ type: "text", text: body }], details: { candidates } };
 }
 
 /**

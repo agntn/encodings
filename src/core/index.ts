@@ -17,13 +17,16 @@ export {
   normalizeError,
 } from "./errors.ts";
 export { binary, type BinaryEncodeOptions } from "./binary.ts";
+export { octal } from "./octal.ts";
+export { decimal } from "./decimal.ts";
+export type { NumbersCodec, NumbersEncodeOptions } from "./numbers.ts";
 export { hex, type HexEncodeOptions } from "./hex.ts";
 export { base32, base32crockford, base32hex, zbase32 } from "./base32.ts";
 export { base45 } from "./base45.ts";
 export { base58, base58check, base58flickr, base58ripple, type Base58Codec } from "./base58.ts";
 export { base64, base64url } from "./base64.ts";
 export type { PaddedCodec, Radix2EncodeOptions, Radix2Codec } from "./radix2.ts";
-export { ascii85, z85, type Ascii85EncodeOptions } from "./base85.ts";
+export { ascii85, base85, z85, type Ascii85EncodeOptions } from "./base85.ts";
 export { base91 } from "./base91.ts";
 export {
   BECH32_LIMIT,
@@ -47,4 +50,11 @@ export {
   register,
   resolveEncoding,
 } from "./registry.ts";
-export { identify, type EncodingCandidate, type IdentifyOptions } from "./identify.ts";
+export {
+  identify,
+  peel,
+  type EncodingCandidate,
+  type IdentifyOptions,
+  type PeelLayer,
+  type PeelOptions,
+} from "./identify.ts";

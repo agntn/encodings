@@ -32,6 +32,8 @@ describe("@agntn/encodings", () => {
   it("lists the built-ins in a fixed order", () => {
     expect(encodings()).toEqual([
       "binary",
+      "octal",
+      "decimal",
       "hex",
       "base32",
       "base32hex",
@@ -46,6 +48,7 @@ describe("@agntn/encodings", () => {
       "base64url",
       "ascii85",
       "z85",
+      "base85",
       "base91",
       "bech32",
       "bech32m",
@@ -66,12 +69,14 @@ describe("@agntn/encodings", () => {
 describe("family subpaths", () => {
   const expected: Record<string, string[]> = {
     binary: ["binary"],
+    octal: ["octal"],
+    decimal: ["decimal"],
     hex: ["hex"],
     base32: ["base32", "base32crockford", "base32hex", "zbase32"],
     base45: ["base45"],
     base58: ["base58", "base58check", "base58flickr", "base58ripple", "createBase58check"],
     base64: ["base64", "base64url"],
-    base85: ["ascii85", "z85"],
+    base85: ["ascii85", "base85", "z85"],
     base91: ["base91"],
     bech32: [
       "BECH32_LIMIT",
@@ -117,7 +122,7 @@ describe("resolveEncoding", () => {
 
   it("names the available encodings when nothing matches", () => {
     expect(() => resolveEncoding("base62")).toThrow(UnknownEncodingError);
-    expect(() => resolveEncoding("base62")).toThrow(/Available: binary, hex/u);
+    expect(() => resolveEncoding("base62")).toThrow(/Available: binary, octal, decimal, hex/u);
     expect(() => resolveEncoding("toString")).toThrow(UnknownEncodingError);
   });
 });
