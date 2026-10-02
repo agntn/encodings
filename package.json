@@ -1,0 +1,164 @@
+{
+  "name": "@agntn/encodings",
+  "version": "0.0.0",
+  "description": "Base58, base64, bech32 and a dozen more binary-to-text encodings, written from the specs",
+  "keywords": [
+    "agent",
+    "ascii85",
+    "base32",
+    "base45",
+    "base58",
+    "base58check",
+    "base64",
+    "base91",
+    "bech32",
+    "bech32m",
+    "encoding",
+    "mcp",
+    "quoted-printable",
+    "uuencode",
+    "z85"
+  ],
+  "homepage": "https://encodings.agntn.dev",
+  "bugs": "https://github.com/agntn/encodings/issues",
+  "license": "MIT",
+  "author": "oritwoen (https://github.com/oritwoen)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agntn/encodings.git"
+  },
+  "bin": {
+    "encodings": "./dist/cli.mjs"
+  },
+  "files": [
+    "dist",
+    "packages/omp/extensions",
+    "packages/pi/extensions"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./binary": {
+      "types": "./dist/binary.d.mts",
+      "import": "./dist/binary.mjs"
+    },
+    "./hex": {
+      "types": "./dist/hex.d.mts",
+      "import": "./dist/hex.mjs"
+    },
+    "./base32": {
+      "types": "./dist/base32.d.mts",
+      "import": "./dist/base32.mjs"
+    },
+    "./base45": {
+      "types": "./dist/base45.d.mts",
+      "import": "./dist/base45.mjs"
+    },
+    "./base58": {
+      "types": "./dist/base58.d.mts",
+      "import": "./dist/base58.mjs"
+    },
+    "./base64": {
+      "types": "./dist/base64.d.mts",
+      "import": "./dist/base64.mjs"
+    },
+    "./base85": {
+      "types": "./dist/base85.d.mts",
+      "import": "./dist/base85.mjs"
+    },
+    "./base91": {
+      "types": "./dist/base91.d.mts",
+      "import": "./dist/base91.mjs"
+    },
+    "./bech32": {
+      "types": "./dist/bech32.d.mts",
+      "import": "./dist/bech32.mjs"
+    },
+    "./uuencode": {
+      "types": "./dist/uuencode.d.mts",
+      "import": "./dist/uuencode.mjs"
+    },
+    "./quoted-printable": {
+      "types": "./dist/quoted-printable.d.mts",
+      "import": "./dist/quoted-printable.mjs"
+    },
+    "./ai": {
+      "types": "./dist/ai.d.mts",
+      "import": "./dist/ai.mjs"
+    },
+    "./mcp": {
+      "types": "./dist/mcp.d.mts",
+      "import": "./dist/mcp.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "obuild",
+    "dev": "obuild --stub",
+    "lint": "pnpm build && vp lint && vp fmt --check",
+    "lint:fix": "pnpm build && vp lint --fix && vp fmt",
+    "typecheck": "tsc --noEmit --skipLibCheck && pnpm build && tsc -p tsconfig.extensions.json && tsc -p test/tsconfig.json",
+    "test": "vp test run",
+    "test:watch": "vp test watch",
+    "prepack": "pnpm run build",
+    "release": "pnpm build && pnpm test && changelogen --release --push"
+  },
+  "dependencies": {
+    "@agntn/hashes": "0.6.1",
+    "@agntn/tools": "0.0.0",
+    "@modelcontextprotocol/server": "2.2.0",
+    "citty": "0.2.2",
+    "consola": "3.4.2"
+  },
+  "devDependencies": {
+    "@agntn/ox": "0.1.0",
+    "@earendil-works/pi-coding-agent": "0.84.2",
+    "@modelcontextprotocol/client": "2.2.0",
+    "@oh-my-pi/pi-coding-agent": "18.0.0",
+    "@types/node": "26.2.0",
+    "ai": "7.0.66",
+    "changelogen": "0.6.2",
+    "obuild": "0.4.43",
+    "typescript": "7.0.2",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": ">=0.84.2 <1",
+    "@oh-my-pi/pi-coding-agent": ">=18.0.0 <19",
+    "ai": ">=7.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@earendil-works/pi-coding-agent": {
+      "optional": true
+    },
+    "@oh-my-pi/pi-coding-agent": {
+      "optional": true
+    },
+    "ai": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=26"
+  },
+  "packageManager": "pnpm@12.8.1",
+  "omp": {
+    "extensions": [
+      "./packages/omp/extensions/encodings.ts"
+    ]
+  },
+  "pi": {
+    "extensions": [
+      "./packages/pi/extensions/encodings.ts"
+    ]
+  }
+}
