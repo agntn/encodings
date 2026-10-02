@@ -55,6 +55,7 @@ const IDENTIFY_SAMPLES: ReadonlyArray<{ label: string; text: string; icon: strin
   { label: "jwt", text: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9", icon: "i-lucide-link" },
   { label: "ascii85", text: "<~87cURD_*#4DfTZ)+T~>", icon: "i-lucide-file-text" },
   { label: "email", text: "caf=C3=A9 =3D ok=20", icon: "i-lucide-mail" },
+  { label: "layered", text: "5958523059574e7249474630494752686432343d", icon: "i-lucide-layers" },
 ];
 
 /** The encodings the chips load, one per family worth showing. */
@@ -71,6 +72,9 @@ const text = ref(create("base64").encode(SAMPLE_INPUT));
 const outputFormat = ref<(typeof OUTPUT_FORMATS)[number]>("auto");
 const unknown = ref(IDENTIFY_SAMPLES[0]!.text);
 const limit = ref<string | number>("5");
+const peeling = ref(false);
+/** The executor's own default: 5 candidates, or 10 layers with `peel`. */
+const limitDefault = computed(() => (peeling.value ? 10 : 5));
 const describe = ref("");
 const family = ref("");
 /** Option values as typed, by option name; only the encoding's own reach the call. */
@@ -131,7 +135,11 @@ const toolArgs = computed((): Record<string, unknown> => {
       };
     case "identify": {
       const count = Number(limit.value);
-      return { text: unknown.value, ...(Number.isInteger(count) && count !== 5 ? { limit: count } : {}) };
+      return {
+        text: unknown.value,
+        ...(peeling.value ? { peel: true } : {}),
+        ...(Number.isInteger(count) && count !== limitDefault.value ? { limit: count } : {}),
+      };
     }
     case "info":
       if (describe.value) return { encoding: describe.value };
@@ -247,7 +255,11 @@ const cliLine = computed(() => {
     }
     case "identify": {
       const count = Number(limit.value);
-      return `encodings identify ${shellArg(unknown.value)}${Number.isInteger(count) && count !== 5 ? ` -n ${count}` : ""}`;
+      const flags = [
+        peeling.value ? "--peel" : "",
+        Number.isInteger(count) && count !== limitDefault.value ? `-n ${count}` : "",
+      ].filter(Boolean);
+      return [`encodings identify ${shellArg(unknown.value)}`, ...flags].join(" ");
     }
     case "info":
       if (describe.value) return `encodings list ${describe.value}`;
@@ -267,7 +279,9 @@ const call = computed(() => {
     const target = args.encoding ?? args.family;
     return `${answered.value.tool}(${target ? `"${String(target)}"` : ""})`;
   }
-  if (request.value.op === "identify") return `${answered.value.tool}(${JSON.stringify(args.text)})`;
+  if (request.value.op === "identify") {
+    return `${answered.value.tool}(${JSON.stringify(args.text)}${args.peel === true ? ", { peel: true }" : ""})`;
+  }
   const value = request.value.op === "decode" ? args.text : args.input;
   return `${answered.value.tool}("${String(args.encoding)}", ${JSON.stringify(value)})`;
 });
@@ -328,15 +342,44 @@ function selectEncoding(slug: string) {
  *
  * @param {string} slug - The candidate's encoding.
  * @param {Record<string, string | number | boolean>} [options] - Its decode options.
+ * @param {string} [from] - The text it reads, the layer above it for a peeled layer.
  */
-function decodeCandidate(slug: string, options: Record<string, string | number | boolean> = {}) {
+function decodeCandidate(
+  slug: string,
+  options: Record<string, string | number | boolean> = {},
+  from: string = unknown.value,
+) {
   encodingName.value = slug;
   for (const key of Object.keys(values)) delete values[key];
   for (const [key, value] of Object.entries(options)) values[key] = typeof value === "boolean" ? value : String(value);
-  text.value = unknown.value;
+  text.value = from;
   outputFormat.value = "auto";
   operation.value = "decode";
 }
+
+/**
+ * Turns `peel` on or off; a limit still at the old default moves to the new one.
+ *
+ * @param {boolean} on - Whether to peel.
+ */
+function setPeeling(on: boolean) {
+  if (Number(limit.value) === limitDefault.value) limit.value = String(on ? 10 : 5);
+  peeling.value = on;
+}
+
+/** Layers outermost first with the text each reads, from hex since `text` drops control bytes. */
+const layers = computed(() => {
+  if (answer.value.kind !== "identify" || answer.value.details.layers === undefined) return undefined;
+  const found = answer.value.details.layers;
+  return found.map((layer, index) => ({
+    layer,
+    from:
+      index === 0
+        ? String(request.value.args.text ?? "")
+        : new TextDecoder().decode(create("hex").decode(found[index - 1]!.hex).bytes),
+  }));
+});
+const innermost = computed(() => layers.value?.at(-1)?.layer);
 
 const { copied, copy } = useCopied();
 
@@ -356,7 +399,8 @@ function readQuery(query: Record<string, unknown>) {
     if (op === "identify") unknown.value = query.text;
     else text.value = query.text;
   }
-  if (typeof query.limit === "string") limit.value = query.limit;
+  if (typeof query.peel === "string") peeling.value = query.peel === "true";
+  limit.value = typeof query.limit === "string" ? query.limit : String(limitDefault.value);
   const inFormat = String(query.inputFormat ?? "");
   if ((INPUT_FORMATS as readonly string[]).includes(inFormat)) {
     inputFormat.value = inFormat as (typeof INPUT_FORMATS)[number];
@@ -535,12 +579,23 @@ const identifyLimit = MAX_CANDIDATES;
                 <dd>
                   <UInput
                     id="playground-limit"
-                    v-model="limit"
+                    v-model.number="limit"
                     type="number"
                     min="1"
                     :max="identifyLimit"
                     variant="none"
                     class="w-full"
+                  />
+                </dd>
+              </div>
+              <div>
+                <dt><label for="playground-peel">peel</label></dt>
+                <dd>
+                  <UCheckbox
+                    id="playground-peel"
+                    :model-value="peeling"
+                    label="take every layer off, outermost first"
+                    @update:model-value="setPeeling($event === true)"
                   />
                 </dd>
               </div>
@@ -695,8 +750,8 @@ const identifyLimit = MAX_CANDIDATES;
             >
             <template v-else-if="operation === 'identify'"
               >Each sample is a different kind of evidence: padding, a checksum, a segwit program,
-              JSON hiding in base64url, delimiters, escapes. Decode a candidate and it carries the
-              text along.</template
+              JSON hiding in base64url, delimiters, escapes, base64 inside hex. Decode a candidate
+              and it carries the text along. Peel takes off one layer after another.</template
             >
             <template v-else-if="operation === 'info'"
               >Pick an encoding to see its alphabet and options the way a model sees them before
@@ -783,6 +838,9 @@ const identifyLimit = MAX_CANDIDATES;
         >
         <span v-else-if="answer.kind === 'decode'" class="console-meta"
           >{{ answer.details.byteLength }} bytes · {{ answer.details.format }}</span
+        >
+        <span v-else-if="layers" class="console-meta"
+          >{{ layers.length }} {{ layers.length === 1 ? "layer" : "layers" }} · outermost first</span
         >
         <span v-else-if="answer.kind === 'identify'" class="console-meta"
           >{{ answer.details.candidates.length }} candidates · best first</span
@@ -925,6 +983,91 @@ const identifyLimit = MAX_CANDIDATES;
           </p>
           <pre :key="scan" class="console-snippet playground-output"><code>{{ answer.details.value }}</code></pre>
         </div>
+      </template>
+
+      <template v-else-if="layers">
+        <div class="console-band console-subject-band">
+          <div :key="scan" class="console-scan" aria-hidden="true" />
+          <div class="console-identity-block">
+            <ConsoleReticle
+              :key="innermost?.encoding ?? 'none'"
+              :icon="encodingEntry(innermost?.encoding ?? '')?.icon ?? 'i-lucide-layers'"
+            />
+            <div class="console-name">
+              <span class="console-label"
+                >Peel / <span class="console-label-key">{{ layers.length }} deep</span></span
+              >
+              <h3 :class="{ 'playground-invalid': layers.length === 0 }">
+                {{
+                  layers.length > 0
+                    ? layers.map(({ layer }) => readingName(layer.encoding, layer.options)).join(" → ")
+                    : "Nothing to peel"
+                }}
+              </h3>
+              <p class="console-about">
+                {{
+                  layers.length === 0
+                    ? "Nothing decodes this to readable text or past a checksum."
+                    : innermost?.confirmed === false
+                      ? "The last layer is only the best guess. Nothing backs it."
+                      : "A checksum, framing or readable text backs every layer."
+                }}
+              </p>
+            </div>
+          </div>
+          <div class="console-readout">
+            <svg class="console-link" viewBox="0 0 32 40" fill="none" aria-hidden="true">
+              <circle cx="3" cy="12" r="2.5" />
+              <path d="M5.5 12H14L22 20H32" />
+            </svg>
+            <dl :key="scan" class="console-readout-rows console-animate">
+              <div>
+                <dt>Layers</dt>
+                <dd class="console-accent">{{ layers.length }}</dd>
+              </div>
+              <div>
+                <dt>Backed</dt>
+                <dd>{{ layers.filter(({ layer }) => layer.confirmed !== false).length }} of {{ layers.length }}</dd>
+              </div>
+              <div>
+                <dt>Bottom</dt>
+                <dd>
+                  <span v-if="innermost?.text !== undefined" class="playground-line">{{
+                    JSON.stringify(innermost?.text)
+                  }}</span>
+                  <span v-else-if="innermost" class="playground-none">{{ innermost.byteLength }} bytes, not text</span>
+                  <span v-else class="playground-none">the text itself</span>
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+        <ol v-if="layers.length > 0" :key="scan" class="console-rows console-animate playground-candidates">
+          <li
+            v-for="({ layer, from }, index) in layers"
+            :key="index"
+            :style="{ animationDelay: `${Math.min(index * 30, 600)}ms` }"
+          >
+            <span class="playground-layer-name">
+              <NuxtLink :to="`/encodings/${layer.encoding}`" class="playground-list-name">{{
+                readingName(layer.encoding, layer.options)
+              }}</NuxtLink>
+              <UBadge v-if="layer.confirmed === false" color="neutral" variant="outline" label="guess" />
+            </span>
+            <span class="playground-line playground-none"
+              >{{ layer.confidence.toFixed(3) }} ·
+              {{ layer.text === undefined ? `hex ${layer.hex}` : JSON.stringify(layer.text) }}</span
+            >
+            <UButton
+              color="neutral"
+              variant="subtle"
+              trailing-icon="i-lucide-arrow-right"
+              label="decode"
+              :aria-label="`Decode layer ${index + 1} with ${readingName(layer.encoding, layer.options)}`"
+              @click="decodeCandidate(layer.encoding, layer.options, from)"
+            />
+          </li>
+        </ol>
       </template>
 
       <template v-else-if="answer.kind === 'identify'">
@@ -1286,6 +1429,14 @@ const identifyLimit = MAX_CANDIDATES;
 .playground-candidates li {
   grid-template-columns: minmax(0, 10rem) minmax(0, 1fr) auto;
   align-items: center;
+}
+/* A layer's name with its `guess` badge, which wraps under it in a narrow column. */
+.playground-layer-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
 }
 /* One row per option of one encoding: the name, whether it is required, what it does. */
 .playground-options li {
