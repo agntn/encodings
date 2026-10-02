@@ -5,6 +5,7 @@ import {
   ENCODINGS,
   SAMPLE_OPTIONS,
   alphabetCells,
+  alphabetSize,
   checksumOption,
   codecExport,
   encodingEntry,
@@ -103,7 +104,7 @@ const title = computed(() => `encodings_info("${props.name}")`);
           >{{ String(position).padStart(2, "0") }} / {{ ENCODINGS.length }}</span
         ></span
       >
-      <span class="console-meta">{{ entry.info.family }} · {{ entry.info.alphabet.length }} characters</span>
+      <span class="console-meta">{{ entry.info.family }} · {{ alphabetSize(entry.info) }} characters</span>
       <span class="console-mark" aria-hidden="true" />
     </header>
     <div class="console-ruler" aria-hidden="true"><span class="console-cursor" /></div>
@@ -196,7 +197,7 @@ const title = computed(() => `encodings_info("${props.name}")`);
           </dd>
         </div>
       </dl>
-      <div class="facts-alphabet" role="img" :aria-label="`${entry.info.alphabet.length}-character alphabet`">
+      <div class="facts-alphabet" role="img" :aria-label="`${alphabetSize(entry.info)}-character alphabet`">
         <span
           v-for="(cell, index) in cells"
           :key="index"

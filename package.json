@@ -5,6 +5,7 @@
   "keywords": [
     "agent",
     "ascii85",
+    "base256",
     "base32",
     "base45",
     "base58",
@@ -83,6 +84,10 @@
     "./base91": {
       "types": "./dist/base91.d.mts",
       "import": "./dist/base91.mjs"
+    },
+    "./base256": {
+      "types": "./dist/base256.d.mts",
+      "import": "./dist/base256.mjs"
     },
     "./bech32": {
       "types": "./dist/bech32.d.mts",

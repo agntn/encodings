@@ -172,7 +172,7 @@ describe("encodings MCP server", () => {
   });
 
   it("lists encodings and shows one", async () => {
-    expect((await call("encodings_info", {})).split("\n")).toHaveLength(13);
+    expect((await call("encodings_info", {})).split("\n")).toHaveLength(14);
     expect(await call("encodings_info", { encoding: "base32" })).toContain(
       'alphabet (string, default "standard", decode too)',
     );
@@ -217,6 +217,22 @@ describe("encodings MCP server", () => {
     ).toBe(
       'binary (symbols=ab, bits=8, order=msb) → 1 bytes as utf8:\n"m"\nIgnored, binary does not read with: alphabet',
     );
+    expect(
+      await call("encodings_decode", {
+        encoding: "base256emoji",
+        text: "🚀😝🌈🌷😝",
+        options: { multibase: true, bits: 8 },
+      }),
+    ).toBe(
+      'base256 (multibase) → 4 bytes as utf8:\n"gsmg"\nIgnored, base256 does not read with: bits',
+    );
+    expect(
+      await call("encodings_decode", {
+        encoding: "base256",
+        text: "♣ ♠ ♦",
+        options: { symbols: "♠♥♦♣" },
+      }),
+    ).toContain("3 bytes as hex:\n030002");
     await expect(
       call("encodings_decode", { encoding: "base32", text: "x", options: { alphabet: "base32" } }),
     ).rejects.toThrow("Invalid arguments");
@@ -313,6 +329,16 @@ describe("executors without the schema", () => {
       "must be an object",
     );
     expect(() => encodingsDecode({ encoding: "hex", text: "" })).toThrow("must be 1 to 100000");
+    expect(() =>
+      encodingsDecode({
+        encoding: "base256",
+        text: "ab",
+        options: { sample: "ab".repeat(50_001) },
+      }),
+    ).toThrow("Invalid option sample=100002 characters: must be 1 to 100000 characters");
+    expect(() =>
+      encodingsEncode({ encoding: "binary", input: "x", options: { symbols: "a".repeat(4097) } }),
+    ).toThrow("must be 1 to 4096 characters");
     expect(() => encodingsIdentify({ text: "x", limit: 99 })).toThrow("from 1 to 20");
     expect(() => encodingsIdentify({ text: "x", peel: "yes" })).toThrow("must be a boolean");
     expect(

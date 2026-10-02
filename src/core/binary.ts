@@ -1,3 +1,4 @@
+import { MAX_SYMBOL, graphemes } from "./bytes.ts";
 import { DecodeError, EncodingError, InvalidOptionError, named } from "./errors.ts";
 
 /** Which bit of a byte the text writes first. */
@@ -35,16 +36,6 @@ const WHITESPACE = /^[\t\n\f\r ]+$/u;
 const ASCII = /^\p{ASCII}*$/u;
 
 /**
- * Splits text into graphemes, so an emoji with its variation selector stays one symbol.
- *
- * @param text - Any text.
- * @returns {Intl.Segments} The graphemes with their index.
- */
-function graphemes(text: string): Intl.Segments {
-  return new Intl.Segmenter("en", { granularity: "grapheme" }).segment(text);
-}
-
-/**
  * Splits `symbols` into two code points, such as zero-width ones, or else two graphemes.
  *
  * @param symbols - Two characters, as the caller passed them.
@@ -58,6 +49,9 @@ function symbolPair(symbols: string): [string, string] {
   const distinct = new Set(characters).size === 2 && characters.length === 2;
   if (!distinct || characters.some((character) => WHITESPACE.test(character))) {
     throw new InvalidOptionError("symbols", symbols, "needs two different non-space characters");
+  }
+  if (characters.some((character) => Array.from(character).length > MAX_SYMBOL)) {
+    throw new InvalidOptionError("symbols", symbols, `has a symbol over ${MAX_SYMBOL} code points`);
   }
   return [zero, one];
 }

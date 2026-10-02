@@ -2,7 +2,8 @@
  * Outputs of independent implementations, frozen so the tests need none of them installed.
  *
  * - `javascript`: base-x 5.0.1 (base58 in three alphabets), node-base91 0.3.4 (basE91) and
- *   base32-encode 2.0.0 (Crockford), over seeded random bytes with frequent zero bytes.
+ *   base32-encode 2.0.0 (Crockford), multiformats 14.0.5 (`base256emoji.baseEncode`, no
+ *   prefix), over seeded random bytes with frequent zero bytes.
  * - `python`: CPython 3.12.13 `base64.b32encode`, `b32hexencode`, `a85encode` and `b85encode`,
  *   `binascii.b2a_uu(backtick=True)` (one line), base45 0.4.4 and pyzmq 27.2.0 `z85.encode`
  *   (multiples of four bytes only), over `random.seed(7)` bytes.
@@ -16,6 +17,7 @@ export type VectorRow = Readonly<Record<string, string>>;
 export const javascript: readonly VectorRow[] = [
   {
     hex: "",
+    base256: "",
     base58: "",
     "base58-flickr": "",
     "base58-ripple": "",
@@ -24,6 +26,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "00",
+    base256: "🚀",
     base58: "1",
     "base58-flickr": "1",
     "base58-ripple": "r",
@@ -32,6 +35,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "000001",
+    base256: "🚀🚀🪐",
     base58: "112",
     "base58-flickr": "112",
     "base58-ripple": "rrp",
@@ -40,6 +44,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "ff",
+    base256: "🥂",
     base58: "5Q",
     "base58-flickr": "5p",
     "base58-ripple": "nQ",
@@ -48,6 +53,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "2700ed00234768e72fd7401b8f9400ed6debf9a5a94700d574000046acba0000",
+    base256: "💙🚀🥀🚀🔥🤩😴❄👌🧐😋🙏😛⚽🚀🥀🌷💌🚩🌞👋🤩🚀🔵😈🚀🚀💓😶🤓🚀🚀",
     base58: "3dFihefKZvL2h81kAfxX83f95rvHWFMw9xhxskwrxN4w",
     "base58-flickr": "3CfHGDEjyVk2G81KaEXw83E95RVhvfmW9XGXSKWRXn4W",
     "base58-ripple": "sdE56eCKZvLp63rkwCxX3sC9nivHWEMA9x6x1kAix4hA",
@@ -56,6 +62,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "2a1fde2ae0bae6bdf886b2e1a8006e00e7",
+    base256: "😆👍🐷😆💧🤓🍑🌱🥵💝🤟😯✊🚀😻🚀❄",
     base58: "Pxe19cmfg9demPwif8cRgTx",
     "base58-flickr": "oXD19BLEF9CDLoWHE8BqFsX",
     "base58-ripple": "Pxer9cmCg9demPA5C3cRgTx",
@@ -64,6 +71,8 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "b0471b827d321c0027bc600000aedf31f3585600266055b800c5da961e009ef0b21cbe770b795d792469252c98c54e9edbe7",
+    base256:
+      "🍓🤩🙏🎂💘😔💕🚀💙💟😥🚀🚀🚶☎💜📸💥😪🚀💖😥👀🎀🚀💸😗☕😘🚀🐶💡🤟💕😖✔🌗🏃🤪🏃🥰🌟💔💪🤫💸👇🐶🤑❄",
     base58: "3AyUtxMNMz1QWkSNThMgodGxDtaTsvVk7T19o1j5gFE8tbgKyTWuQXmbUeu4kR66LKik6",
     "base58-flickr": "3aYtTXmnmZ1pvKrnsGmFNCgXdTzsSVuK7s19N1J5Ffe8TAFjYsvUpwLAtDU4Kq66kjHK6",
     "base58-ripple": "swy7txM4MzrQWkS4T6MgodGxDt2T1vVkfTr9orjngEN3tbgKyTWuQXmb7euhkRaaLK5ka",
@@ -73,6 +82,8 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "d000293d29000000004f60e700764c00c8618f99eb324ce85e00aaf7e0fa7f2bdd00d0ab208ff83b8ba62cc10097",
+    base256:
+      "👎🚀🤔😌🤔🚀🚀🚀🚀🎶😥❄🚀💦💯🚀🌚🤤😛👈💌😔💯🌴👊🚀😰🎼💧🍎☝🙄🤯🚀👎🤨😅😛🥵🤷💀🎈💪▶🚀🏆",
     base58: "PiWrZfgE4CMAQTBtZZBaGi2mjnt7E2YdHY3fQR8VPW9J69NPr4yCkHCGRqxHiLN",
     "base58-flickr": "oHvRyEFe4cmapsbTyybzgH2LJMT7e2xChx3Epq8uov9i69noR4YcKhcgqQXhHkn",
     "base58-ripple": "P5WiZCgNhUMwQTBtZZB2G5pmj8tfNpYdHYsCQR3VPW9Ja94PihyUkHUGRqxH5L4",
@@ -82,6 +93,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "dde4f5003faaaa7f5fdacf389a2d",
+    base256: "🤯🎤🤐🚀🙌😰😰☝🥳😗😵💞😮😉",
     base58: "2QaQNFYBdoSrmbKV1a1A",
     "base58-flickr": "2pzpnfxbCNrRLAju1z1a",
     "base58-ripple": "pQ2Q4EYBdoSimbKVr2rw",
@@ -90,6 +102,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "4b00df821b7a598a5990980072cc774f8b1d1d6fb584a70afa3cd200087beaf9009d5ad104f0d483ca345600",
+    base256: "😃🚀☎🎂🙏💐🙋💫🙋🔴🤫🚀🥺⚠✔🎶💀😭😭😓💨😐❌🌖🍎😱🤠🚀🌔☹🐸🚩🚀🍃😞🤲🌌💡📌🌻😷😇😪🚀",
     base58: "RPQtYPPk3HK8MVApRF6xSyDhRzxhKqo5vU4LcKYyJS5gqYxLNDkhLsmQbmeo",
     "base58-flickr": "qopTxooK3hj8muaPqf6XrYdGqZXGjQN5Vt4kBjxYir5FQxXkndKGkSLpALDN",
     "base58-ripple": "RPQtYPPksHK3MVwFREaxSyD6Rzx6Kqonv7hLcKYyJSngqYxL4Dk6L1mQbmeo",
@@ -98,6 +111,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "e700005574009a93",
+    base256: "❄🚀🚀👀😈🚀😮😫",
     base58: "fdzPP7L6nPC",
     "base58-flickr": "ECZoo7k6Moc",
     "base58-ripple": "CdzPPfLa8PU",
@@ -106,6 +120,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "",
+    base256: "",
     base58: "",
     "base58-flickr": "",
     "base58-ripple": "",
@@ -114,6 +129,8 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "c2103ff0445f0dd314002f3700e41a52607d0071e0cda1ea1f00b11100017b00006a001a6919324a4530238b131b00e3a8e0",
+    base256:
+      "➡🐉🙌💡💛🥳🌍🤧💾🚀👌🎉🚀🎤😊❣😥💘🚀✅💧🙅🌿🐸👍🚀💢☀🚀🪐☹🚀🚀😬🚀😊🌟🤣😔🖤🙂🤗🔥💀🖥🙏🚀👆✊💧",
     base58: "3PggAfXGo6Wj5pbVKZjkvpXHXn895XnfBDi6jMwF8H8j6NDAc6eHjnrAV1Ye4hjECr4sh",
     "base58-flickr": "3oFFaEwgN6vJ5PAujyJKVPwhwM895wMEbdH6JmWf8h8J6ndaB6DhJMRau1xD4GJecR4SG",
     "base58-ripple": "sPggwCXGoaWjnFbVKZjkvFXHX839nX8CBD5ajMAE3H3ja4DwcaeHj8iwVrYeh6jNUih16",
@@ -123,6 +140,8 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "6656c8c114c7380072220c4d9900b87100e30e981d0063006912e4000041db090b6b270072009dd5fd90f2006400fb00e1a0e88518b47f06c100c5ed",
+    base256:
+      "😚😪🌚▶💾😨💞🚀🥺😁🌘🙈👈🚀🎀✅🚀👆🌏🤫😭🚀💃🚀🌟💻🎤🚀🚀💗🤑🌕🌗🙃💙🚀🥺🚀🍃🔵💍🔴👐🚀😳🚀🍊🚀😯😲🌴🖕😍🚨☝🌒▶🚀💸🥀",
     base58: "K8s7ttkGT8mnufBDEhwZUHpWLPAbuYDe5TspryYrPoJxP8PeYdifyd3a5JD58vxC39oTp17krEPK6jFpDi",
     "base58-flickr":
       "j8S7TTKgs8LMUEbdeGWythPvkoaAUxdD5sSPRYxRoNiXo8oDxCHEYC3z5id58VXc39NsP17KReoj6JfPdH",
@@ -134,6 +153,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "e4230085a7722800003bd5fee90500001b00d57c2a0768f9f0028d",
+    base256: "🎤🔥🚀🖕❌🥺😢🚀🚀🤷🔵📣💣🌑🚀🚀🙏🚀🔵🎊😆🌓😴🚩💡☄🎵",
     base58: "XqMnFSQEimKkvQZmuFVSsShD9CxSMuSMcZCEY",
     "base58-flickr": "wQmMfrpeHLjKVpyLUfurSrGd9cXrmUrmBycex",
     "base58-ripple": "XqM8ESQN5mKkvQZmuEVS1S6D9UxSMuSMcZUNY",
@@ -142,6 +162,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "a5f10d031d00ff64007b000065df9a3c00",
+    base256: "🌞💩🌍🛰😭🚀🥂😳🚀☹🚀🚀✋☎😮😱🚀",
     base58: "2ZSjzcGEp2G1YBa5rhWT6q6P",
     "base58-flickr": "2yrJZBgeP2g1xbz5RGvs6Q6o",
     "base58-ripple": "pZSjzcGNFpGrYB2ni6WTaqaP",
@@ -150,6 +171,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "d7d896c83c5d88ec00c17be000",
+    base256: "🧐🐾☕🌚😱🤪😹📍🚀▶☹💧🚀",
     base58: "JyjtRVUKZaLvqg9cH5",
     "base58-flickr": "iYJTqutjyzkVQF9Bh5",
     "base58-ripple": "JyjtRV7KZ2Lvqg9cHn",
@@ -158,6 +180,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "c402324da5e88efd00a51e33348aed00d9e0750000ef004e0002d43300006a39000024",
+    base256: "💎☄😔🙈🌞🌴🤞💍🚀🌞😘😎😇💫🥀🚀🍒💧🤘🚀🚀👅🚀👇🚀☄📌😎🚀🚀😬✌🚀🚀🥰",
     base58: "LZMAhiESR4tfRxKaLAAoBgMvwu2J8dDRNAWTLdkWRqtrJj8F",
     "base58-flickr": "kymaGHerq4TEqXjzkaaNbFmVWU2i8CdqnavskCKvqQTRiJ8f",
     "base58-ripple": "LZMw65NSRhtCRxK2LwwoBgMvAupJ3dDR4wWTLdkWRqtiJj3E",
@@ -166,6 +189,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "073035b600dfe00400d789ee7d00004d182f528b0000a618c1",
+    base256: "🌓🤗🌹🤬🚀☎💧🌌🚀🧐🗣🤢💘🚀🚀🙈😍👌❣💀🚀🚀🎈😍▶",
     base58: "3tm8fsUZSnvcnm7ANkUfXk3BKby4RecLM6",
     "base58-flickr": "3TL8EStyrMVBML7anKtEwK3bjAY4qDBkm6",
     "base58-ripple": "stm3C17ZS8vc8mfw4k7CXksBKbyhRecLMa",
@@ -174,6 +198,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "1eeb17fcb80b0000940000ef29003434ec49cf78908087000136302259",
+    base256: "😘💌❤👼🎀🌗🚀🚀⚽🚀🚀👅🤔🚀😇😇📍😀😵😣🔴😕🙊🚀🪐🤦🤗😁🙋",
     base58: "2QQiDMCsJeGfotpvEsxTRh7q3Sfqnc8bby2Ft9bE",
     "base58-flickr": "2ppHdmcSiDgENTPVeSXsqG7Q3rEQMB8AAY2fT9Ae",
     "base58-ripple": "pQQ5DMU1JeGCotFvN1xTR6fqsSCq8c3bbypEt9bN",
@@ -182,6 +207,8 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "00ed005d5f6c6177834beecacafc1f8400e15b0000905f3e9d94ef00000000ecaca5003d0d6c1788feb1a2007896459a22000024f900f4f462e5c0",
+    base256:
+      "🚀🥀🚀🤪🥳🍀🤤✔🌻😃🤢😷😷👼👍😐🚀😯😩🚀🚀🔴🥳🌸🍃⚽👅🚀🚀🚀🚀📍😶🌞🚀😌🌍🍀❤😹📣💢🧡🚀😣☕🙂😮😁🚀🚀🥰🚩🚀👻👻👉🙇🥴",
     base58: "13A3GBoYDMF46hhr4Db4sLeH99tn5mkHNspkDAwuYhXZFLw23PFzD6PFXPzSv64qJLmxfkWap52zoGXLb",
     "base58-flickr":
       "13a3gbNxdmf46GGR4dA4SkDh99TM5LKhnSPKdaWUxGwyfkW23ofZd6ofwoZrV64QikLXEKvzP52ZNgwkA",
@@ -193,6 +220,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "8c3a003500001f00f4afb6779b9fb04300c3fd",
+    base256: "👑✨🚀🌹🚀🚀👍🚀👻💰🤬✔🙆💁🍓😏🚀❓💍",
     base58: "SfweS3hgiN2gZwMKvwf33CGio6",
     "base58-flickr": "rEWDr3GFHn2FyWmjVWE33cgHN6",
     "base58-ripple": "SCAeSs6g54pgZAMKvACssUG5oa",
@@ -201,6 +229,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "11400080f7d700d1850f00c6fa7f62cd7e6865d089c5ab0e1c3450611300a33cfd00",
+    base256: "☀😋🚀😕🎼🧐🚀🤲🖕🌎🚀⬇🍎☝👉🙅😠😴✋👎🗣💸🤨🌏💕😇😒🤤🖥🚀🎁😱💍🚀",
     base58: "PcpwfkQVdJuZDiiX7bXWRudT8WjP2KyDm563g74eJ7cAC7",
     "base58-flickr": "oBPWEKpuCiUydHHw7AwvqUCs8vJo2jYdL563F74Di7Bac7",
     "base58-ripple": "PcFACkQVdJuZD55XfbXWRudT3WjPpKyDmnasgfheJfcwUf",
@@ -209,6 +238,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "47464a0db514dfeabeca",
+    base256: "🤩💓🖤🌍💨💾☎🐸😖😷",
     base58: "51FajiSHWwR1qj",
     "base58-flickr": "51fzJHrhvWq1QJ",
     "base58-ripple": "nrE2j5SHWARrqj",
@@ -217,6 +247,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "3e242c457800e775a7c7082b370055ae664aab312dae008bd1a9907644",
+    base256: "🌸🥰💪🙂😣🚀❄🤘❌😨🌔🙄🎉🚀👀🚶😚🖤🤨💜😉🚶🚀💀🤲👋🔴💦💛",
     base58: "3pcwhLaitzdYcLgviYA8kzyWuNnF7gFLhWvZidwq",
     "base58-flickr": "3PBWGkzHTZCxBkFVHxa8KZYvUnMf7FfkGvVyHCWQ",
     "base58-ripple": "sFcA6L25tzdYcLgv5Yw3kzyWu48EfgEL6WvZ5dAq",
@@ -225,6 +256,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "4830b21de3fdb9410d5f6e2100ccdbbd0022ba00ba",
+    base256: "😄🤗🤟😭👆💍🍺💗🌍🥳😻👏🚀⚠🤑🌱🚀😁🤓🚀🤓",
     base58: "5SU6WMJMcCbsfv4hYKrDGnMpzxoKf",
     "base58-flickr": "5rt6vmimBcASEV4GxjRdgMmPZXNjE",
     "base58-ripple": "nS7aWMJMcUb1Cvh6YKiDG8MFzxoKC",
@@ -233,6 +265,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "6e3461e2007fd5e87000c583001c3cba64009123a10b30b7b000212430e7cd6778da913500da00a60c",
+    base256: "😻😇🤤💆🚀☝🔵🌴⭐🚀💸🌻🚀💕😱🤓😳🚀😤🔥🌿🌗🤗✈🍓🚀👏🥰🤗❄🙅😝😣😗😤🌹🚀😗🚀🎈🌘",
     base58: "RAoXoa9WQddPCyf13BWdckMuYHYMTsGBFkgWo3psriSqSW6ZddV6Adk7",
     "base58-flickr": "qaNwNz9vpCCocYE13bvCBKmUxhxmsSgbfKFvN3PSRHrQrv6yCCu6aCK7",
     "base58-ripple": "RwoXo29WQddPUyCrsBWdckMuYHYMT1GBEkgWosF1i5SqSWaZddVawdkf",
@@ -241,6 +274,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "06079291f63aeb0006ec63af00d1d4e900cc54980800000d81570500",
+    base256: "🌒🌓🌼😤🤮✨💌🚀🌒📍💃💰🚀🤲📌💣🚀⚠💋🤫🌔🚀🚀🌍🌺😑🌑🚀",
     base58: "4bd2cSKaxAufoqyh3htS4KY6c1YgSAuwsgc5u1",
     "base58-flickr": "4AC2BrjzXaUENQYG3GTr4jx6B1xFraUWSFB5U1",
     "base58-ripple": "hbdpcSK2xwuCoqy6s6tShKYacrYgSwuA1gcnur",
@@ -249,6 +283,8 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "9c03f2070047eb8ada92b62ab66887dc4f764d06ca00d3de4ccede3412527a00ca98f49a9397ac00e6277049f672de6523ac3f96cbeef42902",
+    base256:
+      "🍻🛰👐🌓🚀🤩💌💫😗🌼🤬😆🤬😴🙊🌊🎶💦🙈🌒😷🚀🤧🐷💯😟🐷😇💻❣💐🚀😷🤫👻😮😫🏆😶🚀🍑💙⭐😀🤮🥺🐷✋🔥😶🙌☕🕺🤢👻🤔☄",
     base58: "KedSf7V6cE6QkoPH9bhruLG9gdm55j9pSUnAAoVZyznVQqCiu2WA3ia2x1FZcHt9RdAjGP21WvaSG1",
     "base58-flickr":
       "jDCrE7u6Be6pKNoh9AGRUkg9FCL55J9PrtMaaNuyYZMupQcHU2va3Hz2X1fyBhT9qCaJgo21vVzrg1",
@@ -260,6 +296,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "3454b8818afcc4a23cb50062f90098858ee4b6000ed15816a7e03d00b3009800fc80a0",
+    base256: "😇💋🎀🌺💫👼💎🧡😱💨🚀👉🚩🚀🤫🖕🤞🎤🤬🚀🌏🤲💥😂❌💧😌🚀🙁🚀🤫🚀👼😕😲",
     base58: "6DrPGrBdqinHMF9xFJkbzG1z4N8hL8bstm576PuruEbh7MXM",
     "base58-flickr": "6dRogRbCQHMhmf9XfiKAZg1Z4n8Gk8ASTL576oURUeAG7mwm",
     "base58-ripple": "aDiPGiBdq58HME9xEJkbzGrzh436L3b1tmnfaPuiuNb6fMXM",
@@ -268,6 +305,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "004cba480a00",
+    base256: "🚀💯🤓😄🌖🚀",
     base58: "19f5ZyhH",
     "base58-flickr": "19E5yYGh",
     "base58-ripple": "r9CnZy6H",
@@ -276,6 +314,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "0c1300bf8f9563b72ac647c800000d00785600ef7734371959ea5acb00",
+    base256: "🌘🖥🚀👶😛🤙💃✈😆⬇🤩🌚🚀🚀🌍🚀😣😪🚀👅✔😇🎉🤣🙋🐸😞🕺🚀",
     base58: "YnvX4F3JQhzq5so7sxDrLT9S8bKc9YE95gmDMd9",
     "base58-flickr": "xMVw4f3ipGZQ5SN7SXdRks9r8AjB9xe95FLdmC9",
     "base58-ripple": "Y8vXhEsJQ6zqn1of1xDiLT9S3bKc9YN9ngmDMd9",
@@ -284,6 +323,8 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "2454a400bfa0800097d5d8e2003e319d6586abacabc059fe070300ba000088d646fdbbce2203a80700001fddd4de00930064ec00701580cbfde306efba00",
+    base256:
+      "🥰💋⚡🚀👶😲😕🚀🏆🔵🐾💆🚀🌸💜🍃✋💝🤨😶🤨🥴🙋📣🌓🛰🚀🤓🚀🚀😹💅💓💍😙😟😁🛰✊🌓🚀🚀👍🤯📌🐷🚀😫🚀😳📍🚀⭐💿😕🕺💍👆🌒👅🤓🚀",
     base58: "3ARhpLYbx4U1TBrQxqZ9KYWuRzwTDAr9y1C8ViPm5denqpV1Q7VuoBueuSvgoL5PUberZdqhgTbAyMXXfzA1u",
     "base58-flickr":
       "3aqGPkxAX4t1sbRpXQy9jxvUqZWsdaR9Y1c8uHoL5CDMQPu1p7uUNbUDUrVFNk5otADRyCQGFsAaYmwwEZa1U",
@@ -295,6 +336,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "63e4ed7c7708ee383f7ea34c00c2ce502c56000700000836",
+    base256: "💃🎤🥀🎊✔🌔🤢💞🙌😠🎁💯🚀➡😟😒💪😪🚀🌓🚀🚀🌔🤦",
     base58: "A7C9Ab5RowPD39tidGfzhqd1ijbCCF2fw",
     "base58-flickr": "a7c9aA5qNWod39THCgEZGQC1HJAccf2EW",
     "base58-ripple": "wfU9wbnRoAPDs9t5dGCz6qdr5jbUUEpCA",
@@ -303,6 +345,8 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "e6cc00db007c35afd1a08cae2b333ace000978001b112195d6e8d84416de895e00002bb994162700eb7e6fc85be9d4210087501bbc709eb97100",
+    base256:
+      "🍑⚠🚀🤑🚀🎊🌹💰🤲😲👑🚶🙄😎✨😟🚀🌕😣🚀🙏☀👏🤙💅🌴🐾💛😂🐷🗣👊🚀🚀🙄🍺⚽😂💙🚀💌😠😓🌚😩💣📌👏🚀🙊😒🙏💟⭐🐶🍺✅🚀",
     base58: "36mQM7iLTkEuRzkNvCVAVukWfWmhD7ZEhQUVVuc4nxY3cL8ekxN3LPdhNy7mceSiSuBYaocVZQix4U55",
     "base58-flickr":
       "36Lpm7HksKeUqZKnVcuauUKvEvLGd7yeGptuuUB4MXx3Bk8DKXn3koCGnY7LBDrHrUbxzNBuypHX4t55",
@@ -314,6 +358,7 @@ export const javascript: readonly VectorRow[] = [
   },
   {
     hex: "000000964262bd70053300f5e7709bbaacecf573000374b7da77",
+    base256: "🚀🚀🚀☕💚👉🌱⭐🌑😎🚀🤐❄⭐🙆🤓😶📍🤐🌈🚀🛰😈✈😗✔",
     base58: "111471CdZb62uCw1o4uazB8fu1M94bYkaPp",
     "base58-flickr": "111471cCyA62UcW1N4UzZb8EU1m94AxKzoP",
     "base58-ripple": "rrrhfrUdZbapuUArohu2zB3CurM9hbYk2PF",

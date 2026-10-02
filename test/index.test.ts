@@ -41,6 +41,7 @@ describe("@agntn/encodings", () => {
       "base64",
       "base85",
       "base91",
+      "base256",
       "bech32",
       "uuencode",
       "quoted-printable",
@@ -68,6 +69,7 @@ describe("family subpaths", () => {
     base64: ["BASE64_ALPHABETS", "base64"],
     base85: ["BASE85_ALPHABETS", "base85"],
     base91: ["base91"],
+    base256: ["BASE256_ALPHABETS", "base256"],
     bech32: [
       "BECH32_LIMIT",
       "bech32",
@@ -104,6 +106,7 @@ describe("resolveEncoding", () => {
     ["b64", "base64"],
     ["base16", "hex"],
     ["basE91", "base91"],
+    ["base256emoji", "base256"],
   ])("reads %j as %s", (typed, name) => {
     expect(resolveEncoding(typed)).toBe(name);
   });

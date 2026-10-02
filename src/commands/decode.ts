@@ -6,7 +6,16 @@ import { create } from "../core/registry.ts";
 import { flaggedOptions, integerFlag, readText } from "./shared.ts";
 
 /** Flags that set decode options, by the option name they set. */
-const OPTION_FLAGS = ["alphabet", "check", "m", "symbols", "bits", "order"] as const;
+const OPTION_FLAGS = [
+  "alphabet",
+  "check",
+  "m",
+  "symbols",
+  "bits",
+  "order",
+  "sample",
+  "multibase",
+] as const;
 
 export default defineCommand({
   meta: {
@@ -32,13 +41,21 @@ export default defineCommand({
     },
     alphabet: {
       type: "string",
-      description: "base32, base58, base64, base85: alphabet (encodings list <encoding>)",
+      description: "base32, base58, base64, base85, base256: alphabet (encodings list <encoding>)",
     },
     check: { type: "boolean", description: "base58: Base58Check, verify and strip the checksum" },
     m: { type: "boolean", description: "bech32: Bech32m checksum (segwit v1+)" },
-    symbols: { type: "string", description: "binary: the characters for 0 and 1 (default 01)" },
+    symbols: {
+      type: "string",
+      description: "binary: the characters for 0 and 1 (default 01). base256: the table",
+    },
     bits: { type: "string", description: "binary: bits per byte, 1 to 8 (default 8)" },
     order: { type: "string", description: "binary: msb or lsb first (default msb)" },
+    sample: {
+      type: "string",
+      description: "base256: text whose symbols, in order of first appearance, make the table",
+    },
+    multibase: { type: "boolean", description: "base256: the 🚀 multibase prefix" },
   },
   run({ args, rawArgs }) {
     const encoding = create(args.encoding);

@@ -10,6 +10,12 @@ import {
 import { BASE64_ALPHABETS, base64, type Base64Alphabet } from "./base64.ts";
 import { BASE85_ALPHABETS, base85, type Base85Alphabet } from "./base85.ts";
 import { base91 } from "./base91.ts";
+import {
+  BASE256_ALPHABETS,
+  base256,
+  type Base256Alphabet,
+  type Base256Options,
+} from "./base256.ts";
 import { BECH32_LIMIT, bech32, bech32m, segwit, type SegwitAddress } from "./bech32.ts";
 import { binary, type BinaryOptions, type BitOrder } from "./binary.ts";
 import { toBytes, type BytesInput } from "./bytes.ts";
@@ -129,6 +135,22 @@ function binaryOptions(values: Values): BinaryOptions {
     symbols: String(values["symbols"]),
     bits: Number(values["bits"]),
     order: String(values["order"]) as BitOrder,
+  };
+}
+
+/**
+ * Reads base256 options from checked values.
+ *
+ * @param values - Checked option values.
+ * @returns {Base256Options} The codec options.
+ */
+function base256Options(values: Values): Base256Options {
+  const { symbols, sample } = values;
+  return {
+    alphabet: String(values["alphabet"]) as Base256Alphabet,
+    ...(symbols === undefined ? {} : { symbols: String(symbols) }),
+    ...(sample === undefined ? {} : { sample: String(sample) }),
+    multibase: values["multibase"] === true,
   };
 }
 
@@ -473,6 +495,53 @@ export const builtins: readonly Encoding[] = [
     },
     (bytes) => base91.encode(bytes),
     (text) => base91.decode(text),
+  ),
+  define(
+    "base256",
+    {
+      label: "Base256",
+      description:
+        "One symbol per byte: an emoji in base256emoji, or any table of 2 to 256 symbols as digits",
+      family: "base256",
+      standard: "multiformats base256emoji",
+      alphabet: base256.encode(Uint8Array.from({ length: 256 }, (_, value) => value)),
+      options: [
+        {
+          name: "alphabet",
+          type: "string",
+          required: false,
+          default: "emoji",
+          choices: [...BASE256_ALPHABETS],
+          description: "emoji, the base256emoji table of multiformats",
+          decode: true,
+        },
+        {
+          name: "symbols",
+          type: "string",
+          required: false,
+          description:
+            "Symbols for 0 upward in place of the alphabet, 2 to 256 of them; fewer read as digits",
+          decode: true,
+        },
+        {
+          name: "sample",
+          type: "string",
+          required: false,
+          description: "Text whose symbols, in order of first appearance, make the table",
+          decode: true,
+        },
+        {
+          name: "multibase",
+          type: "boolean",
+          required: false,
+          default: false,
+          description: "The 🚀 multibase prefix of base256emoji",
+          decode: true,
+        },
+      ],
+    },
+    (bytes, values) => base256.encode(bytes, base256Options(values)),
+    (text, values) => base256.decode(text, base256Options(values)),
   ),
   define(
     "bech32",

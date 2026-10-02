@@ -18,7 +18,7 @@ Docs and a live playground: [encodings.agntn.dev](https://encodings.agntn.dev).
 
 ## ✨ Features
 
-- 🔤 **All the usual ones.** Binary, octal, decimal, hex, base32 in four alphabets, base45, base58 in three, base64 in two, base85 in three (Ascii85 and Z85 too), basE91, bech32 and bech32m, uuencode, Quoted-Printable.
+- 🔤 **All the usual ones.** Binary, octal, decimal, hex, base32 in four alphabets, base45, base58 in three, base64 in two, base85 in three (Ascii85 and Z85 too), basE91, base256emoji, bech32 and bech32m, uuencode, Quoted-Printable.
 - 🧾 **Written from the specs.** RFC 4648, RFC 9285, BIP173, BIP350. No codec library underneath.
 - ✅ **Checksums checked.** Base58Check and bech32 refuse a typo instead of decoding it.
 - 🪙 **Segwit aware.** A `bc1…` address comes back as its witness version and program.
@@ -100,20 +100,21 @@ That's most of it, really. Strings go in as UTF-8, bytes come out as `Uint8Array
 
 ## 🗂️ Encodings
 
-| Encoding                       | Variants as options                                |
-| ------------------------------ | -------------------------------------------------- |
-| `binary`                       | `symbols`, `bits`, `order`: `msb`, `lsb`           |
-| `octal`, `decimal`, `hex`      |                                                    |
-| `base32`                       | `alphabet`: `standard`, `hex`, `crockford`, `z`    |
-| `base45`                       |                                                    |
-| `base58`                       | `alphabet`: `bitcoin`, `flickr`, `ripple`; `check` |
-| `base64`                       | `alphabet`: `standard`, `url`                      |
-| `base85`                       | `alphabet`: `rfc1924`, `ascii85`, `z85`            |
-| `base91`                       |                                                    |
-| `bech32`                       | `m` for Bech32m                                    |
-| `uuencode`, `quoted-printable` |                                                    |
+| Encoding                       | Variants as options                                   |
+| ------------------------------ | ----------------------------------------------------- |
+| `binary`                       | `symbols`, `bits`, `order`: `msb`, `lsb`              |
+| `octal`, `decimal`, `hex`      |                                                       |
+| `base32`                       | `alphabet`: `standard`, `hex`, `crockford`, `z`       |
+| `base45`                       |                                                       |
+| `base58`                       | `alphabet`: `bitcoin`, `flickr`, `ripple`; `check`    |
+| `base64`                       | `alphabet`: `standard`, `url`                         |
+| `base85`                       | `alphabet`: `rfc1924`, `ascii85`, `z85`               |
+| `base91`                       |                                                       |
+| `base256`                      | `alphabet`: `emoji`; `multibase`, `symbols`, `sample` |
+| `bech32`                       | `m` for Bech32m                                       |
+| `uuencode`, `quoted-printable` |                                                       |
 
-Base58Check is `base58` with `check`. z-base-32 is `base32` with `alphabet: "z"`. Decoding takes the same options, so a variant reads back the way it was written. Each family is also a subpath, like `@agntn/encodings/base58`. Alphabets, overhead and options per encoding are on [the encodings page](https://encodings.agntn.dev/encodings).
+Base58Check is `base58` with `check`. z-base-32 is `base32` with `alphabet: "z"`. Got a puzzle in card suits or runes? `base256` takes your own table as `symbols`, or reads its order off a `sample`, and gives you the digits. Decoding takes the same options, so a variant reads back the way it was written. Each family is also a subpath, like `@agntn/encodings/base58`. Alphabets, overhead and options per encoding are on [the encodings page](https://encodings.agntn.dev/encodings).
 
 ## 🤖 Agents
 

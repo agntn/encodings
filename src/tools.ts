@@ -14,6 +14,7 @@ import {
   MAX_CANDIDATES,
   MAX_NAME_LENGTH,
   MAX_PREFIX_LENGTH,
+  MAX_SYMBOLS_LENGTH,
   MAX_TEXT_LENGTH,
   OUTPUT_FORMATS,
 } from "./tool-contract.ts";
@@ -55,7 +56,7 @@ const encoding = Type.String({
 const alphabet = Type.Optional(
   Type.Enum(ALPHABETS, {
     description:
-      "base32: standard, hex, crockford or z. base58: bitcoin, flickr or ripple. base64: standard or url. base85: rfc1924, ascii85 or z85",
+      "base32: standard, hex, crockford or z. base58: bitcoin, flickr or ripple. base64: standard or url. base85: rfc1924, ascii85 or z85. base256: emoji",
   }),
 );
 const check = Type.Optional(
@@ -65,8 +66,21 @@ const m = Type.Optional(Type.Boolean({ description: "bech32: Bech32m checksum (s
 const symbols = Type.Optional(
   Type.String({
     minLength: 2,
-    maxLength: 32,
-    description: "binary: the character for 0, then the one for 1, such as ab (default 01)",
+    maxLength: MAX_SYMBOLS_LENGTH,
+    description:
+      "binary: the character for 0, then the one for 1, such as ab (default 01). base256: the symbols for 0 upward in place of the alphabet, 2 to 256; fewer read as digits",
+  }),
+);
+const sample = Type.Optional(
+  Type.String({
+    minLength: 2,
+    maxLength: MAX_TEXT_LENGTH,
+    description: "base256: text whose symbols, in order of first appearance, make the table",
+  }),
+);
+const multibase = Type.Optional(
+  Type.Boolean({
+    description: "base256: text starts with the 🚀 multibase prefix, else read as a zero byte",
   }),
 );
 const bits = Type.Optional(
@@ -117,6 +131,8 @@ export const encodeSchema = closed({
       symbols,
       bits,
       order,
+      sample,
+      multibase,
       delimiters: Type.Optional(
         Type.Boolean({ description: "base85 with the ascii85 alphabet: wrap in <~ and ~>" }),
       ),
@@ -149,7 +165,7 @@ export const decodeSchema = closed({
         "How to show the bytes: auto (UTF-8 when they are readable text, else hex; default), utf8, hex or base64",
     }),
   ),
-  options: Type.Optional(closed({ alphabet, check, m, symbols, bits, order })),
+  options: Type.Optional(closed({ alphabet, check, m, symbols, bits, order, sample, multibase })),
 });
 
 export const identifySchema = closed({
@@ -188,13 +204,13 @@ export const infoSchema = closed({
 
 /** The options that stand for variants other libraries name as encodings of their own. */
 const VARIANTS =
-  "Variants are options: Crockford and z-base-32 are base32 alphabets, Base58Check is base58 with check, base64url is base64 with alphabet url, Ascii85 and Z85 are base85 alphabets, Bech32m is bech32 with m.";
+  "Variants are options: Crockford and z-base-32 are base32 alphabets, Base58Check is base58 with check, base64url is base64 with alphabet url, Ascii85 and Z85 are base85 alphabets, base256emoji is the base256 alphabet emoji, Bech32m is bech32 with m.";
 
 export const encodeTool = defineTool({
   name: "encodings_encode",
   title: "Encode",
   description:
-    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, bech32 (Bech32m too), uuencode or quoted-printable.",
+    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, base256 (base256emoji and any table of symbols), bech32 (Bech32m too), uuencode or quoted-printable.",
   snippet: "Use encodings_encode to write text or bytes in base64, base58, bech32 and the like.",
   guidelines: [
     "Text is encoded as UTF-8. For bytes, pass them in hex or base64 and set inputFormat.",

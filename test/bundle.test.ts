@@ -20,6 +20,7 @@ const markers: Record<(typeof familyEntries)[number], string> = {
   base64: "-_",
   base85: ".-:+=^!/*?&<>()[]{}@%$#",
   base91: "@[]^_`{|}~",
+  base256: "is not in the table",
   bech32: "qpzry9x8gf2tvdw0s3jn54khce6mua7l",
   uuencode: "begin-base64",
   "quoted-printable": "must be escaped",

@@ -12,6 +12,7 @@ export const familyEntries = [
   "base64",
   "base85",
   "base91",
+  "base256",
   "bech32",
   "uuencode",
   "quoted-printable",

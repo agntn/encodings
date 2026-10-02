@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { SAMPLE_INPUT, type LandingSample } from "../../composables/useLandingSample";
-import { ENCODINGS, familyLabel, registryPosition } from "../../utils/encodings";
+import { ENCODINGS, characterCount, familyLabel, registryPosition } from "../../utils/encodings";
 import { optionLiteral } from "../../utils/format";
 
 const props = defineProps<{ sample: LandingSample; samples: readonly LandingSample[] }>();
@@ -22,7 +22,7 @@ const bytes = new TextEncoder().encode(SAMPLE_INPUT).length;
 
 /** The output on one line: uuencode and Quoted-Printable break lines, shown as ↵. */
 const outLine = computed(() => props.sample.text.replace(/\n$/u, "").replaceAll("\n", "↵"));
-const outLength = computed(() => props.sample.text.replaceAll(/\s/gu, "").length);
+const outLength = computed(() => characterCount(props.sample.text));
 
 /** The widest alphabet in the walk: the grid keeps room for it, so the band never jumps. */
 const widest = Math.max(...props.samples.map((sample) => sample.cells.length));

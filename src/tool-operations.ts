@@ -19,6 +19,7 @@ import {
   MAX_BASE58_LENGTH,
   MAX_CANDIDATES,
   MAX_NAME_LENGTH,
+  MAX_SYMBOLS_LENGTH,
   MAX_TEXT_LENGTH,
   OUTPUT_FORMATS,
   type InputFormat,
@@ -210,6 +211,25 @@ function optionsArgument(value: unknown): object {
   return options;
 }
 
+/** Longest value of each free text option, checked here as the schema checks it. */
+const OPTION_LENGTHS: Readonly<Record<string, number>> = {
+  symbols: MAX_SYMBOLS_LENGTH,
+  sample: MAX_TEXT_LENGTH,
+};
+
+/**
+ * Checks the length of a free text option, which a caller without the schema could make huge.
+ *
+ * @param key - Option name.
+ * @param value - The value as passed.
+ * @returns {string | number | boolean} The value.
+ */
+function optionValue(key: string, value: unknown): string | number | boolean {
+  const max = Object.hasOwn(OPTION_LENGTHS, key) ? OPTION_LENGTHS[key] : undefined;
+  if (max !== undefined && typeof value === "string") return stringArgument(key, value, max);
+  return value as string | number | boolean;
+}
+
 /**
  * Splits tool options into the ones an encoding declares and the rest. Strict function calling
  * fills every field of the schema, and `options` holds the fields of every encoding, so base91
@@ -232,7 +252,7 @@ function pickOptions(
     if (!option) ignored.push(token(key));
     else if (option.choices && !option.choices.includes(String(value))) {
       ignored.push(`${token(key)}=${token(String(value))}`);
-    } else taken[key] = value as string | number | boolean;
+    } else taken[key] = optionValue(key, value);
   }
   return { taken, ignored };
 }

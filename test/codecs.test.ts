@@ -10,6 +10,7 @@ import {
   base64,
   base85,
   base91,
+  base256,
   bech32,
   bech32m,
   binary,
@@ -118,6 +119,7 @@ describe("frozen outputs of independent implementations", () => {
     "base58-flickr": base58flickr,
     "base58-ripple": base58ripple,
     base91,
+    base256,
     "base32-crockford": base32crockford,
     base32,
     base32hex,
@@ -253,7 +255,7 @@ describe("binary", () => {
   });
 
   it("refuses symbols, bit counts and bytes it cannot write", () => {
-    for (const symbols of ["0", "aa", "abc", "a ", "\t1", ""]) {
+    for (const symbols of ["0", "aa", "abc", "a ", "\t1", "", `a${"\u0301".repeat(16)}b`]) {
       expect(() => binary.decode("0", { symbols })).toThrow(InvalidOptionError);
     }
     for (const bits of [0, 9, 7.5, Number.NaN]) {
@@ -494,6 +496,104 @@ describe("basE91", () => {
   });
 });
 
+describe("base256", () => {
+  it("writes and reads the multibase example of issue 10", () => {
+    expect(base256.encode(text("gsmg"), { multibase: true })).toBe("🚀😝🌈🌷😝");
+    expect(read(base256.decode("🚀😝🌈🌷😝", { multibase: true }))).toBe("gsmg");
+    expect(hex.encode(base256.decode("🚀😝🌈🌷😝"))).toBe("0067736d67");
+    expect(() => base256.decode("😝🌈🌷😝", { multibase: true })).toThrow(
+      'base256: text does not start with "🚀" (U+1F680)',
+    );
+  });
+
+  it("skips whitespace and emoji presentation selectors", () => {
+    expect(base256.decode("☄\uFE0F ☄\n☄\uFE0E")).toEqual(new Uint8Array([2, 2, 2]));
+  });
+
+  it("reads a table of fewer symbols as digits", () => {
+    expect(base256.decode("♠ ♥️ ♦ ♣ ♣", { symbols: "♠ ♥ ♦ ♣" })).toEqual(
+      new Uint8Array([0, 1, 2, 3, 3]),
+    );
+    expect(base256.encode(new Uint8Array([3, 0]), { symbols: "♠♥♦♣" })).toBe("♣♠");
+    expect(() => base256.encode(new Uint8Array([4]), { symbols: "♠♥♦♣" })).toThrow(
+      "byte 4 at index 0 is past the table of 4 symbols",
+    );
+  });
+
+  it("orders the table by first appearance in a sample", () => {
+    expect(base256.decode("ᚦᚠᚢ", { sample: "ᚠᚢᚠ ᚦᚢ" })).toEqual(new Uint8Array([2, 0, 1]));
+  });
+
+  it("keeps flags and joined emoji whole and zero-width characters apart", () => {
+    expect(base256.decode("🇩🇪🇵🇱", { symbols: "🇵🇱🇩🇪" })).toEqual(new Uint8Array([1, 0]));
+    expect(base256.decode("👍👨‍👩‍👧", { symbols: "👨‍👩‍👧👍" })).toEqual(new Uint8Array([1, 0]));
+    const zeroWidth = "\u200B\u200C\u200D\u2060";
+    expect(base256.decode("\u2060\u200D\u200C\u200B", { symbols: zeroWidth })).toEqual(
+      new Uint8Array([3, 2, 1, 0]),
+    );
+  });
+
+  it("names the stray symbol and where it is", () => {
+    expect(() => base256.decode("🚀a")).toThrow(
+      expect.objectContaining({ message: 'base256: "a" (U+0061) is not in the table', index: 2 }),
+    );
+  });
+
+  it("reads symbols the text ran into one grapheme back apart", () => {
+    const symbols = "🇩🇪 🇵 🇱";
+    const text = base256.encode(new Uint8Array([1, 2, 0]), { symbols });
+    expect(text).toBe("🇵🇱🇩🇪");
+    expect(base256.decode(text, { symbols })).toEqual(new Uint8Array([1, 2, 0]));
+  });
+
+  it("refuses to write symbols that read back as another symbol", () => {
+    const symbols = "🇵 🇱 🇵🇱";
+    expect(() => base256.encode(new Uint8Array([0, 1]), { symbols })).toThrow(
+      "base256: the symbols from index 0 run together and read back as other bytes",
+    );
+    expect(base256.encode(new Uint8Array([2, 0]), { symbols })).toBe("🇵🇱🇵");
+    expect(base256.decode("🇵🇱", { symbols })).toEqual(new Uint8Array([2]));
+  });
+
+  it("keeps a mark after a space separator a symbol of its own", () => {
+    expect(base256.encode(new Uint8Array([1, 0]), { symbols: "a \u0301" })).toBe("\u0301a");
+  });
+
+  it("refuses a symbol over 16 code points and shows a long value by its length", () => {
+    const sample = `a${"\u0301".repeat(20_000)}b`;
+    expect(() => base256.decode("b", { sample })).toThrow(
+      "Invalid option sample=20002 characters: has a symbol over 16 code points",
+    );
+  });
+
+  it("names a huge grapheme by its first code point only", () => {
+    const error = (() => {
+      try {
+        base256.decode(`a${"\u0301".repeat(100_000)}`, { symbols: "🇩🇪 b" });
+      } catch (caught) {
+        return caught as Error;
+      }
+      return new Error("no error");
+    })();
+    expect(error.message).toBe('base256: "a" (U+0061) is not in the table');
+  });
+
+  it("quotes a symbol of several code points whole in errors", () => {
+    expect(() => base256.decode("x", { symbols: "a\u0301 a\u0301" })).toThrow('repeats "a\u0301"');
+    expect(() => base256.decode("🇵🇱", { symbols: "🇩🇪🇫🇷" })).toThrow('"🇵🇱" is not in the table');
+  });
+
+  it("refuses tables it cannot read", () => {
+    for (const symbols of ["a", "aa", "a a", ""]) {
+      expect(() => base256.decode("a", { symbols })).toThrow(InvalidOptionError);
+    }
+    expect(() => base256.decode("a", { symbols: "ab", sample: "ab" })).toThrow(InvalidOptionError);
+    expect(() => base256.decode("a", { symbols: "ab", multibase: true })).toThrow(
+      "goes with the emoji alphabet only",
+    );
+  });
+});
+
 describe("bech32 and bech32m (BIP173, BIP350)", () => {
   it.each([
     "A12UEL5L",
@@ -686,6 +786,7 @@ describe("round trips over every byte value", () => {
     ["z85", z85],
     ["base85", base85],
     ["base91", base91],
+    ["base256", base256],
     ["uuencode", uuencode],
     ["quoted-printable", quotedPrintable],
   ] as const)("%s", (_, codec) => {
