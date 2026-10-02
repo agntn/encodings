@@ -6,6 +6,8 @@
  * - `python`: CPython 3.12.13 `base64.b32encode`, `b32hexencode` and `a85encode`,
  *   `binascii.b2a_uu(backtick=True)` (one line), base45 0.4.4 and pyzmq 27.2.0 `z85.encode`
  *   (multiples of four bytes only), over `random.seed(7)` bytes.
+ * - `base58checkVariants`: @scure/base 2.4.0 `createBase58check` with @noble/hashes 2.4.0
+ *   `blake256` (Decred), and `base58xrp` over the payload and its double SHA-256 (XRP Ledger).
  */
 
 /** Rows keyed by encoding name; `hex` is the input. */
@@ -725,5 +727,21 @@ export const python: readonly VectorRow[] = [
     ascii85: "J2=t@JL7@_^`NL^!'K@;l2X9RM?\"GpO*_>__RPX)Z\">(Z)oT6no;'Y3amj',d@gR0dYu>44pC",
     base45:
       "E9GCCOWEGZJL.CO*AWF10L:S9QTA%83KH .2B6IQX1XROK3I9JMD/3/M3*DN2 U-1Q$NPYBDPMQF50ZRQJRP%$7",
+  },
+];
+
+export const base58checkVariants: readonly VectorRow[] = [
+  { hex: "", blake256: "6YcPkx", ripple: "sQJm86" },
+  { hex: "000001", blake256: "11Cx2mTj", ripple: "rrBAWpqR" },
+  { hex: "cc", blake256: "Q341gxT", ripple: "QnrSWz6" },
+  {
+    hex: "0000a0c5810033970036e637005fbc37f9000087c2ba",
+    blake256: "11Ff5iWJ34siz9chvBjVNYx3Jfu18uYsxBy",
+    ripple: "rrECn5WJsh15z9c6vBjV4YxsJCur3u85mwH",
+  },
+  {
+    hex: "f857e100c8d1d2000094c3ac3b5c33000090007fd02c555efcf50000e70077c7f5",
+    blake256: "9KkKVx1hWZ5oAfHxpzh5nBGkFUzrAXa1U3iHPrfZrkVrAJhQ1BV",
+    ripple: "9KkKVxr6WZnowCHxFz6n8BGkE7ziwX2r7s5HPiCZikViwHkqFKi",
   },
 ];
