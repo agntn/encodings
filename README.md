@@ -5,7 +5,7 @@
 [![license](https://npmx.dev/api/registry/badge/license/@agntn/encodings)](https://npmx.dev/package/@agntn/encodings)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/agntn/encodings)
 
-🔤 Twenty binary-to-text encodings, written from the specs. You hand it a weird string, it tells you what's inside. Same answer in the terminal, in TypeScript and in an agent.
+🔤 Binary-to-text encodings, written from the specs. You hand it a weird string, it tells you what's inside. Layer by layer, if it has to. Same answer in the terminal, in TypeScript and in an agent.
 
 > [!CAUTION]
 > **Not audited.** This code has never had a security audit. Do not use it in production, with real funds or with sensitive data. It is meant for agents, puzzles and local experiments only. It comes as is, without warranty of any kind, and the authors are not liable for any loss, as the MIT license states. Anything that matters wants an audited library.
@@ -18,11 +18,11 @@ Docs and a live playground: [encodings.agntn.dev](https://encodings.agntn.dev).
 
 ## ✨ Features
 
-- 🔤 **Twenty encodings.** Hex, base32 in four flavours, base45, base58 in three alphabets, base64, Ascii85, Z85, basE91, bech32, uuencode, Quoted-Printable.
+- 🔤 **All the usual ones.** Binary, octal, decimal, hex, base32 in four flavours, base45, base58 in three alphabets, base64, Ascii85, Z85, base85, basE91, bech32, uuencode, Quoted-Printable.
 - 🧾 **Written from the specs.** RFC 4648, RFC 9285, BIP173, BIP350. No codec library underneath.
 - ✅ **Checksums checked.** Base58Check and bech32 refuse a typo instead of decoding it.
 - 🪙 **Segwit aware.** A `bc1…` address comes back as its witness version and program.
-- 🔍 **`identify`.** Tries every encoding, ranks the ones that work, and tells you why.
+- 🔍 **`identify`.** Tries every encoding, ranks the ones that work, and tells you why. Three layers deep? `peel` takes them off one by one.
 - 🤖 **Agent tools.** Four of them, same over MCP, Pi, OMP and the AI SDK.
 - 📦 **One subpath per family.** Need base58 only? Import base58 only.
 - 🌐 **Runs anywhere.** Nothing from `node:*`, no network. The docs site runs it in your tab.
@@ -74,13 +74,13 @@ Exit code 1. No key, no config, no network.
 
 ### Commands
 
-| Command                               | Does                                              |
-| ------------------------------------- | ------------------------------------------------- |
-| `encodings encode <encoding> <input>` | Write text or bytes in an encoding                |
-| `encodings decode <encoding> <text>`  | Read it back into bytes                           |
-| `encodings identify <text>`           | Rank the encodings it decodes in                  |
-| `encodings list [encoding]`           | All of them, one family, or one with its alphabet |
-| `encodings mcp`                       | MCP server over stdio                             |
+| Command                               | Does                                                   |
+| ------------------------------------- | ------------------------------------------------------ |
+| `encodings encode <encoding> <input>` | Write text or bytes in an encoding                     |
+| `encodings decode <encoding> <text>`  | Read it back into bytes                                |
+| `encodings identify <text>`           | Rank the encodings it decodes in, or `--peel` them off |
+| `encodings list [encoding]`           | All of them, one family, or one with its alphabet      |
+| `encodings mcp`                       | MCP server over stdio                                  |
 
 `-` reads stdin, `--input-format hex` encodes bytes. Flags per encoding: [CLI guide](https://encodings.agntn.dev/guide/cli).
 
@@ -100,17 +100,17 @@ That's most of it, really. Strings go in as UTF-8, bytes come out as `Uint8Array
 
 ## 🗂️ Encodings
 
-| Family                     | Encodings                                                 |
-| -------------------------- | --------------------------------------------------------- |
-| binary, hex                | `binary`, `hex`                                           |
-| base32                     | `base32`, `base32hex`, `base32-crockford`, `z-base-32`    |
-| base45                     | `base45`                                                  |
-| base58                     | `base58`, `base58check`, `base58-flickr`, `base58-ripple` |
-| base64                     | `base64`, `base64url`                                     |
-| base85                     | `ascii85`, `z85`                                          |
-| base91                     | `base91`                                                  |
-| bech32                     | `bech32`, `bech32m`                                       |
-| uuencode, quoted-printable | `uuencode`, `quoted-printable`                            |
+| Family                      | Encodings                                                 |
+| --------------------------- | --------------------------------------------------------- |
+| binary, octal, decimal, hex | `binary`, `octal`, `decimal`, `hex`                       |
+| base32                      | `base32`, `base32hex`, `base32-crockford`, `z-base-32`    |
+| base45                      | `base45`                                                  |
+| base58                      | `base58`, `base58check`, `base58-flickr`, `base58-ripple` |
+| base64                      | `base64`, `base64url`                                     |
+| base85                      | `ascii85`, `z85`, `base85`                                |
+| base91                      | `base91`                                                  |
+| bech32                      | `bech32`, `bech32m`                                       |
+| uuencode, quoted-printable  | `uuencode`, `quoted-printable`                            |
 
 Each family is also a subpath, like `@agntn/encodings/base58`. Alphabets, overhead and options per encoding are on [the encodings page](https://encodings.agntn.dev/encodings).
 

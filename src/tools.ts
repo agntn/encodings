@@ -84,7 +84,9 @@ export const encodeSchema = closed({
       ),
       upper: Type.Optional(Type.Boolean({ description: "hex: write A-F" })),
       separate: Type.Optional(
-        Type.Boolean({ description: "binary: space between bytes (default true)" }),
+        Type.Boolean({
+          description: "binary, octal and decimal: space between bytes (default true)",
+        }),
       ),
       delimiters: Type.Optional(Type.Boolean({ description: "ascii85: wrap in <~ and ~>" })),
       padding: Type.Optional(
@@ -124,7 +126,13 @@ export const identifySchema = closed({
     Type.Integer({
       minimum: 1,
       maximum: MAX_CANDIDATES,
-      description: `Most candidates to return (default 5, at most ${MAX_CANDIDATES})`,
+      description: `Most candidates to return (default 5), or most layers with peel (default 10); at most ${MAX_CANDIDATES}`,
+    }),
+  ),
+  peel: Type.Optional(
+    Type.Boolean({
+      description:
+        "Take encodings off one layer at a time while each decodes to text, and list every layer",
     }),
   ),
 });
@@ -150,7 +158,7 @@ export const encodeTool = defineTool({
   name: "encodings_encode",
   title: "Encode",
   description:
-    "Write text or bytes in a binary-to-text encoding: hex, binary, base32 and its variants, base45, base58, base58check, base64, base64url, ascii85, z85, base91, bech32, bech32m, uuencode or quoted-printable.",
+    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, base32 and its variants, base45, base58, base58check, base64, base64url, ascii85, z85, base85, base91, bech32, bech32m, uuencode or quoted-printable.",
   snippet: "Use encodings_encode to write text or bytes in base64, base58, bech32 and the like.",
   guidelines: [
     "Text is encoded as UTF-8. For bytes, pass them in hex or base64 and set inputFormat.",
@@ -185,7 +193,8 @@ export const identifyTool = defineTool({
   snippet: "Use encodings_identify on a string whose encoding nobody named.",
   guidelines: [
     "The confidence ranks candidates; it is not a probability. A matching checksum is the strongest evidence.",
-    "Decoded text may itself be encoded again: identify it in turn.",
+    "Decoded text may itself be encoded again: set peel to take every layer off in one call.",
+    "With peel, a last layer marked unconfirmed is only the best guess; nothing backs it.",
   ],
   effect: "read",
   input: identifySchema,

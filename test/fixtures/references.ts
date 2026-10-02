@@ -3,7 +3,7 @@
  *
  * - `javascript`: base-x 5.0.1 (base58 in three alphabets), node-base91 0.3.4 (basE91) and
  *   base32-encode 2.0.0 (Crockford), over seeded random bytes with frequent zero bytes.
- * - `python`: CPython 3.12.13 `base64.b32encode`, `b32hexencode` and `a85encode`,
+ * - `python`: CPython 3.12.13 `base64.b32encode`, `b32hexencode`, `a85encode` and `b85encode`,
  *   `binascii.b2a_uu(backtick=True)` (one line), base45 0.4.4 and pyzmq 27.2.0 `z85.encode`
  *   (multiples of four bytes only), over `random.seed(7)` bytes.
  * - `base58checkVariants`: @scure/base 2.4.0 `createBase58check` with @noble/hashes 2.4.0
@@ -357,6 +357,7 @@ export const javascript: readonly VectorRow[] = [
 export const python: readonly VectorRow[] = [
   {
     hex: "ca25301d6d0023d900721fcb0044499d5c00602069daeee87f7c00fde52500affa27a0b3e900002100",
+    base85: "$|W!zZ2%+L0CFG807OZhTmWDoY1;1Se|!M_<s|^G`X`{X=>PyB00",
     base32: "ZISTAHLNAAR5SADSD7FQARCJTVOAAYBANHNO52D7PQAP3ZJFACX7UJ5AWPUQAABBAA======",
     base32hex: "P8IJ07BD00HTI03I3V5G0H29JLE00O10D7DETQ3VFG0FRP9502NVK9T0MFKG001100======",
     ascii85: 'asA_^D#bg6!-01)!(9DL>QA.SC"i"=Is_7pjWso1qBqrBkl:],!!',
@@ -365,6 +366,8 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "e4c5b10056fc0042cbfe008edc8eb7c24d0077005d0200a31bc8c9001f6a381a00330d00c000b1f200ee9f0000875269b9000d982e855572a863cd74fc0e8f63b0b2ba0000ac00b02b3d665baa00ca2b570eee4af2b3430034",
+    base85:
+      "<i)W7R{Q`$%l-h4+>W=xO#pWQT>=238_3B3A8I%n05c5$zyPuG0Pddv0Ebd(xd08AE`?QcsAJ7^{0@&}u(G-U0IUG8D?MggssPF>R}St<^0Pw#Gy",
     base32:
       "4TC3CACW7QAEFS76ACHNZDVXYJGQA5YALUBABIY3ZDEQAH3KHANAAMYNADAABMPSADXJ6AAAQ5JGTOIABWMC5BKVOKUGHTLU7QHI6Y5QWK5AAAFMACYCWPLGLOVABSRLK4HO4SXSWNBQANA=",
     base32hex:
@@ -376,6 +379,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "47636c007ba6d61fb5d742095d4cf23da6f7361d8d00000e2066e7f47e846746c825db003e4fbb00ef30f972dcce642f09ea099720007535005c4284fd2d5d25088500",
+    base85: "M`LUNd#2VOwbw!kT}<*lruQ}-jQ{`+AZF+EeuQU6$R*nVK2N&<?=bmt+|Fb#3F--#AOLkW09-<Z{ViQ32!#L",
     base32:
       "I5RWYAD3U3LB7NOXIIEV2THSHWTPONQ5RUAAADRAM3T7I7UEM5DMQJO3AA7E7OYA54YPS4W4ZZSC6CPKBGLSAADVGUAFYQUE7UWV2JIIQUAA====",
     base32hex:
@@ -386,6 +390,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "00e800d589167a525c9f695b091200617d36ddc99d7547b14200821c",
+    base85: "0O$bKi57ZNT%T!M2@(KdeKy_6opndCLI8ps",
     base32: "ADUABVMJCZ5FEXE7NFNQSEQAMF6TNXOJTV2UPMKCACBBY===",
     base32hex: "03K01LC92PT54N4VD5DGI4G0C5UJDNE9JLQKFCA20211O===",
     ascii85: "!9aF5M&(D8>b>_7#nd5HI5]p'STRH-63)TW",
@@ -395,6 +400,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "c39096008986a8a59e5d",
+    base85: "!;qE$iH4}9o?Q",
     base32: "YOIJMAEJQ2UKLHS5",
     base32hex: "OE89C049GQKAB7IT",
     ascii85: "_iU/aM2%t*Sm;",
@@ -403,6 +409,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "",
+    base85: "",
     base32: "",
     base32hex: "",
     ascii85: "",
@@ -411,6 +418,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "f366020049159977004fc7fd004a00db470875000035e7097d01232f21f2267869ebc300936500009b44",
+    base85: "^JW47NfnuQ08hvL07?McM+kKQ05#_ceE}mcA@U}8Y3suPlVtz^n?w",
     base32: "6NTAEACJCWMXOACPY76QASQA3NDQQ5IAAA26OCL5AERS6IPSEZ4GT26DACJWKAAATNCA====",
     base32hex: "UDJ040292MCNE02FOVUG0IG0RD3GGT8000QUE2BT04HIU8FI4PS6JQU3029MA000JD20====",
     ascii85: "o4A%(8JRY;!)LZ6!(m7G7gO5;!&`pGI/tQG+n?t)C$WY:P@X^oRm[",
@@ -419,6 +427,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "f8",
+    base85: "_y",
     base32: "7A======",
     base32hex: "V0======",
     ascii85: "p]",
@@ -427,6 +436,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "32fa92ee662b0827e6c66b000086438fbaf85100e648c0a900cb0006942127db181a",
+    base85: "GWwG4W-ACM=EiFP0ER=4y7*B5=19P)0LuUdlp!bE7#a",
     base32: "GL5JF3TGFMECPZWGNMAABBSDR65PQUIA4ZEMBKIAZMAANFBBE7NRQGQ=",
     base32hex: "6BT95RJ65C42FPM6DC0011I3HUTFGK80SP4C1A80PC00D5114VDHG6G=",
     ascii85: '1A[1%Ah+-7k/M0:!/<k%](f,&k"*:e!6Y?HPT_F/(`E',
@@ -435,6 +445,8 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "4c88a1bfdbcc6819d2469241d498857ac90026fee7e662592ebc67d36badffb8006e00c4e49f0b00f2fa00ef7f7237ea000077139b80df390062720000eba17c780e9d00d700d974adb965002266637197005ff8",
+    base85:
+      "Oo*Ys+stSg(ngX&)R={O$p9w)=jLKrF1%;cYpwsd0B!)p<ev)w^7;Vpe{whK004Irn}FXr0Ag|g0PCTAcn+Na*8tgct+{0YB4%T8mjGY*",
     base32:
       "JSEKDP63ZRUBTUSGSJA5JGEFPLEQAJX647TGEWJOXRT5G25N764AA3QAYTSJ6CYA6L5AB337OI36UAAAO4JZXAG7HEAGE4QAADV2C7DYB2OQBVYA3F2K3OLFAARGMY3RS4AF76A=",
     base32hex:
@@ -447,6 +459,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "1c4a1b481ee6a028a8ef00c1a93700b33f6a9edd0064e4baf200cf0000008320adab16a298002100f3eec5dc435d009b4da7eb28c8",
+    base85: "97-EV9_FAZsP6#5sW$+#KWd)c0A%F4@&L~O004s^t*aKIm;fOF^X|pmLtOxyO{eQ9$N",
     base32:
       "DRFBWSA642QCRKHPADA2SNYAWM7WVHW5ABSOJOXSADHQAAAAQMQK3KYWUKMAAIIA6PXMLXCDLUAJWTNH5MUMQ===",
     base32hex:
@@ -456,6 +469,8 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "d00000a6da242bd7e444783e9689857e7860ca7d7633120076bf003d0063be5b850300b3bc16820068a7be9f0000f700004f2ecbd19d1ab609bac868ded80000ba53000000cb00bd570057376516f7c6005271645d15503f00620013a5009c9d",
+    base85:
+      "&;S6Y+9WI2<V1KrmWhRacwowXb~6$HcE12U0As#eg#!SyycU80Xs5oP008#@08cK<(VZH$3A)H=-q-*Dx>EoE0LuWqR{&QxWfu3w08(*eT@_G20Ac_Wr2w3r",
     base32:
       "2AAABJW2EQV5PZCEPA7JNCMFPZ4GBST5OYZREADWX4AD2ADDXZNYKAYAWO6BNAQANCT35HYAAD3QAACPF3F5DHI2WYE3VSDI33MAAAF2KMAAAAGLAC6VOACXG5SRN56GABJHCZC5CVID6ADCAAJ2KAE4TU======",
     base32hex:
@@ -468,6 +483,8 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "c7e45b00fae4eaf222002e140000a02800c145000038fb547100818ce900f5867912ce8ec08700b8e735c9bebcb8295a1881a01194ddba4317000036729a68f3077ce6008a871cb3e3fc",
+    base85:
+      "$K+c8`sC{JA^<KF005vU0Kr87066<paR7mg=>YYHc@oZ!z=r_1=QYW`ytpY^7=fS>l-;^R7XSb@a++xK2YluLiiaGt<NN",
     base32:
       "Y7SFWAH24TVPEIQAFYKAAAFAFAAMCRIAAA4PWVDRACAYZ2IA6WDHSEWOR3AIOAFY4424TPV4XAUVUGEBUAIZJXN2IMLQAABWOKNGR4YHPTTABCUHDSZ6H7A=",
     base32hex:
@@ -479,6 +496,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "0000cf5100066400d4592018f403dfee00593513008688df876f00567867a7",
+    base85: "007TX00v|L)L9@H^aJ1S09iE?0EUR)hi?E@cxR^",
     base32: "AAAM6UIAAZSABVCZEAMPIA675YAFSNITACDIRX4HN4AFM6DHU4======",
     base32hex: "000CUK800PI01L2P40CF80UVTO05ID8J0238HNS7DS05CU37KS======",
     ascii85: '!!(>B!!Zs6e6*n2oE4"=!*M/m!/?<eLMm/nG\\<o',
@@ -487,6 +505,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "a8c2f003df779dc82757000000b00e0000151700ba21c400",
+    base85: "sKW3A-*=tJCszOf0I&`K02LPix*@~>",
     base32: "VDBPAA67O6O4QJ2XAAAABMAOAAABKFYAXIQ4IAA=",
     base32hex: "L31F00UVEUESG9QN00001C0E0001A5O0N8GS800=",
     ascii85: "W5A$+hfkX4-W^9J!3cq5!#6:M\\fnul",
@@ -496,6 +515,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "11002c93430068ac0a9000a4f30f0f32186e2e9300931b00fb5e",
+    base85: "5dbWcLjY*33XlM#^A8U)7;Y|;0FxU4`(6",
     base32: "CEACZE2DABUKYCUQACSPGDYPGIMG4LUTACJRWAH3LY======",
     base32hex: "2402P4Q301KAO2KG02IF63OF68C6SBKJ029HM07RBO======",
     ascii85: "&HFAG6NCf$$BP7`o+)?e(iCsi!0\\?%qd'",
@@ -504,6 +524,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "85516d76382935b6002c0c9b57774011a7e6a5e0834079884f7eb2a78434344d9ade3736c606df9748cf00dcd7753fa0327c50d80ad15da7c73600526633e9",
+    base85: "g;8yGI4L!@04xlfS9d@Wr{<;LgFtzRPkyqegfuiwn%*}y#s=S)NY4P=*L6RjGJH_j3ejDs$2I^`W;5v",
     base32:
       "QVIW25RYFE23MABMBSNVO52ACGT6NJPAQNAHTCCPP2ZKPBBUGRGZVXRXG3DANX4XJDHQBXGXOU72AMT4KDMAVUK5U7DTMACSMYZ6S===",
     base32hex:
@@ -514,6 +535,8 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "f3bdd2e95e3eb681cc0000b437cd70c8540062734ad39640f075c0daf6008f9af82bb99b1d00a647b0076b963377e74ece552e986de03b87471d497e03a4feeed626b80e00",
+    base85:
+      "^S#pPUOu*g%m4tiH_dR!Q~+XgO4F7=@O8l2_5hEX_$#@a9RQ|Bum@|FGk51s&Q&g$ZQwhHM;%Fi1El`$)+V?P00",
     base32:
       "6O65F2K6H23IDTAAAC2DPTLQZBKAAYTTJLJZMQHQOXANV5QAR6NPQK5ZTMOQBJSHWADWXFRTO7TU5TSVF2MG3YB3Q5DR2SL6AOSP53WWE24A4AA=",
     base32hex:
@@ -525,6 +548,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "a930f84900",
+    base85: "sWA9S00",
     base32: "VEYPQSIA",
     base32hex: "L4OFGI80",
     ascii85: "WA+*=!!",
@@ -533,6 +557,8 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "40bb6baf1a95fc8bb0fca999002c14cf193700f31ec02aea590012330647845ea3001b14d7cf074fd32a6c07043e2d3e00007c5fbb4a2bff821a0500289f54f9a1e05500b953d5e7aa1faa079e7ec07791a4d815484bff2bf86677",
+    base85:
+      "K)Y+N8kPKuu>7f+04x;G88-m)9>6N<SpX6<21kTmqW~Ke*Utw}(<*ES1U@Z3004YnyGkqnf*J(?D4$gMq2N^jxl`5WsvoKco_@f0k)+raNK5}K_-1z",
     base32:
       "IC5WXLY2SX6IXMH4VGMQALAUZ4MTOAHTD3ACV2SZAAJDGBSHQRPKGAA3CTL46B2P2MVGYBYEHYWT4AAAPRP3WSRL76BBUBIAFCPVJ6NB4BKQBOKT2XT2UH5KA6PH5QDXSGSNQFKIJP7SX6DGO4======",
     base32hex:
@@ -544,6 +570,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "ca6904ebb57784a467620094b74cfc36ed4f0f0a00f86d8fe443135c0e00ea20cb2e77c9517871",
+    base85: "%4r1awReQ1XJP=9w@myt?N1L10QhZ><U<o&4gl&P%Px1xQFw6",
     base32: "ZJUQJ25VO6CKIZ3CACKLOTH4G3WU6DYKAD4G3D7EIMJVYDQA5IQMWLTXZFIXQ4I=",
     base32hex: "P9KG9QTLEU2A8PR202ABEJ7S6RMKU3OA03S6R3V48C9LO3G0T8GCMBJNP58NGS8=",
     ascii85: 'b%V"E[<I;"B4:k*[nQ]Xm8"6"!;LDlj?jSc%KPc:b:\\"\\;0[\'',
@@ -552,6 +579,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "00b4000e18f700006598e135be3fc27a0663507000bf",
+    base85: "0JH!O8211GWtibLzCXfx24hfg0KW",
     base32: "AC2AADQY64AAAZMY4E234P6CPIDGGUDQAC7Q====",
     base32hex: "02Q003GOUS000PCOS4QRSFU2F8366K3G02VG====",
     ascii85: '!42_9)#""1AXMF6^-BJ\\#%LJK!5A',
@@ -560,6 +588,8 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "0031c526ad77bb001de74a4cd20d975537f7001d6c9200ba85790053009600e2aee20092de008d4675642cfd59626700d01cb1fc00f4007fbb0002e42400a4c31f37fd0d44007255000f0063ede3005b00008f0000744bec5409c7121aadab",
+    base85:
+      "05QcTt#`Ws9p_3+(hZkYH}?P?Y?1)Fg?Ru|0G0sauHpca-T;k8b!064Sz>1Z&>XS+0Q3NVy8r^@BmkttA2<CCL;!MC01p6T?c)Gj0055w0CY?2R0+ot8m+4",
     base32:
       "AAY4KJVNO65QAHPHJJGNEDMXKU37OAA5NSJABOUFPEAFGAEWADRK5YQASLPABDKGOVSCZ7KZMJTQBUA4WH6AB5AAP65QAAXEEQAKJQY7G76Q2RAAOJKQADYAMPW6GAC3AAAI6AAAORF6YVAJY4JBVLNL",
     base32hex:
@@ -571,6 +601,8 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "a41b4bb4d8055f000ad7e81400888b12800000149c550089004b43d08c2c937167bb9bf00f71c4ca007aa6916e0b22b21fe1374fb4008d30f34134003c4c8f38e79395c403ff999bdf7600a57c680500fe9fdfdcb700e72232cd4e",
+    base85:
+      "q#H}L*acqz3fJfq0EmkcfB*m#oK*mc082yAj4YFJXS<v54{^lG0D7j8ZVMu^AK^Dov;d7T^FcHKJWP)`=aZGh1OJ(u-*y0{d}sv#{-596w*coNGR;l",
     base32:
       "UQNUXNGYAVPQACWX5AKABCELCKAAAAAUTRKQBCIAJNB5BDBMSNYWPO436AHXDRGKAB5KNELOBMRLEH7BG5H3IAENGDZUCNAAHRGI6OHHSOK4IA77TGN565QAUV6GQBIA72P57XFXADTSEMWNJY======",
     base32hex:
@@ -582,6 +614,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "f9af2fa2265900afd7946a601e3615059d02cb07648849d2",
+    base85: "`L8dcCRqTl*OY2t9yS#PodU}TWQa-9",
     base32: "7GXS7IRGLEAK7V4UNJQB4NQVAWOQFSYHMSEETUQ=",
     base32hex: "V6NIV8H6B40AVLSKD9G1SDGL0MEG5IO7CI44JKG=",
     ascii85: "q6)HG-<U>Pf9C#X*]=`:SH?t>A;Eh*",
@@ -591,6 +624,8 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "00360000fbdc1fa5008d8820e60a00167a1658e981fd22c771ccf8002cb70394b900c521d8b3c691df00ae7b2f41ef7ab4cf6af3744385e1bcce6c002e8ac5004ac75a763700989f00ccceed43",
+    base85:
+      "05$*s``jO;0F8(s<_Z87dKOsef&C)Kam@GtEVl!cxd6o>*t5ow-vF+AFG25mw9jhubVG&Vyv}R@E{eqfO2=AuHvpKQ0L;$qLj",
     base32:
       "AA3AAAH33QP2KAENRAQOMCQACZ5BMWHJQH6SFR3RZT4AALFXAOKLSAGFEHMLHRUR34AK46ZPIHXXVNGPNLZXIQ4F4G6M43AAF2FMKACKY5NHMNYATCPQBTGO5VBQ====",
     base32hex:
@@ -602,6 +637,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "bbb30ceccd323a7014529b145b7482b23992183800b02cc9712ed9aee7694160008553",
+    base85: "yR!`J%`!T06jGZMTXcf5Ig%JS0I)2{aW2`e=V?J;0EJT",
     base32: "XOZQZ3GNGI5HAFCSTMKFW5ECWI4ZEGBYACYCZSLRF3M25Z3JIFQABBKT",
     base32hex: "NEPGPR6D68T7052IJCA5MT42M8SP461O02O2PIBH5RCQTPR985G011AJ",
     ascii85: "]<_q4bq_>!'N1D7>BGJ&3Kb4=!3e#rEA#qIk@m4i!/4>",
@@ -610,6 +646,8 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "851eb1674600f77b0044b344487b3c564feccf3a0669009b9e39e3b92400f8008700dea40092802800004a5f56009ea7b6bc00811500ce6eff99290046cd000061be00d9000000ad00005a5402b2f000eb4f291ea998d7f646af0e71e54bbed57bca74",
+    base85:
+      "g&whIMgaGF07SDyNP9e1PwdY+25A7Bo;l;WBmnpThXCHB0Fr<x002r~Rsf!-w!8p=6#&j||CuQOM$G^KVZH#_00023003H40<!P`>rW{jshHRHMz0QW<x9TRd&+b",
     base32:
       "QUPLCZ2GAD3XWACEWNCEQ6Z4KZH6ZTZ2AZUQBG46HHR3SJAA7AAIOAG6UQAJFABIAAAEUX2WACPKPNV4ACARKAGON37ZSKIAI3GQAADBXYANSAAAACWQAAC2KQBLF4AA5NHSSHVJTDL7MRVPBZY6KS562V54U5A=",
     base32hex:
@@ -621,6 +659,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "67398160807473392925443a34c8622f001d18076d3dda",
+    base85: "XE}jjfOK;?DJ4WYG{|Bv038?yZ9Uo",
     base32: "M44YCYEAORZTSKJFIQ5DJSDCF4AB2GAHNU65U===",
     base32hex: "CSSO2O40EHPJIA958GT39I325S01Q607DKUTK===",
     ascii85: "B/tNNJ95im.4%AC1rs,Z!$)m]D*?S",
@@ -629,6 +668,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "67b5ae053eb616b4003900",
+    base85: "XSJ>cKDHLL0672",
     base32: "M6224BJ6WYLLIABZAA======",
     base32hex: "CUQQS19UMOBB801P00======",
     ascii85: "B=4lG5.266!'(#",
@@ -637,6 +677,8 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "b5e400e10000005e94c280890700f9101200c851e5266e4316b8a9c6a000aa7f17498b00b6471130da329079489bae7dcfacf67cb26900e8ca9a210081ae00289befdb22a38d0b890acc90321d1800ae02070ea70dcf",
+    base85:
+      "wd4Td00019l)`|C2LSmH5&+0i<tA=J7PzU#pa80W7fFi%wnq^#+A@%NNSm&G&#d-*vS|S5%9<enfvx~3oA28qqm2uR3e1o)9T)(v0tXJK4bK",
     base32:
       "WXSABYIAAAAF5FGCQCEQOAHZCAJABSCR4UTG4QYWXCU4NIAAVJ7ROSMLAC3EOEJQ3IZJA6KITOXH3T5M6Z6LE2IA5DFJUIIAQGXAAKE357NSFI4NBOEQVTEQGIORQAFOAIDQ5JYNZ4======",
     base32hex:
@@ -648,6 +690,8 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "acd42cabcced0da000a809492eb94ea984f49ee8b98c0000b9742e4400685dbb5a52b37cffb0c7a50d0021cdb300d1c07200007b68d998ff5088459000007fe71a6bb800e04798390400b400cb00",
+    base85:
+      "tkf*4%<T=J0H_H`F1b#rg!G>1xr_h+xpXc>0BBviT2ixo|FFlU4FDm{vjEY+asU8(XxW(mP>4m4004jI8f&-!;76D_1OT)E%K!",
     base32:
       "VTKCZK6M5UG2AAFIBFES5OKOVGCPJHXIXGGAAAFZOQXEIADILW5VUUVTPT73BR5FBUACDTNTADI4A4QAAB5WRWMY75IIQRMQAAAH7ZY2NO4ABYCHTA4QIAFUADFQA===",
     base32hex:
@@ -659,6 +703,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "cb10670700763518a2000045014b39fe276e728b072364d0b9a6e8a989a2c4c6d10282c1652c1119a6e2a1",
+    base85: "%MfP=0CqJPq5uFz0ZTdlCvI|!2P0(Axu)o;iK4{D(E@_OWh@aHrsAO",
     base32: "ZMIGOBYAOY2RRIQAABCQCSZZ7YTW44ULA4RWJUFZU3UKTCNCYTDNCAUCYFSSYEIZU3RKC===",
     base32hex: "PC86E1O0EOQHH8G0012G2IPPVOJMSSKB0SHM9K5PKRKAJ2D2OJ3D20K2O5IIO48PKRHA2===",
     ascii85: "b7J:k!-U4:U&Y0^!D>HP-Z3s_#:!d+\\YeSiM5%r.d/np9ALnE2VW+9",
@@ -667,6 +712,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "00f0c2c12088a4007287f2b2f44800ba567a4eeb16b9db0080ba9a2d9439f4594c000079ae810084008c82e0002dd894bee21597dc83c54262be",
+    base85: "0Pw=WAc&*@a)<J=^hf}@R(ekB7P;F1fV!G3lsWWSOaK6Ru7LoA0E~j*04>;*zTy>^+=InJV!i",
     base32:
       "ADYMFQJARCSAA4UH6KZPISAAXJLHUTXLC245WAEAXKNC3FBZ6RMUYAAAPGXICAEEACGIFYAAFXMJJPXCCWL5ZA6FIJRL4===",
     base32hex:
@@ -677,6 +723,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "a828c2d40d00ecdf",
+    base85: "s3^kJ4FK%l",
     base32: "VAUMFVANADWN6===",
     base32hex: "L0KC5L0D03MDU===",
     ascii85: "W$oO4%05bP",
@@ -686,6 +733,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "5ae14504661496c63c00070000e800ab1cd547194a61038c2c8298d79dc2834300bffa48ae1a04d1a500e06be8e368003f0024fe54",
+    base85: "TH!?mW)zmjJOBp(0O$a#9Mwk|N?`+xEP|NVox+1d0KfW3t{Mc<r2yb-=;LSrKL8~DQ~",
     base32:
       "LLQUKBDGCSLMMPAAA4AAB2AAVMONKRYZJJQQHDBMQKMNPHOCQNBQBP72JCXBUBGRUUAOA27I4NUAAPYAET7FI===",
     base32hex:
@@ -695,6 +743,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "96510069ee001983e24f440096a34e846d76104f722f4cdccd003e6b25b2002f8f2df0749900004d19b37eba98e80052ec0000d343b400532ef585003b8a3c",
+    base85: "mQes{?f@Bs;!i{XmZMIDZFUe(axYBW%>X`YC9(i7k1g<YnE(Jy8MA)6nCJjf>;M4ML$m->F7<@~JBmC",
     base32:
       "SZIQA2POAAMYHYSPIQAJNI2OQRWXMECPOIXUZXGNAA7GWJNSAAXY6LPQOSMQAACNDGZX5OUY5AAFF3AAADJUHNAAKMXPLBIAHOFDY===",
     base32hex:
@@ -705,6 +754,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "5315bb91687a7a0700006b750087d9383d00771f25320059af005d00d2100055b0687022f500a82019",
+    base85: "Qx&_BXnJ}F003)s0EgK)JpgwfB{Be6uK-;D(hvYuuxM~1^#G_K82",
     base32: "KMK3XELIPJ5AOAAANN2QBB6ZHA6QA5Y7EUZAAWNPABOQBUQQABK3A2DQEL2QBKBADE======",
     base32hex: "ACARN4B8F9T0E000DDQG11UP70UG0TOV4KP00MDF01EG1KGG01AR0Q3G4BQG1A1034======",
     ascii85: ";\\cp,BR4t0!!$eW!/K5e4TK[J,r,I'Y5hi.dLZCYY\\7u\"o`1p5)#",
@@ -713,6 +763,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "2fb2fcfe009bee54993b008176eafc19caafcf74adda0208f399ab2aee958ae27b00155eaab9b3c9a3605304007d",
+    base85: "FS7jp0GsYqnL7Z1cIx~Y%CFCKt=a+z^O>tE?v;w-djJ()s=2etqhM160DS",
     base32: "F6ZPZ7QATPXFJGJ3ACAXN2X4DHFK7T3UVXNAECHTTGVSV3UVRLRHWAAVL2VLTM6JUNQFGBAAPU======",
     base32hex: "5UPFPVG0JFN5969R020NDQNS375AVJRKLND0427JJ6LILRKLHBH7M00LBQLBJCU9KDG56100FK======",
     ascii85: '0=(NT!1WCUR6(D"G3\\uCb-0-5XkEg^o9lX/mZi[hHN4deWk#IXUL7"\'!.=',
@@ -720,6 +771,7 @@ export const python: readonly VectorRow[] = [
   },
   {
     hex: "8033c0008126a997c01eff09003ce54dea0046008a0017588f7b0dd0c2b88efdb1661f571bc4b85ff3a4ce00c9f168e6d1a100f0d28cca933e06",
+    base85: "fHS}VfhMV!z#jhz06gVQ>HtOniU1c_k9!T!!nlt8v1T7v8^pL@^Q6uI$?<6B(V+nF(u~TJJ_Y",
     base32:
       "QAZ4AAEBE2UZPQA674EQAPHFJXVAARQARIABOWEPPMG5BQVYR363CZQ7K4N4JOC76OSM4AGJ6FUONUNBADYNFDGKSM7AM===",
     base32hex:

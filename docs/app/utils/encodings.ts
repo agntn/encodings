@@ -12,6 +12,8 @@ type BuiltinEncoding = (typeof BUILTINS)[number];
 /** Built-ins in listing order. A newcomer without a row in `PRESENTATION` fails the type below. */
 const BUILTINS = [
   "binary",
+  "octal",
+  "decimal",
   "hex",
   "base32",
   "base32hex",
@@ -26,6 +28,7 @@ const BUILTINS = [
   "base64url",
   "ascii85",
   "z85",
+  "base85",
   "base91",
   "bech32",
   "bech32m",
@@ -36,6 +39,8 @@ const BUILTINS = [
 /** An icon, a one-liner and who writes it, per encoding. Everything else comes from `info()`. */
 const PRESENTATION: Record<BuiltinEncoding, { icon: string; blurb: string; usedBy?: string }> = {
   binary: { icon: "i-lucide-binary", blurb: "Every bit spelled out. Eight characters a byte" },
+  octal: { icon: "i-lucide-octagon", blurb: "A number a byte in base 8. Looks like decimal, isn't" },
+  decimal: { icon: "i-lucide-list-ordered", blurb: "A number a byte. The ASCII table, written out" },
   hex: { icon: "i-lucide-hash", blurb: "Two digits a byte. The one everybody reads" },
   base32: {
     icon: "i-lucide-case-upper",
@@ -66,6 +71,7 @@ const PRESENTATION: Record<BuiltinEncoding, { icon: string; blurb: string; usedB
   base64url: { icon: "i-lucide-link", blurb: "Base64 that survives a URL", usedBy: "JWT" },
   ascii85: { icon: "i-lucide-file-text", blurb: "Four bytes as five, z for zeros", usedBy: "PostScript, PDF" },
   z85: { icon: "i-lucide-code-xml", blurb: "Base85 safe to paste into source code", usedBy: "ZeroMQ" },
+  base85: { icon: "i-lucide-git-compare", blurb: "The RFC 1924 alphabet in four byte groups", usedBy: "Python, Mercurial, git patches" },
   base91: { icon: "i-lucide-package", blurb: "Squeezes printable ASCII hardest" },
   bech32: {
     icon: "i-lucide-fingerprint",
@@ -80,6 +86,8 @@ const PRESENTATION: Record<BuiltinEncoding, { icon: string; blurb: string; usedB
 /** Labels a page shows per family. The keys come from the library. */
 const FAMILY_LABELS: Record<(typeof encodingFamilies)[number], string> = {
   binary: "Binary",
+  octal: "Octal",
+  decimal: "Decimal",
   hex: "Hex",
   base32: "Base32",
   base45: "Base45",
@@ -95,6 +103,7 @@ const FAMILY_LABELS: Record<(typeof encodingFamilies)[number], string> = {
 /** How the landing groups the registry: by how an encoding turns bytes into text. */
 export const GROUPS = [
   { key: "bits", label: "Bit groups", about: "a fixed number of bits per character" },
+  { key: "values", label: "Byte values", about: "each byte as one number, spaced" },
   { key: "number", label: "Big number", about: "the whole input as one number in base 58" },
   { key: "blocks", label: "Fixed blocks", about: "a few bytes at a time as a few characters" },
   { key: "words", label: "Checksummed words", about: "5-bit words behind a prefix, with a BCH checksum" },
@@ -105,6 +114,8 @@ export type GroupKey = (typeof GROUPS)[number]["key"];
 
 const GROUP_OF: Record<BuiltinEncoding, GroupKey> = {
   binary: "bits",
+  octal: "values",
+  decimal: "values",
   hex: "bits",
   base32: "bits",
   base32hex: "bits",
@@ -119,6 +130,7 @@ const GROUP_OF: Record<BuiltinEncoding, GroupKey> = {
   base45: "blocks",
   ascii85: "blocks",
   z85: "blocks",
+  base85: "blocks",
   base91: "blocks",
   bech32: "words",
   bech32m: "words",

@@ -27,6 +27,35 @@ export interface IdentifyOptions {
   encodings?: readonly string[];
 }
 
+/** Options for `peel`. */
+export interface PeelOptions {
+  /** Most layers to take off. Default: 10. */
+  limit?: number;
+  /** Encodings to try at each layer; default all registered. */
+  encodings?: readonly string[];
+}
+
+/** One layer `peel` took off. */
+export interface PeelLayer extends EncodingCandidate {
+  /**
+   * Whether something backs the layer: a checksum, framing, or at least eight bytes of readable
+   * text. Only the last layer can be unconfirmed, and then it is a best guess.
+   */
+  confirmed: boolean;
+}
+
+/** A candidate with what `peel` needs to know about it. */
+interface Scored {
+  candidate: EncodingCandidate;
+  /** Backed by a checksum, framing or enough readable text. */
+  confirmed: boolean;
+  /** The bytes read as text, so the next layer can start from it. */
+  readable: boolean;
+}
+
+/** Fewest readable bytes that back a layer alone; plain words decode to less by chance. */
+const MIN_TEXT_BYTES = 8;
+
 /** Base58 decoding is quadratic in the text length; real base58 strings are short. */
 const BASE58_MAX_LENGTH = 1024;
 
@@ -74,21 +103,16 @@ function framing(encoding: string, text: string): string | undefined {
 }
 
 /**
- * Scores one decoding of the text.
+ * Scores what the text carries besides its decoded bytes: a checksum and framing.
  *
  * @param info - The encoding's metadata.
- * @param text - The text as given.
- * @param decoded - What the encoding decoded it to.
- * @returns {EncodingCandidate | undefined} The candidate, or nothing when this decoding says nothing.
+ * @param frame - Framing found in the text, if any.
+ * @returns {{ score: number; reasons: string[] }} The score and what raised it.
  */
-function candidate(
+function marks(
   info: EncodingInfo,
-  text: string,
-  decoded: Decoded,
-): EncodingCandidate | undefined {
-  const frame = framing(info.name, text);
-  // Any ASCII text is Quoted-Printable; without an escape it only lost a trailing `=`.
-  if (info.name === "quoted-printable" && !frame) return undefined;
+  frame: string | undefined,
+): { score: number; reasons: string[] } {
   const reasons: string[] = [];
   let score = 0;
   if (info.checksum) {
@@ -99,14 +123,50 @@ function candidate(
     score += WEIGHTS.framing;
     reasons.push(frame);
   }
+  return { score, reasons };
+}
+
+/**
+ * Whether a decoding backs a layer of `peel`: a checksum, framing or enough readable text.
+ *
+ * @param info - The encoding's metadata.
+ * @param frame - Framing found in the text, if any.
+ * @param readable - Whether the bytes read as text.
+ * @param length - How many bytes it decoded to.
+ * @returns {boolean} Whether something confirms it.
+ */
+function backed(
+  info: EncodingInfo,
+  frame: string | undefined,
+  readable: boolean,
+  length: number,
+): boolean {
+  return info.checksum || frame !== undefined || (readable && length >= MIN_TEXT_BYTES);
+}
+
+/**
+ * Scores one decoding of the text. Quoted-Printable counts only with an `=XX` escape: any ASCII
+ * text is valid Quoted-Printable, and without an escape it only lost a trailing `=`.
+ *
+ * @param info - The encoding's metadata.
+ * @param text - The text as given.
+ * @param decoded - What the encoding decoded it to.
+ * @returns {Scored | undefined} The candidate, or nothing when this decoding says nothing.
+ */
+function candidate(info: EncodingInfo, text: string, decoded: Decoded): Scored | undefined {
+  const frame = framing(info.name, text);
+  if (info.name === "quoted-printable" && !frame) return undefined;
+  const { reasons, score: marked } = marks(info, frame);
+  let score = marked;
   const asText = utf8(decoded.bytes);
   const share = asText === undefined ? 0 : printable(asText);
   score += WEIGHTS.text * share;
-  if (share >= 0.95) reasons.push("decodes to readable text");
+  const readable = share >= 0.95;
+  if (readable) reasons.push("decodes to readable text");
   const size = Math.max(2, info.alphabet.length);
   score += WEIGHTS.alphabet * Math.max(0, 1 - Math.log2(size) / 7);
   if (size <= 16) reasons.push(`fits a ${size}-character alphabet`);
-  return {
+  const candidate: EncodingCandidate = {
     encoding: info.name,
     confidence: Math.min(1, Math.round(score * 1000) / 1000),
     reasons,
@@ -114,6 +174,8 @@ function candidate(
     ...(asText === undefined ? {} : { text: asText }),
     details: decoded.details,
   };
+  const confirmed = backed(info, frame, readable, decoded.bytes.length);
+  return { candidate, confirmed, readable };
 }
 
 /**
@@ -122,9 +184,9 @@ function candidate(
  * @param name - Registry name.
  * @param text - The text as given.
  * @param own - The text's own UTF-8 bytes.
- * @returns {EncodingCandidate | undefined} The scored candidate, or nothing.
+ * @returns {Scored | undefined} The scored candidate, or nothing.
  */
-function attempt(name: string, text: string, own: Uint8Array): EncodingCandidate | undefined {
+function attempt(name: string, text: string, own: Uint8Array): Scored | undefined {
   const encoding = create(name);
   const info = encoding.info();
   if (info.family === "base58" && text.length > BASE58_MAX_LENGTH) return undefined;
@@ -136,6 +198,35 @@ function attempt(name: string, text: string, own: Uint8Array): EncodingCandidate
   }
   if (decoded.bytes.length === 0 || equalBytes(decoded.bytes, own)) return undefined;
   return candidate(info, text, decoded);
+}
+
+/**
+ * Scores every encoding the text decodes in, best first.
+ *
+ * @param text - Text in an unknown encoding.
+ * @param names - Registry names to try.
+ * @returns {Scored[]} Candidates, best first.
+ */
+function rank(text: string, names: readonly string[]): Scored[] {
+  const own = toBytes(text);
+  return names
+    .map((name) => attempt(name, text, own))
+    .filter((entry) => entry !== undefined)
+    .toSorted((left, right) => right.candidate.confidence - left.candidate.confidence);
+}
+
+/**
+ * Reads the shared options of `identify` and `peel`.
+ *
+ * @param limit - The limit given.
+ * @param wanted - Encodings given, if any.
+ * @returns {string[]} Registry names to try.
+ */
+function tried(limit: number, wanted: readonly string[] | undefined): string[] {
+  if (!Number.isInteger(limit) || limit < 1) {
+    throw new InvalidOptionError("limit", limit, "must be a positive integer");
+  }
+  return wanted?.map((name) => create(name).name) ?? encodings();
 }
 
 /**
@@ -154,14 +245,59 @@ export function identify(
   options: Readonly<IdentifyOptions> = {},
 ): EncodingCandidate[] {
   const { limit = 5 } = options;
-  if (!Number.isInteger(limit) || limit < 1) {
-    throw new InvalidOptionError("limit", limit, "must be a positive integer");
+  const names = tried(limit, options.encodings);
+  return rank(text, names)
+    .slice(0, limit)
+    .map((entry) => entry.candidate);
+}
+
+/**
+ * Whether unconfirmed text still looks encoded rather than plain: a digit, and no whitespace
+ * unless the guess is a small alphabet like hex. Prose decodes in base32 too.
+ *
+ * @param text - The text the guess decodes.
+ * @param encoding - Registry name of the best candidate for it.
+ * @returns {boolean} Whether to show the guess.
+ */
+function looksEncoded(text: string, encoding: string): boolean {
+  if (!/\d/u.test(text)) return false;
+  return !/\s/u.test(text.trim()) || create(encoding).info().alphabet.length <= 16;
+}
+
+/**
+ * Picks the next layer of `peel`: the best confirmed candidate, else the best guess when the
+ * text still looks encoded.
+ *
+ * @param text - The text to take a layer off.
+ * @param names - Registry names to try.
+ * @returns {Scored | undefined} The layer, or nothing when peeling stops here.
+ */
+function nextLayer(text: string, names: readonly string[]): Scored | undefined {
+  const ranked = rank(text, names);
+  const next = ranked.find((entry) => entry.confirmed) ?? ranked[0];
+  if (next === undefined) return undefined;
+  return next.confirmed || looksEncoded(text, next.candidate.encoding) ? next : undefined;
+}
+
+/**
+ * Takes encodings off one layer at a time, each the best confirmed candidate, while it decodes
+ * to text. When nothing is confirmed but the text still looks encoded, the best guess comes last
+ * with `confirmed: false`, so base64 over encrypted bytes still shows.
+ *
+ * @param text - Text in an unknown encoding, perhaps several.
+ * @param options - Most layers and which encodings to try.
+ * @returns {PeelLayer[]} Layers, outermost first; empty when nothing decodes the text.
+ */
+export function peel(text: string, options: Readonly<PeelOptions> = {}): PeelLayer[] {
+  const { limit = 10 } = options;
+  const names = tried(limit, options.encodings);
+  const layers: PeelLayer[] = [];
+  let current: string | undefined = text;
+  while (current !== undefined && layers.length < limit) {
+    const next = nextLayer(current, names);
+    if (next === undefined) break;
+    layers.push({ ...next.candidate, confirmed: next.confirmed });
+    current = next.confirmed && next.readable ? next.candidate.text : undefined;
   }
-  const own = toBytes(text);
-  const names = options.encodings?.map((name) => create(name).name) ?? encodings();
-  return names
-    .map((name) => attempt(name, text, own))
-    .filter((entry) => entry !== undefined)
-    .toSorted((left, right) => right.confidence - left.confidence)
-    .slice(0, limit);
+  return layers;
 }

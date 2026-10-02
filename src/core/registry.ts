@@ -61,7 +61,7 @@ const ALIASES: Readonly<Record<string, string>> = {
   b64url: "base64url",
   a85: "ascii85",
   btoa: "ascii85",
-  base85: "ascii85",
+  b85: "base85",
   b91: "base91",
   uu: "uuencode",
   uue: "uuencode",

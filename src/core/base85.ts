@@ -61,6 +61,37 @@ function decode85(name: string, values: readonly number[]): Uint8Array {
   return Uint8Array.from(out);
 }
 
+/**
+ * Reads each character of a text as its digit value in an alphabet with no whitespace or
+ * framing to skip.
+ *
+ * @param name - Registry name, for errors.
+ * @param text - The text.
+ * @param value - Digit value of a character, or nothing when it is not in the alphabet.
+ * @returns {number[]} Digit values in order.
+ */
+function alphabetDigits(
+  name: string,
+  text: string,
+  value: (character: string) => number | undefined,
+): number[] {
+  const values: number[] = [];
+  let index = 0;
+  for (const character of text) {
+    const digit = value(character);
+    if (digit === undefined) {
+      throw new DecodeError(
+        name,
+        `${named(character)} at index ${index} is not in the alphabet`,
+        index,
+      );
+    }
+    values.push(digit);
+    index += character.length;
+  }
+  return values;
+}
+
 /** ASCII whitespace, which Ascii85 decoders skip anywhere. */
 const WHITESPACE = new Set(["\t", "\n", "\f", "\r", " "]);
 
@@ -170,23 +201,42 @@ export const z85 = {
    * @returns {Uint8Array} The bytes.
    */
   decode(text: string): Uint8Array {
-    const values: number[] = [];
-    let index = 0;
-    for (const character of text) {
-      const value = Z85_VALUES.get(character);
-      if (value === undefined) {
-        throw new DecodeError(
-          "z85",
-          `${named(character)} at index ${index} is not in the alphabet`,
-          index,
-        );
-      }
-      values.push(value);
-      index += character.length;
-    }
+    const values = alphabetDigits("z85", text, (character) => Z85_VALUES.get(character));
     if (values.length % 5 !== 0) {
       throw new DecodeError("z85", `${values.length} characters are not a multiple of 5`);
     }
     return decode85("z85", values);
+  },
+} as const;
+
+const BASE85_ALPHABET =
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~";
+const BASE85_VALUES = alphabetIndex(BASE85_ALPHABET);
+
+/**
+ * Base85 with the RFC 1924 alphabet, in groups of four bytes as git binary patches and Python's
+ * `b85encode` write it. RFC 1924 itself reads a whole IPv6 address as one number; this reads
+ * any length, with a short last group cut like Ascii85's.
+ */
+export const base85 = {
+  /**
+   * Writes bytes in base85.
+   *
+   * @param bytes - Bytes to write.
+   * @returns {string} The text.
+   */
+  encode(bytes: Uint8Array): string {
+    return encode85(bytes, (value) => BASE85_ALPHABET[value]!);
+  },
+
+  /**
+   * Reads base85 text.
+   *
+   * @param text - Base85 text.
+   * @returns {Uint8Array} The bytes.
+   */
+  decode(text: string): Uint8Array {
+    const values = alphabetDigits("base85", text, (character) => BASE85_VALUES.get(character));
+    return decode85("base85", values);
   },
 } as const;

@@ -3,6 +3,8 @@ import type { BytesInput } from "./bytes.ts";
 /** Families the built-in encodings belong to, by the radix or scheme they share. */
 export const encodingFamilies = [
   "binary",
+  "octal",
+  "decimal",
   "hex",
   "base32",
   "base45",

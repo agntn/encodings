@@ -15,11 +15,14 @@ import {
   base58ripple,
   base64,
   base64url,
+  base85,
   base91,
   bech32,
   bech32m,
   binary,
+  decimal,
   hex,
+  octal,
   quotedPrintable,
   segwit,
   uuencode,
@@ -73,6 +76,7 @@ describe("frozen outputs of independent implementations", () => {
     ascii85,
     base45,
     z85,
+    base85,
   } as const;
 
   it.each(python)("matches row $hex without padding", (row) => {
@@ -94,6 +98,34 @@ describe("frozen outputs of independent implementations", () => {
       expect(uuencode.encode(bytes).split("\n")[1]).toBe(line.trimEnd());
       expect(hex.encode(uuencode.decode(line))).toBe(row["hex"]);
     }
+  });
+});
+
+describe("octal and decimal", () => {
+  it("writes one number per byte, spaced or three digits each", () => {
+    expect(decimal.encode(text("Hi\n"))).toBe("72 105 10");
+    expect(decimal.encode(text("Hi\n"), { separate: false })).toBe("072105010");
+    expect(octal.encode(text("Hi\n"))).toBe("110 151 12");
+    expect(octal.encode(text("Hi\n"), { separate: false })).toBe("110151012");
+  });
+
+  it("reads spaces, commas and runs of three digits", () => {
+    expect(read(decimal.decode("72, 105,10\n"))).toBe("Hi\n");
+    expect(read(decimal.decode("072105010"))).toBe("Hi\n");
+    expect(read(octal.decode("110 151 012"))).toBe("Hi\n");
+    expect(read(octal.decode("110151012"))).toBe("Hi\n");
+    expect(decimal.decode(" , ")).toEqual(new Uint8Array());
+  });
+
+  it("rejects values over a byte, stray digits and runs that do not split", () => {
+    expect(() => decimal.decode("72 256")).toThrow('"256" at index 3 is over 255');
+    expect(() => octal.decode("400")).toThrow('"400" at index 0 is over 255');
+    expect(() => octal.decode("110 18")).toThrow('"8" (U+0038) is not an octal digit');
+    expect(() => decimal.decode("7a")).toThrow('"a" (U+0061) is not a decimal digit');
+    expect(() => decimal.decode("1234")).toThrow("4 digits at index 0 are not one number");
+    expect(() => decimal.decode("72 1x5")).toThrow(
+      expect.objectContaining({ name: "DecodeError", encoding: "decimal", index: 4 }),
+    );
   });
 });
 
@@ -298,6 +330,19 @@ describe("Ascii85 and Z85", () => {
   });
 });
 
+describe("base85 (RFC 1924 alphabet)", () => {
+  it("reads and writes the vector Python's b85encode gives for hello world", () => {
+    expect(base85.encode(text("hello world"))).toBe("Xk~0{Zy<MXa%^M");
+    expect(read(base85.decode("Xk~0{Zy<MXa%^M"))).toBe("hello world");
+  });
+
+  it("rejects characters outside the alphabet, a group of one and overflow", () => {
+    expect(() => base85.decode("Xk~0 ")).toThrow('" " (U+0020) at index 4 is not in the alphabet');
+    expect(() => base85.decode("Xk~0{Z")).toThrow("leave a group of one");
+    expect(() => base85.decode("~~~~~")).toThrow("over 2^32 - 1");
+  });
+});
+
 describe("basE91", () => {
   it("writes the reference implementation's output", () => {
     expect(base91.encode(text("Hello, World!"))).toBe(">OwJh>}AQ;r@@Y?F");
@@ -485,6 +530,8 @@ describe("round trips over every byte value", () => {
   const all = Uint8Array.from({ length: 256 }, (_, index) => index);
   it.each([
     ["binary", binary],
+    ["octal", octal],
+    ["decimal", decimal],
     ["hex", hex],
     ["base32", base32],
     ["base32hex", base32hex],
@@ -497,6 +544,7 @@ describe("round trips over every byte value", () => {
     ["base64url", base64url],
     ["ascii85", ascii85],
     ["z85", z85],
+    ["base85", base85],
     ["base91", base91],
     ["uuencode", uuencode],
     ["quoted-printable", quotedPrintable],

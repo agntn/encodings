@@ -122,8 +122,25 @@ describe("encodings MCP server", () => {
     expect(text.split("\n")[0]).toMatch(/^1\. base58check 0\.\d+; checksum matches/u);
   });
 
+  it("peels layers and marks the last guess", async () => {
+    const text = await call("encodings_identify", {
+      text: "553246736447566b58312b786c723668",
+      peel: true,
+    });
+    expect(text.split("\n")).toEqual([
+      "2 layers, outermost first:",
+      expect.stringMatching(/^1\. hex 0\.\d+; decodes to readable text/u),
+      '   16 bytes, text "U2FsdGVkX1+xlr6h"',
+      expect.stringMatching(/^2\. base64 \(unconfirmed guess\) 0\.\d+$/u),
+      "   12 bytes, hex 53616c7465645f5fb196bea1",
+    ]);
+    expect(await call("encodings_identify", { text: "Hello world", peel: true })).toBe(
+      "No layer to take off: nothing decodes this text to readable text or past a checksum.",
+    );
+  });
+
   it("lists encodings and shows one", async () => {
-    expect((await call("encodings_info", {})).split("\n")).toHaveLength(20);
+    expect((await call("encodings_info", {})).split("\n")).toHaveLength(23);
     expect(await call("encodings_info", { encoding: "bech32" })).toContain(
       "prefix (string, required)",
     );
@@ -212,7 +229,19 @@ describe("executors without the schema", () => {
     );
     expect(() => encodingsDecode({ encoding: "hex", text: "" })).toThrow("must be 1 to 100000");
     expect(() => encodingsIdentify({ text: "x", limit: 99 })).toThrow("from 1 to 20");
-    expect(() => encodingsInfo({ family: "base62" })).toThrow("use one of binary, hex");
+    expect(() => encodingsIdentify({ text: "x", peel: "yes" })).toThrow("must be a boolean");
+    expect(
+      encodingsIdentify({ text: "553246736447566b58312b786c723668", peel: true }).details,
+    ).toMatchObject({
+      candidates: [],
+      layers: [
+        { encoding: "hex", confirmed: true },
+        { encoding: "base64", confirmed: false },
+      ],
+    });
+    expect(() => encodingsInfo({ family: "base62" })).toThrow(
+      "use one of binary, octal, decimal, hex",
+    );
   });
 
   it("refuse base58 past the length a real one has", () => {
