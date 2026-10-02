@@ -10,6 +10,7 @@ import {
 import { encodingFamilies } from "./core/types.ts";
 import {
   ALPHABETS,
+  CHARSET_FORMATS,
   INPUT_FORMATS,
   MAX_CANDIDATES,
   MAX_NAME_LENGTH,
@@ -202,6 +203,19 @@ export const infoSchema = closed({
   ),
 });
 
+export const charsetConvertSchema = closed({
+  text: text("Text to convert: characters of the from code page, UTF-8, or bytes in hex or base64"),
+  from: Type.Enum(CHARSET_FORMATS, {
+    description:
+      "How the text turns into bytes: a code page (ibm* are EBCDIC), utf8, or hex or base64 for bytes written out",
+  }),
+  to: Type.Optional(
+    Type.Enum(CHARSET_FORMATS, {
+      description: "How the bytes turn back into text: a code page, utf8 (default), hex or base64",
+    }),
+  ),
+});
+
 /** The options that stand for variants other libraries name as encodings of their own. */
 const VARIANTS =
   "Variants are options: Crockford and z-base-32 are base32 alphabets, Base58Check is base58 with check, base64url is base64 with alphabet url, Ascii85 and Z85 are base85 alphabets, base256emoji is the base256 alphabet emoji, Bech32m is bech32 with m.";
@@ -267,10 +281,28 @@ export const infoTool = defineTool({
   execute: async (params) => (await loadOperations()).encodingsInfo(params),
 });
 
+export const charsetConvertTool = defineTool({
+  name: "encodings_charset_convert",
+  title: "Convert Code Page",
+  description:
+    "Read text as bytes in one character set and write those bytes in another: IBM EBCDIC code pages 037, 273, 500, 1140 and 1141, Latin-1, Windows-1252, UTF-8, hex or base64. Turns mojibake back into the text it was, and EBCDIC bytes into readable text.",
+  snippet: "Use encodings_charset_convert for EBCDIC, Latin-1 or Windows-1252 bytes and mojibake.",
+  guidelines: [
+    "from turns the text into bytes, to turns the bytes back into text.",
+    "Mojibake is text shown in the wrong code page: from is the page it is shown in, to is the one its bytes were written in.",
+    "EBCDIC bytes in hex: from hex, to the code page. Text into EBCDIC bytes: from the code page, to hex.",
+    "encodings_identify does not guess code pages; try the likely ones.",
+  ],
+  effect: "read",
+  input: charsetConvertSchema,
+  execute: async (params) => (await loadOperations()).encodingsCharsetConvert(params),
+});
+
 /** The encoding tools, in the order every surface lists them. */
 export const encodingTools: readonly ToolDefinition[] = [
   encodeTool,
   decodeTool,
   identifyTool,
   infoTool,
+  charsetConvertTool,
 ];

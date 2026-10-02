@@ -13,8 +13,10 @@ import { InvalidOptionError, quote, token } from "./core/errors.ts";
 import { hex } from "./core/hex.ts";
 import { identify, peel, type EncodingCandidate, type PeelLayer } from "./core/identify.ts";
 import { create, encodingInfos } from "./core/registry.ts";
+import { bytesText, textBytes } from "./core/transcode.ts";
 import type { EncodingInfo, EncodingOption } from "./core/types.ts";
 import {
+  CHARSET_FORMATS,
   INPUT_FORMATS,
   MAX_BASE58_LENGTH,
   MAX_CANDIDATES,
@@ -22,12 +24,20 @@ import {
   MAX_SYMBOLS_LENGTH,
   MAX_TEXT_LENGTH,
   OUTPUT_FORMATS,
+  type CharsetFormat,
   type InputFormat,
   type OutputFormat,
 } from "./tool-contract.ts";
 
 /** The contract the playground and the docs read, so a limit changes in one place. */
-export { INPUT_FORMATS, MAX_BASE58_LENGTH, MAX_CANDIDATES, MAX_TEXT_LENGTH, OUTPUT_FORMATS };
+export {
+  CHARSET_FORMATS,
+  INPUT_FORMATS,
+  MAX_BASE58_LENGTH,
+  MAX_CANDIDATES,
+  MAX_TEXT_LENGTH,
+  OUTPUT_FORMATS,
+};
 
 /**
  * Text for the model plus details for the harness, shared by every tool surface.
@@ -86,6 +96,18 @@ export interface InfoDetails {
   encodings: EncodingInfo[];
 }
 
+export interface CharsetConvertDetails {
+  /** How the text was read into bytes. */
+  from: CharsetFormat;
+  /** How the bytes were written back. */
+  to: CharsetFormat;
+  /** The bytes written as `to` says. */
+  text: string;
+  /** The bytes in between, in hex. */
+  hex: string;
+  byteLength: number;
+}
+
 /** Characters shown of a decoded value per candidate before it is cut. */
 const PREVIEW_LENGTH = 200;
 
@@ -116,16 +138,16 @@ function stringArgument(name: string, value: unknown, max: number, min = 1): str
  * @param name - Argument name.
  * @param value - The value as passed.
  * @param allowed - Allowed values.
- * @param fallback - Value when it is absent.
+ * @param fallback - Value when it is absent; without one the argument is required.
  * @returns {T} The value.
  */
 function enumArgument<T extends string>(
   name: string,
   value: unknown,
   allowed: readonly T[],
-  fallback: T,
+  fallback?: T,
 ): T {
-  if (value === undefined) return fallback;
+  if (value === undefined && fallback !== undefined) return fallback;
   if (typeof value === "string" && (allowed as readonly string[]).includes(value))
     return value as T;
   throw new InvalidOptionError(name, value, `use one of ${allowed.join(", ")}`);
@@ -521,4 +543,32 @@ export function encodingsInfo(params: Readonly<Record<string, unknown>>): ToolRe
       `${info.name} [${info.family}] ${info.description}${info.options.length > 0 ? ` (options: ${info.options.map((option) => option.name).join(", ")})` : ""}`,
   );
   return { content: [{ type: "text", text: lines.join("\n") }], details: { encodings: infos } };
+}
+
+/**
+ * Reads text as bytes in one character set and writes the bytes in another.
+ *
+ * @param params - Tool arguments.
+ * @returns {ToolResult<CharsetConvertDetails>} The converted text.
+ */
+export function encodingsCharsetConvert(
+  params: Readonly<Record<string, unknown>>,
+): ToolResult<CharsetConvertDetails> {
+  const text = stringArgument("text", params["text"], MAX_TEXT_LENGTH);
+  const from = enumArgument("from", params["from"], CHARSET_FORMATS);
+  const to = enumArgument("to", params["to"], CHARSET_FORMATS, "utf8");
+  const bytes = textBytes(text, from);
+  const value = bytesText(bytes, to);
+  if (value.length > MAX_TEXT_LENGTH * 2) {
+    throw new InvalidOptionError(
+      "text",
+      `${bytes.length} bytes`,
+      "the result is too long to return",
+    );
+  }
+  const shownValue = to === "hex" || to === "base64" ? value : quote(value);
+  return {
+    content: [{ type: "text", text: `${from} → ${bytes.length} bytes → ${to}:\n${shownValue}` }],
+    details: { from, to, text: value, hex: hex.encode(bytes), byteLength: bytes.length },
+  };
 }

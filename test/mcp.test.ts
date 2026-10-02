@@ -1,9 +1,10 @@
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { afterEach, describe, expect, it } from "vite-plus/test";
-import { encodingInfos } from "../src/index.ts";
+import { CODE_PAGES, encodingInfos } from "../src/index.ts";
 import { createMcpServer } from "../src/mcp.ts";
-import { ALPHABETS } from "../src/tool-contract.ts";
+import { ALPHABETS, CHARSET_FORMATS } from "../src/tool-contract.ts";
 import {
+  encodingsCharsetConvert,
   encodingsDecode,
   encodingsEncode,
   encodingsIdentify,
@@ -40,7 +41,7 @@ async function call(name: string, args: Readonly<Record<string, unknown>>): Prom
 }
 
 describe("encodings MCP server", () => {
-  it("advertises four read-only tools", async () => {
+  it("advertises every tool as read-only", async () => {
     const client = await connectTestClient();
 
     const response = await client.listTools();
@@ -50,6 +51,7 @@ describe("encodings MCP server", () => {
       "encodings_decode",
       "encodings_identify",
       "encodings_info",
+      "encodings_charset_convert",
     ]);
     for (const tool of response.tools) {
       expect(tool.annotations).toMatchObject({
@@ -169,6 +171,32 @@ describe("encodings MCP server", () => {
       info.options.flatMap((option) => (option.name === "alphabet" ? (option.choices ?? []) : [])),
     );
     expect([...ALPHABETS].toSorted()).toEqual([...new Set(choices)].toSorted());
+  });
+
+  it("offers in the schema every code page the library has, after utf8, hex and base64", () => {
+    expect(CHARSET_FORMATS).toEqual(["utf8", "hex", "base64", ...CODE_PAGES]);
+  });
+
+  it("converts between code pages, bytes and UTF-8", async () => {
+    expect(
+      await call("encodings_charset_convert", { text: "C8C5D3D3D6", from: "hex", to: "ibm037" }),
+    ).toBe('hex → 5 bytes → ibm037:\n"HELLO"');
+    expect(
+      await call("encodings_charset_convert", { text: "Grüße", from: "ibm273", to: "hex" }),
+    ).toBe("ibm273 → 5 bytes → hex:\nc799d0a185");
+    expect(await call("encodings_charset_convert", { text: "ÃƒÂ©", from: "windows1252" })).toBe(
+      'windows1252 → 4 bytes → utf8:\n"Ã©"',
+    );
+  });
+
+  it("names a character the code page lacks as an error result", async () => {
+    const client = await connectTestClient();
+    const response = await client.callTool({
+      name: "encodings_charset_convert",
+      arguments: { text: "a€", from: "ibm037" },
+    });
+    expect(response.isError).toBe(true);
+    expect(JSON.stringify(response.content)).toContain('\\"€\\" (U+20AC) at index 1 has no byte');
   });
 
   it("lists encodings and shows one", async () => {
@@ -353,6 +381,32 @@ describe("executors without the schema", () => {
     expect(() => encodingsInfo({ family: "base62" })).toThrow(
       "use one of binary, octal, decimal, hex",
     );
+    expect(() => encodingsCharsetConvert({ text: "x" })).toThrow("Invalid option from=undefined");
+    expect(() => encodingsCharsetConvert({ text: "x", from: "cp037" })).toThrow(
+      "use one of utf8, hex, base64, ibm037",
+    );
+    expect(() => encodingsCharsetConvert({ text: "", from: "utf8" })).toThrow(
+      "must be 1 to 100000",
+    );
+    expect(() => encodingsCharsetConvert({ text: "ff", from: "hex" })).toThrow(
+      "the bytes are not valid UTF-8; use hex or a code page",
+    );
+  });
+
+  it("quote converted text, so control characters from a code page cannot forge lines", () => {
+    const { content, details } = encodingsCharsetConvert({
+      text: "250015",
+      from: "hex",
+      to: "ibm037",
+    });
+    expect(content[0]?.text).toBe('hex → 3 bytes → ibm037:\n"\\n\\u0000\\u0085"');
+    expect(details).toEqual({
+      from: "hex",
+      to: "ibm037",
+      text: "\n\u0000\u0085",
+      hex: "250015",
+      byteLength: 3,
+    });
   });
 
   it("refuse base58 past the length a real one has", () => {

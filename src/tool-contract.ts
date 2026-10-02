@@ -46,5 +46,23 @@ export const ALPHABETS = [
   "emoji",
 ] as const;
 
+/**
+ * What `encodings_charset_convert` reads and writes: UTF-8, hex, base64 or a code page. A literal
+ * list, so the schemas load without the tables; `test/mcp.test.ts` holds it to `CODE_PAGES`.
+ */
+export const CHARSET_FORMATS = [
+  "utf8",
+  "hex",
+  "base64",
+  "ibm037",
+  "ibm273",
+  "ibm500",
+  "ibm1140",
+  "ibm1141",
+  "latin1",
+  "windows1252",
+] as const;
+
 export type InputFormat = (typeof INPUT_FORMATS)[number];
 export type OutputFormat = (typeof OUTPUT_FORMATS)[number];
+export type CharsetFormat = (typeof CHARSET_FORMATS)[number];

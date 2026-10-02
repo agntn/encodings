@@ -164,6 +164,7 @@ const subCommands = {
   encode: () => command(() => import("./commands/encode.ts")),
   decode: () => command(() => import("./commands/decode.ts")),
   identify: () => command(() => import("./commands/identify.ts")),
+  convert: () => command(() => import("./commands/convert.ts")),
   list: () => command(() => import("./commands/list.ts")),
   mcp: loadMcpCommand,
 };

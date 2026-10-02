@@ -11,7 +11,7 @@ const extensionPath = fileURLToPath(
 );
 
 describe("pi encodings extension", () => {
-  it("registers the four tools with the shared schemas", async () => {
+  it("registers every tool with the shared schemas", async () => {
     const host = await loadPiExtension(extensionPath);
 
     expect([...host.tools.keys()]).toEqual(encodingTools.map((tool) => tool.name));

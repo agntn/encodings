@@ -45,7 +45,7 @@ describe("encodings CLI", () => {
     const usage = run("encode", "--help");
     const unknown = run("nope");
 
-    expect(help.stdout).toContain("USAGE encodings encode|decode|identify|list|mcp");
+    expect(help.stdout).toContain("USAGE encodings encode|decode|identify|convert|list|mcp");
     expect(usage.stdout).toContain("ENCODING");
     expect(unknown).toMatchObject({ code: 1, stderr: "Unknown command nope\n" });
     for (const output of [help, usage, unknown]) {
@@ -172,6 +172,25 @@ describe("encodings CLI", () => {
     expect(run("list", "bech32").stdout).toContain("--prefix  Human-readable part");
     expect(run("list", "base64").stdout).toContain(
       "url (- and _, safe in URLs and file names) (decode too)",
+    );
+  });
+
+  it("converts between code pages, from an argument or stdin", () => {
+    expect(run("convert", "HELLO", "--from", "ibm037", "--to", "hex")).toMatchObject({
+      code: 0,
+      stdout: "c8c5d3d3d6\n",
+    });
+    expect(run("convert", "c8c5d3d3d6", "--from", "hex", "--to", "ibm037").stdout).toBe("HELLO\n");
+    expect(runWith("ÃƒÂ©\n", "convert", "-", "--from", "windows1252").stdout).toBe("Ã©\n");
+    expect(
+      runWith(Uint8Array.of(0xc8, 0x89), "convert", "-", "--from", "raw", "--to", "ibm037").stdout,
+    ).toBe("Hi\n");
+    expect(run("convert", "a€", "--from", "ibm037")).toMatchObject({
+      code: 1,
+      stderr: 'ibm037: "€" (U+20AC) at index 1 has no byte\n',
+    });
+    expect(run("convert", "x", "--from", "cp037").stderr).toMatch(
+      /^Invalid option from=cp037: use raw, utf8, hex, base64, ibm037/u,
     );
   });
 

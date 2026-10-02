@@ -26,7 +26,7 @@ function renderedText(component: unknown): string {
 }
 
 describe("omp encodings extension", () => {
-  it("registers the four tools as read-approval tools under one label", async () => {
+  it("registers every tool as read-approval tools under one label", async () => {
     const host = await registerOmpExtension(encodingsExtension);
 
     expect([...host.tools.keys()]).toEqual(encodingTools.map((tool) => tool.name));

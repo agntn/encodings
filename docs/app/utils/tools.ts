@@ -1,8 +1,10 @@
 import {
+  encodingsCharsetConvert,
   encodingsDecode,
   encodingsEncode,
   encodingsIdentify,
   encodingsInfo,
+  type CharsetConvertDetails,
   type DecodeDetails,
   type EncodeDetails,
   type IdentifyDetails,
@@ -11,21 +13,26 @@ import {
 } from "#tool-operations";
 
 /** Every agent tool, in the order every surface lists them. Same names over MCP, Pi, OMP and the AI SDK. */
-export const TOOLS = ["encodings_encode", "encodings_decode", "encodings_identify", "encodings_info"] as const;
+export const TOOLS = [
+  "encodings_encode",
+  "encodings_decode",
+  "encodings_identify",
+  "encodings_info",
+  "encodings_charset_convert",
+] as const;
 
 export type ToolName = (typeof TOOLS)[number];
+
+type ToolDetails = EncodeDetails | DecodeDetails | IdentifyDetails | InfoDetails | CharsetConvertDetails;
 
 /**
  * Runs one tool's executor, the one the MCP server runs.
  *
  * @param {ToolName} name - The tool.
  * @param {Record<string, unknown>} params - Its arguments.
- * @returns {ToolResult<EncodeDetails | DecodeDetails | IdentifyDetails | InfoDetails>} Text and details.
+ * @returns {ToolResult<ToolDetails>} Text and details.
  */
-export function runTool(
-  name: ToolName,
-  params: Readonly<Record<string, unknown>>,
-): ToolResult<EncodeDetails | DecodeDetails | IdentifyDetails | InfoDetails> {
+export function runTool(name: ToolName, params: Readonly<Record<string, unknown>>): ToolResult<ToolDetails> {
   switch (name) {
     case "encodings_encode":
       return encodingsEncode(params);
@@ -35,6 +42,8 @@ export function runTool(
       return encodingsIdentify(params);
     case "encodings_info":
       return encodingsInfo(params);
+    case "encodings_charset_convert":
+      return encodingsCharsetConvert(params);
   }
 }
 

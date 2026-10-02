@@ -3,13 +3,15 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { rolldown } from "vite/rolldown";
 import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
-import { familyEntries } from "../build.config.ts";
+import { familyEntries, standaloneEntries } from "../build.config.ts";
 
 const root = join(import.meta.dirname, "..");
 let packed = "";
 
+const entries = [...familyEntries, ...standaloneEntries];
+
 /** A string only that family's code carries, so finding it elsewhere means a leak. */
-const markers: Record<(typeof familyEntries)[number], string> = {
+const markers: Record<(typeof entries)[number], string> = {
   binary: "is not a bit",
   octal: "is not an octal digit",
   decimal: "is not a decimal digit",
@@ -24,6 +26,7 @@ const markers: Record<(typeof familyEntries)[number], string> = {
   bech32: "qpzry9x8gf2tvdw0s3jn54khce6mua7l",
   uuencode: "begin-base64",
   "quoted-printable": "must be escaped",
+  charsets: "has no byte",
 };
 
 /** Strings of the registry and `identify`, which no family subpath should load. */
@@ -71,7 +74,7 @@ async function bundle(entry: string): Promise<string> {
 }
 
 describe("family subpaths", () => {
-  it.each(familyEntries)("%s carries its own codec and no other", async (family) => {
+  it.each(entries)("%s carries its own codec and no other", async (family) => {
     const code = await bundle(family);
     expect(code).toContain(markers[family]);
     for (const [other, marker] of Object.entries(markers)) {
