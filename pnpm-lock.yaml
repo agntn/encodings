@@ -180,10 +180,10 @@ importers:
     dependencies:
       '@agntn/hashes':
         specifier: 0.6.1
-        version: 0.6.1(@earendil-works/pi-coding-agent@0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3))(@oh-my-pi/pi-coding-agent@18.0.0)(ai@7.0.122(zod@4.4.3))
+        version: 0.6.1(@earendil-works/pi-coding-agent@0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3))(@oh-my-pi/pi-coding-agent@18.0.0)(ai@7.0.123(zod@4.4.3))
       '@agntn/tools':
         specifier: 0.0.0
-        version: 0.0.0(@earendil-works/pi-coding-agent@0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.0.0)(ai@7.0.122(zod@4.4.3))
+        version: 0.0.0(@earendil-works/pi-coding-agent@0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.0.0)(ai@7.0.123(zod@4.4.3))
       '@modelcontextprotocol/server':
         specifier: 2.2.0
         version: 2.2.0
@@ -210,8 +210,8 @@ importers:
         specifier: 26.2.0
         version: 26.2.0
       ai:
-        specifier: 7.0.122
-        version: 7.0.122(zod@4.4.3)
+        specifier: 7.0.123
+        version: 7.0.123(zod@4.4.3)
       changelogen:
         specifier: 0.6.2
         version: 0.6.2
@@ -272,20 +272,20 @@ packages:
       ai:
         optional: true
 
-  '@ai-sdk/gateway@4.0.100':
-    resolution: {integrity: sha512-diJXVW2D1/NUW2JSg99b8yTpN8eW9AK5ntXSW4B7NrsW5STqwcGJAAOFlfOrQBzYHJlWReyy11WefWetdx4Qsw==}
+  '@ai-sdk/gateway@4.0.101':
+    resolution: {integrity: sha512-lBMXWbNSAb3eQD/F8ja9Egi32PsL9lLajC4DUvionnWO8V+X0nYw9hWJVBJdZ0SftfE/OyKySkoHRfIg/UafYg==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/provider-utils@5.0.51':
-    resolution: {integrity: sha512-z0IsEsDx+dxlZqyCtDjMbBj16NGmxFVTgQcP3+n3EFm9ttNU6wjOgL/kgvaPwtmZM6F7JbtRuLyzr6WOfo5DMw==}
+  '@ai-sdk/provider-utils@5.0.52':
+    resolution: {integrity: sha512-PWWa14kVJlBj/G4E85D+IMM28H9W9SC3cQ/yyRHTMzRmtLkNgmDOLhSYBJ9ZT+w83a+DQ9+QIcCaY36iuD89mw==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/provider@4.0.19':
-    resolution: {integrity: sha512-ryVZSSfmpEsr4bM8rbt9cSBWal+KGYRrm57C+k/hiPQHMiMahaqg2bPF0MpxSUWY8mGpt7s/ajM6PAqNTMKqPQ==}
+  '@ai-sdk/provider@4.0.20':
+    resolution: {integrity: sha512-daWW1Jxnvcn6+VhUuPqR7i5DtbdontcPCC5pH3QYU2r/x0hl31AIGiejWThGU499pJYA9DzwnBm+tc3EMKQeLQ==}
     engines: {node: '>=22'}
 
   '@anthropic-ai/sdk@0.91.1':
@@ -2199,8 +2199,8 @@ packages:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
 
-  ai@7.0.122:
-    resolution: {integrity: sha512-Un4yVROG+BMd6Q62xUxb9yV+wlTrUGeXhRtg5ltEFDV0p3lOYQaQHK9ozB6rdPdqlH3LyaszfbFdUkZ1p00nIQ==}
+  ai@7.0.123:
+    resolution: {integrity: sha512-blyApVMNpQfendoGLAQRjQgh0EdbwhAI4SJYBTS4Dw+BygPzdj/Pcgt6AaClvy5+ibV8v+d+k8PABam0QxORtw==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -3669,15 +3669,15 @@ packages:
 
 snapshots:
 
-  '@agntn/hashes@0.6.1(@earendil-works/pi-coding-agent@0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3))(@oh-my-pi/pi-coding-agent@18.0.0)(ai@7.0.122(zod@4.4.3))':
+  '@agntn/hashes@0.6.1(@earendil-works/pi-coding-agent@0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3))(@oh-my-pi/pi-coding-agent@18.0.0)(ai@7.0.123(zod@4.4.3))':
     dependencies:
-      '@agntn/tools': 0.0.0(@earendil-works/pi-coding-agent@0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.0.0)(ai@7.0.122(zod@4.4.3))
+      '@agntn/tools': 0.0.0(@earendil-works/pi-coding-agent@0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.0.0)(ai@7.0.123(zod@4.4.3))
       '@modelcontextprotocol/server': 2.2.0
       citty: 0.2.2
     optionalDependencies:
       '@earendil-works/pi-coding-agent': 0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3)
       '@oh-my-pi/pi-coding-agent': 18.0.0
-      ai: 7.0.122(zod@4.4.3)
+      ai: 7.0.123(zod@4.4.3)
 
   '@agntn/ox@0.1.0(oxfmt@0.70.0(vite-plus@1.0.0(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/ui@5.0.1)(esbuild@0.27.3)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.0)))(oxlint-tsgolint@7.0.2003)(oxlint@1.85.0(oxlint-tsgolint@7.0.2003)(vite-plus@1.0.0(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/ui@5.0.1)(esbuild@0.27.3)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.0)))':
     dependencies:
@@ -3685,30 +3685,30 @@ snapshots:
       oxlint: 1.85.0(oxlint-tsgolint@7.0.2003)(vite-plus@1.0.0(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/ui@5.0.1)(esbuild@0.27.3)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.0))
       oxlint-tsgolint: 7.0.2003
 
-  '@agntn/tools@0.0.0(@earendil-works/pi-coding-agent@0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.0.0)(ai@7.0.122(zod@4.4.3))':
+  '@agntn/tools@0.0.0(@earendil-works/pi-coding-agent@0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.0.0)(ai@7.0.123(zod@4.4.3))':
     optionalDependencies:
       '@earendil-works/pi-coding-agent': 0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3)
       '@modelcontextprotocol/server': 2.2.0
       '@oh-my-pi/pi-coding-agent': 18.0.0
-      ai: 7.0.122(zod@4.4.3)
+      ai: 7.0.123(zod@4.4.3)
 
-  '@ai-sdk/gateway@4.0.100(zod@4.4.3)':
+  '@ai-sdk/gateway@4.0.101(zod@4.4.3)':
     dependencies:
-      '@ai-sdk/provider': 4.0.19
-      '@ai-sdk/provider-utils': 5.0.51(zod@4.4.3)
+      '@ai-sdk/provider': 4.0.20
+      '@ai-sdk/provider-utils': 5.0.52(zod@4.4.3)
       '@vercel/oidc': 3.2.0
       zod: 4.4.3
 
-  '@ai-sdk/provider-utils@5.0.51(zod@4.4.3)':
+  '@ai-sdk/provider-utils@5.0.52(zod@4.4.3)':
     dependencies:
-      '@ai-sdk/provider': 4.0.19
+      '@ai-sdk/provider': 4.0.20
       '@standard-schema/spec': 1.1.0
       '@workflow/serde': 4.1.0
       eventsource-parser: 3.1.1
       undici: 7.29.0
       zod: 4.4.3
 
-  '@ai-sdk/provider@4.0.19':
+  '@ai-sdk/provider@4.0.20':
     dependencies:
       json-schema: 0.4.0
 
@@ -5275,11 +5275,11 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  ai@7.0.122(zod@4.4.3):
+  ai@7.0.123(zod@4.4.3):
     dependencies:
-      '@ai-sdk/gateway': 4.0.100(zod@4.4.3)
-      '@ai-sdk/provider': 4.0.19
-      '@ai-sdk/provider-utils': 5.0.51(zod@4.4.3)
+      '@ai-sdk/gateway': 4.0.101(zod@4.4.3)
+      '@ai-sdk/provider': 4.0.20
+      '@ai-sdk/provider-utils': 5.0.52(zod@4.4.3)
       zod: 4.4.3
 
   ajv-formats@3.0.1:
