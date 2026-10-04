@@ -173,6 +173,7 @@ describe("encodings CLI", () => {
     expect(run("list", "base64").stdout).toContain(
       "url (- and _, safe in URLs and file names) (decode too)",
     );
+    expect(run("list", "base32").stdout).toContain("the text no encoder writes (decode only)");
   });
 
   it("converts between code pages, from an argument or stdin", () => {
@@ -210,6 +211,12 @@ describe("encodings CLI", () => {
     });
     expect(run("encode", "base62", "x").stderr).toMatch(/^Unknown encoding: base62\. Available: /u);
     expect(run("identify", "€€€")).toMatchObject({ code: 1, stdout: "" });
+    expect(run("decode", "base64", "YR==", "--canonical")).toMatchObject({
+      code: 1,
+      stdout: "",
+      stderr: 'base64: "R" (U+0052) at index 1 leaves non-zero bits after the last byte\n',
+    });
+    expect(run("decode", "base64", "YQ==", "--canonical")).toMatchObject({ code: 0, stdout: "a" });
   });
 
   it("stops at text that starts with a dash and points at --", () => {

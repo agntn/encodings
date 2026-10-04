@@ -1,6 +1,18 @@
 import { defineCommand } from "citty";
 import { quote } from "../core/errors.ts";
 import { create, encodingInfos } from "../core/registry.ts";
+import type { EncodingOption } from "../core/types.ts";
+
+/**
+ * Says which direction takes an option besides encoding.
+ *
+ * @param option - The option.
+ * @returns {string} ` (decode only)`, ` (decode too)` or nothing.
+ */
+function scope(option: EncodingOption): string {
+  if (option.narrows === true) return " (decode only)";
+  return option.decode === true ? " (decode too)" : "";
+}
 
 export default defineCommand({
   meta: {
@@ -25,7 +37,7 @@ export default defineCommand({
         `padding   ${info.padding ? "yes" : "no"}`,
         ...info.options.map(
           (option) =>
-            `${`--${option.name}`.padEnd(flagWidth)}${option.description}${option.required ? " (required)" : ""}${option.decode ? " (decode too)" : ""}`,
+            `${`--${option.name}`.padEnd(flagWidth)}${option.description}${option.required ? " (required)" : ""}${scope(option)}`,
         ),
       ];
       process.stdout.write(`${lines.join("\n")}\n`);

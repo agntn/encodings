@@ -17,10 +17,16 @@ export interface Radix2Spec {
   ignore?: RegExp;
 }
 
+/** Options for reading a power-of-two alphabet. */
+export interface Radix2DecodeOptions {
+  /** Refuse non-zero bits past the last byte, the text no encoder writes. Default: false. */
+  canonical?: boolean;
+}
+
 /** A codec over one power-of-two alphabet. */
 export interface Radix2Codec {
   encode(bytes: Uint8Array): string;
-  decode(text: string): Uint8Array;
+  decode(text: string, options?: Readonly<Radix2DecodeOptions>): Uint8Array;
 }
 
 /** A radix-2 codec whose output can turn the spec's padding on or off. */
@@ -103,6 +109,29 @@ function withoutPadding(
 }
 
 /**
+ * Refuses a last character with non-zero bits past the last byte, which no encoder writes.
+ *
+ * @param name - Registry name, for errors.
+ * @param data - The text without padding and ignored characters.
+ * @param leftover - The bits past the last byte.
+ * @param at - Index in the caller's text of an index in `data`.
+ */
+function refuseLeftover(
+  name: string,
+  data: string,
+  leftover: number,
+  at: (index: number) => number,
+): void {
+  if (leftover === 0) return;
+  const where = at(data.length - 1);
+  throw new DecodeError(
+    name,
+    `${named(data.at(-1)!)} at index ${where} leaves non-zero bits after the last byte`,
+    where,
+  );
+}
+
+/**
  * Builds a codec that reads bytes as one bit stream, most significant bit first, and writes each
  * group of `log2(alphabet.length)` bits as one character, as RFC 4648 does.
  *
@@ -141,7 +170,7 @@ export function radix2(spec: Radix2Spec): PaddedCodec {
       return out;
     },
 
-    decode(text) {
+    decode(text, options = {}) {
       const body = ignore ? text.replaceAll(new RegExp(ignore.source, "gu"), "") : text;
       const at = (index: number): number =>
         ignore ? inputIndex(text, ignore.source, index) : index;
@@ -177,6 +206,7 @@ export function radix2(spec: Radix2Spec): PaddedCodec {
           `${data.length} characters do not end on a byte: drop or add characters`,
         );
       }
+      if (options.canonical === true) refuseLeftover(name, data, buffer & ((1 << held) - 1), at);
       return out;
     },
   };

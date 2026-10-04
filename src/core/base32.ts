@@ -16,6 +16,12 @@ export interface Base32Options {
   alphabet?: Base32Alphabet;
 }
 
+/** Options for reading base32. */
+export interface Base32DecodeOptions extends Base32Options {
+  /** Refuse non-zero bits past the last byte, so `MZ` stops passing for `MY`. Default: false. */
+  canonical?: boolean;
+}
+
 /** Options for base32 output. */
 export interface Base32EncodeOptions extends Base32Options {
   /**
@@ -28,7 +34,7 @@ export interface Base32EncodeOptions extends Base32Options {
 /** Base32 in any of its four alphabets. */
 export interface Base32Codec {
   encode(bytes: Uint8Array, options?: Readonly<Base32EncodeOptions>): string;
-  decode(text: string, options?: Readonly<Base32Options>): Uint8Array;
+  decode(text: string, options?: Readonly<Base32DecodeOptions>): Uint8Array;
 }
 
 const CODECS: Readonly<Record<Base32Alphabet, PaddedCodec>> = {
@@ -81,5 +87,6 @@ export const base32: Base32Codec = {
     const codec = byAlphabet(CODECS, alphabet, "standard");
     return codec.encode(bytes, { padding: pads && (options.padding ?? true) });
   },
-  decode: (text, options = {}) => byAlphabet(CODECS, options.alphabet, "standard").decode(text),
+  decode: (text, options = {}) =>
+    byAlphabet(CODECS, options.alphabet, "standard").decode(text, options),
 };

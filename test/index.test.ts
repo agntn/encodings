@@ -176,7 +176,7 @@ describe("encode and decode through the registry", () => {
     expect(() => decode("binary", "0", { order: "middle" })).toThrow("use one of msb, lsb");
     expect(() => decode("base64", "-_8")).toThrow("not in the alphabet");
     expect(() => decode("base32", "MY", { padding: false })).toThrow(
-      "not an option here; use alphabet",
+      "not an option here; use alphabet, canonical",
     );
     expect(() => decode("base85", "x", { delimiters: true })).toThrow(
       "not an option here; use alphabet",
@@ -186,6 +186,25 @@ describe("encode and decode through the registry", () => {
     expect(() => decode("base58", "1", { alphabet: "z" })).toThrow(
       "use one of bitcoin, flickr, ripple",
     );
+  });
+
+  it("takes canonical to decode base32 and base64 only", () => {
+    expect(decode("base64", "YQ==", { canonical: true }).bytes).toEqual(new Uint8Array([0x61]));
+    expect(() => decode("base64", "YR==", { canonical: true })).toThrow(
+      expect.objectContaining({ name: "DecodeError", index: 1 }),
+    );
+    expect(() => decode("base32", "CP", { alphabet: "hex", canonical: true })).toThrow(
+      '"P" (U+0050) at index 1 leaves non-zero bits after the last byte',
+    );
+    expect(() => encode("base64", "a", { canonical: true })).toThrow(
+      "not an option here; use alphabet, padding",
+    );
+    expect(() => decode("base58", "1", { canonical: true })).toThrow(InvalidOptionError);
+    expect(
+      create("base32")
+        .info()
+        .options.find((option) => option.name === "canonical"),
+    ).toMatchObject({ decode: true, narrows: true, default: false });
   });
 
   it("returns a segwit address as its program with the version in details", () => {

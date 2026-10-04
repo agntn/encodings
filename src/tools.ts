@@ -166,7 +166,24 @@ export const decodeSchema = closed({
         "How to show the bytes: auto (UTF-8 when they are readable text, else hex; default), utf8, hex or base64",
     }),
   ),
-  options: Type.Optional(closed({ alphabet, check, m, symbols, bits, order, sample, multibase })),
+  options: Type.Optional(
+    closed({
+      alphabet,
+      check,
+      m,
+      symbols,
+      bits,
+      order,
+      sample,
+      multibase,
+      canonical: Type.Optional(
+        Type.Boolean({
+          description:
+            "base32 and base64: refuse a last character with non-zero bits past the last byte, which no encoder writes",
+        }),
+      ),
+    }),
+  ),
 });
 
 export const identifySchema = closed({

@@ -240,14 +240,15 @@ function alternatives(option: EncodingOption): (string | boolean)[] {
 
 /**
  * Every combination of `decode` options changed from their default, such as base32's
- * `alphabet` or base58's `check`, fewest changes first, starting from the default reading.
+ * `alphabet` or base58's `check`, fewest changes first, starting from the default reading. An
+ * option that only narrows never reads other bytes, so it stays off.
  *
  * @param info - The encoding's metadata.
  * @returns {Reading[]} Option values per reading.
  */
 function readings(info: EncodingInfo): Reading[] {
   return info.options
-    .filter((option) => option.decode === true)
+    .filter((option) => option.decode === true && option.narrows !== true)
     .reduce<Reading[]>(
       (sets, option) => [
         ...sets,
