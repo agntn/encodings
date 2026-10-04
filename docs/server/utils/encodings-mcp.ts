@@ -20,6 +20,10 @@ export function encodingsMcpTool(name: string): McpToolDefinitionListItem {
   /** Any object passes Zod, so `callTool` refuses a bad one in `encodings mcp`'s words, sanitized. */
   const schema = z.looseObject({});
   schema._zod.toJSONSchema = () => ({ ...listing.inputSchema });
+  /** The SDK hands Zod a missing `arguments` as is, so read it as the `{}` stdio gets. */
+  const run = schema._zod.run.bind(schema._zod);
+  schema._zod.run = (payload, context) =>
+    run(payload.value === undefined ? { ...payload, value: {} } : payload, context);
   /** The toolkit types a raw shape only, while the SDK it hands the schema to takes an object too. */
   const inputSchema = schema as unknown as NonNullable<McpToolDefinition["inputSchema"]>;
   return defineMcpTool({
