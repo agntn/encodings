@@ -250,6 +250,20 @@ describe("encodings CLI", () => {
     expect(run("-v")).toMatchObject({ code: 0 });
   });
 
+  it("refuses help and version in a form citty would drop, instead of running the command", () => {
+    const hint = "Text that starts with - goes after --, which ends the options.";
+    expect(run("list", "--version")).toMatchObject({
+      code: 1,
+      stdout: "",
+      stderr: `Unknown option --version for list. ${hint}\n`,
+    });
+    expect(run("decode", "--version", "base64", "SGk=")).toMatchObject({ code: 1, stdout: "" });
+    expect(run("list", "--help=x").stderr).toBe(`Unknown option --help=x for list. ${hint}\n`);
+    expect(run("list", "-hh").stderr).toBe(`Unknown option -hh for list. ${hint}\n`);
+    expect(run("--version", "list").stderr).toBe(`Unknown option --version. ${hint}\n`);
+    expect(run("list", "--version", "-h")).toMatchObject({ code: 0 });
+  });
+
   it("writes details from the text escaped, so they cannot drive the terminal", () => {
     const ESC = String.fromCodePoint(27);
     const text = `begin 644 a${ESC}]0;pwned${String.fromCodePoint(7)}\n#0V%T\n\`\nend\n`;

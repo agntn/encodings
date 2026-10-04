@@ -193,6 +193,9 @@ importers:
       consola:
         specifier: 3.4.2
         version: 3.4.2
+      scule:
+        specifier: 1.3.0
+        version: 1.3.0
     devDependencies:
       '@agntn/ox':
         specifier: 0.1.0
