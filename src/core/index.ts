@@ -28,6 +28,7 @@ export {
   type Base32Alphabet,
   type Base32Codec,
   type Base32EncodeOptions,
+  type Base32DecodeOptions,
   type Base32Options,
 } from "./base32.ts";
 export { base45 } from "./base45.ts";
@@ -45,9 +46,10 @@ export {
   type Base64Alphabet,
   type Base64Codec,
   type Base64EncodeOptions,
+  type Base64DecodeOptions,
   type Base64Options,
 } from "./base64.ts";
-export type { Radix2Codec } from "./radix2.ts";
+export type { Radix2Codec, Radix2DecodeOptions } from "./radix2.ts";
 export {
   BASE85_ALPHABETS,
   base85,

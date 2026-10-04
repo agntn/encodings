@@ -16,6 +16,12 @@ export interface Base64Options {
   alphabet?: Base64Alphabet;
 }
 
+/** Options for reading base64. */
+export interface Base64DecodeOptions extends Base64Options {
+  /** Refuse non-zero bits past the last byte, so `YR` stops passing for `YQ`. Default: false. */
+  canonical?: boolean;
+}
+
 /** Options for base64 output. */
 export interface Base64EncodeOptions extends Base64Options {
   /** Pad the last block with `=` to four characters. Default: true. */
@@ -25,7 +31,7 @@ export interface Base64EncodeOptions extends Base64Options {
 /** RFC 4648 base64 in either of its two alphabets. */
 export interface Base64Codec {
   encode(bytes: Uint8Array, options?: Readonly<Base64EncodeOptions>): string;
-  decode(text: string, options?: Readonly<Base64Options>): Uint8Array;
+  decode(text: string, options?: Readonly<Base64DecodeOptions>): Uint8Array;
 }
 
 const CODECS: Readonly<Record<Base64Alphabet, PaddedCodec>> = {
@@ -53,5 +59,6 @@ export const base64: Base64Codec = {
     byAlphabet(CODECS, options.alphabet, "standard").encode(bytes, {
       padding: options.padding ?? true,
     }),
-  decode: (text, options = {}) => byAlphabet(CODECS, options.alphabet, "standard").decode(text),
+  decode: (text, options = {}) =>
+    byAlphabet(CODECS, options.alphabet, "standard").decode(text, options),
 };

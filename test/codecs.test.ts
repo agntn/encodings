@@ -303,6 +303,56 @@ describe("base32 and base64 decoding rules", () => {
     expect(() => base64.decode("Zm9v!")).toThrow('"!" (U+0021) at index 4 is not in the alphabet');
   });
 
+  it("reads non-zero leftover bits unless asked for the canonical form", () => {
+    expect(base32.decode("MZ======")).toEqual(base32.decode("MY======"));
+    expect(base64.decode("YR==")).toEqual(base64.decode("YQ=="));
+    expect(read(base32.decode("MY======", { canonical: true }))).toBe("f");
+    expect(read(base64.decode("YQ==", { canonical: true }))).toBe("a");
+    expect(() => base32.decode("MZ======", { canonical: true })).toThrow(
+      expect.objectContaining({ name: "DecodeError", encoding: "base32", index: 1 }),
+    );
+    expect(() => base64.decode("YR==", { canonical: true })).toThrow(
+      '"R" (U+0052) at index 1 leaves non-zero bits after the last byte',
+    );
+  });
+
+  it.each([
+    [
+      "base32 hex",
+      "CO",
+      "CP",
+      (value: string, canonical: boolean) => base32.decode(value, { alphabet: "hex", canonical }),
+    ],
+    [
+      "Crockford",
+      "CR",
+      "CS",
+      (value: string, canonical: boolean) =>
+        base32.decode(value, { alphabet: "crockford", canonical }),
+    ],
+    [
+      "z-base-32",
+      "ca",
+      "c3",
+      (value: string, canonical: boolean) => base32.decode(value, { alphabet: "z", canonical }),
+    ],
+    [
+      "base64url",
+      "-_8",
+      "-_9",
+      (value: string, canonical: boolean) => base64.decode(value, { alphabet: "url", canonical }),
+    ],
+  ] as const)("refuses %s leftover bits on request", (_, written, other, decode) => {
+    expect(decode(other, false)).toEqual(decode(written, true));
+    expect(() => decode(other, true)).toThrow("leaves non-zero bits after the last byte");
+  });
+
+  it("reads whole bytes and empty text as canonical", () => {
+    expect(read(base32.decode("MZXW6YTBOI======", { canonical: true }))).toBe("foobar");
+    expect(read(base64.decode("Zm9vYmFy", { canonical: true }))).toBe("foobar");
+    expect(base64.decode("", { canonical: true })).toEqual(new Uint8Array());
+  });
+
   it("reads Crockford's look-alikes and hyphens", () => {
     expect(base32crockford.decode("CSQPYRK1E8")).toEqual(base32crockford.decode("csqp-yrki-e8"));
     expect(base32crockford.decode("0O")).toEqual(base32crockford.decode("00"));
@@ -862,6 +912,11 @@ describe("decode error index", () => {
     ["hex with 0x and spaces", () => hex.decode("0x00 11 2g"), 9],
     ["Ascii85 inside <~ ~>", () => ascii85.decode(" <~87cU{~>"), 7],
     ["Ascii85 z after <~", () => ascii85.decode("<~8 z~>"), 4],
+    [
+      "base64 leftover bits after a line break",
+      () => base64.decode("Y\nR==", { canonical: true }),
+      2,
+    ],
   ] as const)("%s", (_, decode, index) => {
     expect(decode).toThrow(expect.objectContaining({ name: "DecodeError", index }));
     expect(decode).toThrow(new RegExp(`at index ${index}\\b`, "u"));

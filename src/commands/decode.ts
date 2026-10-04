@@ -15,6 +15,7 @@ const OPTION_FLAGS = [
   "order",
   "sample",
   "multibase",
+  "canonical",
 ] as const;
 
 export default defineCommand({
@@ -56,6 +57,10 @@ export default defineCommand({
       description: "base256: text whose symbols, in order of first appearance, make the table",
     },
     multibase: { type: "boolean", description: "base256: the 🚀 multibase prefix" },
+    canonical: {
+      type: "boolean",
+      description: "base32, base64: refuse non-zero spare bits in the last character",
+    },
   },
   run({ args, rawArgs }) {
     const encoding = create(args.encoding);

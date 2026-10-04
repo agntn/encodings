@@ -299,7 +299,10 @@ export function encodingsEncode(
   const options = optionsArgument(params["options"]);
   const encoding = create(name);
   const info = encoding.info();
-  const { taken, ignored } = pickOptions(info.options, options);
+  const { taken, ignored } = pickOptions(
+    info.options.filter((option) => option.narrows !== true),
+    options,
+  );
   const bytes =
     format === "hex"
       ? hex.decode(input)
@@ -507,6 +510,17 @@ export function encodingsIdentify(
 }
 
 /**
+ * Says which direction takes an option besides encoding, for the option lines of `info`.
+ *
+ * @param option - The option.
+ * @returns {string} `, decode only`, `, decode too` or nothing.
+ */
+function optionScope(option: EncodingOption): string {
+  if (option.narrows === true) return ", decode only";
+  return option.decode === true ? ", decode too" : "";
+}
+
+/**
  * Lists encodings, or shows one.
  *
  * @param params - Tool arguments.
@@ -517,7 +531,7 @@ export function encodingsInfo(params: Readonly<Record<string, unknown>>): ToolRe
     const info = create(stringArgument("encoding", params["encoding"], MAX_NAME_LENGTH)).info();
     const options = info.options.map(
       (option) =>
-        `  ${option.name} (${option.type}${option.required ? ", required" : ""}${option.default === undefined ? "" : `, default ${JSON.stringify(option.default)}`}${option.decode ? ", decode too" : ""}): ${option.description}`,
+        `  ${option.name} (${option.type}${option.required ? ", required" : ""}${option.default === undefined ? "" : `, default ${JSON.stringify(option.default)}`}${optionScope(option)}): ${option.description}`,
     );
     const lines = [
       `${info.name}: ${info.label}`,

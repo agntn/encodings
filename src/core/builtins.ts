@@ -111,11 +111,12 @@ function define(
     options: [],
     ...about,
   };
+  const writing = info.options.filter((option) => option.narrows !== true);
   return {
     name,
     info: () => structuredClone(info),
     encode: (input: BytesInput, options?: EncodeOptions) =>
-      write(toBytes(input), checked(info.options, options)),
+      write(toBytes(input), checked(writing, options)),
     decode(text: string, options?: DecodeOptions) {
       const reading = info.options.filter((option) => option.decode === true);
       const result = read(text, checked(reading, options));
@@ -213,6 +214,18 @@ function segwitAddress(text: string, versionZero: boolean): SegwitAddress | unde
 const PRINTABLE_ASCII = `\t${Array.from({ length: 95 }, (_, index) => String.fromCodePoint(32 + index)).join("")}`;
 const BASE32_RFC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 const BASE64_RFC = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+/** The base32 and base64 switch for the spare bits of the last character. */
+const CANONICAL: EncodingOption = {
+  name: "canonical",
+  type: "boolean",
+  required: false,
+  default: false,
+  description:
+    "Refuse non-zero spare bits in the last character; case, whitespace and padding read as usual",
+  decode: true,
+  narrows: true,
+};
 
 /** The built-in encodings, in listing order: by radix, then by how common each variant is. */
 export const builtins: readonly Encoding[] = [
@@ -353,6 +366,7 @@ export const builtins: readonly Encoding[] = [
           default: true,
           description: "Pad the last block with = to eight characters; standard and hex only",
         },
+        CANONICAL,
       ],
     },
     (bytes, values) =>
@@ -361,7 +375,10 @@ export const builtins: readonly Encoding[] = [
         padding: values["padding"] === true,
       }),
     (text, values) =>
-      base32.decode(text, { alphabet: String(values["alphabet"]) as Base32Alphabet }),
+      base32.decode(text, {
+        alphabet: String(values["alphabet"]) as Base32Alphabet,
+        canonical: values["canonical"] === true,
+      }),
   ),
   define(
     "base45",
@@ -436,6 +453,7 @@ export const builtins: readonly Encoding[] = [
           default: true,
           description: "Pad the last block with = to four characters",
         },
+        CANONICAL,
       ],
     },
     (bytes, values) =>
@@ -444,7 +462,10 @@ export const builtins: readonly Encoding[] = [
         padding: values["padding"] === true,
       }),
     (text, values) =>
-      base64.decode(text, { alphabet: String(values["alphabet"]) as Base64Alphabet }),
+      base64.decode(text, {
+        alphabet: String(values["alphabet"]) as Base64Alphabet,
+        canonical: values["canonical"] === true,
+      }),
   ),
   define(
     "base85",

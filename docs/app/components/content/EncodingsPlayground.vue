@@ -128,9 +128,11 @@ const family = ref("");
 const values = reactive<Record<string, string | boolean>>({});
 
 const entry = computed(() => encodingEntry(encodingName.value) ?? ENCODINGS[0]!);
-/** The options the form shows: every one to encode, the ones marked `decode` to decode. */
+/** To encode every option but the narrowing ones, to decode the ones marked `decode`. */
 const optionFields = computed(() =>
-  entry.value.info.options.filter((option) => operation.value === "encode" || option.decode === true),
+  entry.value.info.options.filter((option) =>
+    operation.value === "encode" ? option.narrows !== true : option.decode === true,
+  ),
 );
 
 const encodingItems = computed(() =>

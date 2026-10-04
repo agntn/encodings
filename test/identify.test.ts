@@ -145,6 +145,46 @@ describe("identify", () => {
     ]);
   });
 
+  it("never tries an option that only narrows decoding", () => {
+    const seen: string[] = [];
+    register({
+      name: "narrow-hex",
+      info: () => ({
+        name: "narrow-hex",
+        label: "Narrow hex",
+        description: "Hex with a switch that only refuses text",
+        family: "test",
+        standard: "none",
+        alphabet: "0123456789abcdef",
+        checksum: false,
+        padding: false,
+        options: [
+          {
+            name: "picky",
+            type: "boolean",
+            required: false,
+            default: false,
+            description: "Refuse more",
+            decode: true,
+            narrows: true,
+          },
+        ],
+      }),
+      encode: (input) => create("hex").encode(input),
+      decode: (text, options) => {
+        seen.push(JSON.stringify(options ?? {}));
+        return create("hex").decode(text);
+      },
+    });
+    expect(identify("48656c6c6f", { encodings: ["narrow-hex"] })).toMatchObject([
+      { encoding: "narrow-hex", text: "Hello" },
+    ]);
+    expect(seen).toEqual(["{}"]);
+    expect(identify("YR==").find((candidate) => candidate.encoding === "base64")).toMatchObject({
+      text: "a",
+    });
+  });
+
   it("leaves out an option reading that gives the default reading's bytes", () => {
     const base64 = identify("SGVsbG8gd29ybGQ", { limit: 20 }).filter(
       (candidate) => candidate.encoding === "base64",

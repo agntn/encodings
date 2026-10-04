@@ -236,6 +236,9 @@ describe("encodings MCP server", () => {
     expect(await call("encodings_info", { encoding: "bech32" })).toContain(
       "prefix (string, required)",
     );
+    expect(await call("encodings_info", { encoding: "base64" })).toContain(
+      "canonical (boolean, default false, decode only)",
+    );
     expect((await call("encodings_info", { family: "base58" })).split("\n")).toHaveLength(1);
   });
 
@@ -315,6 +318,26 @@ describe("encodings MCP server", () => {
     await expect(call("encodings_decode", { encoding: "base62", text: "x" })).rejects.toThrow(
       "Unknown encoding: base62",
     );
+  });
+
+  it("reads canonical text only on request, and keeps the switch off encode", async () => {
+    await expect(
+      call("encodings_decode", { encoding: "base64", text: "YR==", options: { canonical: true } }),
+    ).rejects.toThrow('base64: "R" (U+0052) at index 1 leaves non-zero bits after the last byte');
+    expect(
+      await call("encodings_decode", {
+        encoding: "base32",
+        text: "MY======",
+        options: { canonical: true },
+      }),
+    ).toBe('base32 (canonical) → 1 bytes as utf8:\n"f"');
+    expect(
+      await call("encodings_decode", { encoding: "hex", text: "61", options: { canonical: true } }),
+    ).toBe('hex → 1 bytes as utf8:\n"a"\nIgnored, hex does not read with: canonical');
+    expect(
+      encodingsEncode({ encoding: "base64", input: "a", options: { canonical: true } }).content[0]
+        ?.text,
+    ).toBe("base64 (1 bytes):\nYQ==\nIgnored, base64 does not take: canonical");
   });
 
   it("rejects arguments that miss the schema", async () => {
