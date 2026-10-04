@@ -952,11 +952,11 @@ describe("hostile input", () => {
 });
 
 describe("large input", () => {
-  it("encodes 3 MB in a 64 MB heap, as a Workers isolate would have to", () => {
+  it("encodes 1 MB in a 24 MB heap, where appending per character runs out", () => {
     const script = `
       import { Buffer } from "node:buffer";
       import * as lib from "./src/index.ts";
-      const bytes = new Uint8Array(3_000_000).map((_, index) => (index * 131 + 7) & 255);
+      const bytes = new Uint8Array(1_000_000).map((_, index) => (index * 131 + 7) & 255);
       const outputs = {
         base64: lib.base64.encode(bytes),
         base64url: lib.base64.encode(bytes, { alphabet: "url", padding: false }),
@@ -983,7 +983,7 @@ describe("large input", () => {
     `;
     const { status, stdout, stderr } = spawnSync(
       process.execPath,
-      ["--max-old-space-size=64", "--input-type=module", "-e", script],
+      ["--max-old-space-size=24", "--input-type=module", "-e", script],
       { cwd: join(import.meta.dirname, ".."), encoding: "utf8" },
     );
     expect(stderr).not.toContain("heap out of memory");
@@ -994,12 +994,12 @@ describe("large input", () => {
     };
     expect(matches).toEqual([true, true, true, true]);
     expect(lengths).toMatchObject({
-      base64: 4_000_000,
-      base32: 4_800_000,
-      hex: 6_000_000,
-      base45: 4_500_000,
-      base85: 3_750_000,
-      latin1: 3_000_000,
+      base64: 1_333_336,
+      base32: 1_600_000,
+      hex: 2_000_000,
+      base45: 1_500_000,
+      base85: 1_250_000,
+      latin1: 1_000_000,
     });
   }, 30_000);
 });
