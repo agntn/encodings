@@ -1,4 +1,4 @@
-import { alphabetIndex } from "./bytes.ts";
+import { alphabetIndex, inputIndex } from "./bytes.ts";
 import { DecodeError, named } from "./errors.ts";
 
 /** How one power-of-two alphabet writes bytes: base32, base64 and their variants. */
@@ -74,20 +74,23 @@ function valueMap(
  * @param name - Registry name, for errors.
  * @param body - The text without ignored characters.
  * @param blockChars - Characters in one padded block.
+ * @param at - Index in the caller's text of an index in `body`.
  * @returns {string} The text without its padding.
  */
-function withoutPadding(name: string, body: string, blockChars: number): string {
+function withoutPadding(
+  name: string,
+  body: string,
+  blockChars: number,
+  at: (index: number) => number,
+): string {
   const padStart = body.indexOf("=");
   if (padStart === -1) return body;
   const data = body.slice(0, padStart);
   const pad = body.slice(padStart);
   const stray = pad.search(/[^=]/u);
   if (stray !== -1) {
-    throw new DecodeError(
-      name,
-      `character after padding at index ${padStart + stray}`,
-      padStart + stray,
-    );
+    const index = at(padStart + stray);
+    throw new DecodeError(name, `character after padding at index ${index}`, index);
   }
   const expected = (blockChars - (data.length % blockChars)) % blockChars;
   if (pad.length !== expected) {
@@ -140,7 +143,9 @@ export function radix2(spec: Radix2Spec): PaddedCodec {
 
     decode(text) {
       const body = ignore ? text.replaceAll(new RegExp(ignore.source, "gu"), "") : text;
-      const data = withoutPadding(name, body, blockChars);
+      const at = (index: number): number =>
+        ignore ? inputIndex(text, ignore.source, index) : index;
+      const data = withoutPadding(name, body, blockChars, at);
       const totalBits = data.length * bits;
       const out = new Uint8Array(Math.floor(totalBits / 8));
       let buffer = 0;
@@ -150,10 +155,11 @@ export function radix2(spec: Radix2Spec): PaddedCodec {
       for (const character of data) {
         const value = values.get(character);
         if (value === undefined) {
+          const where = at(index);
           throw new DecodeError(
             name,
-            `${named(character)} at index ${index} is not in the alphabet`,
-            index,
+            `${named(character)} at index ${where} is not in the alphabet`,
+            where,
           );
         }
         buffer = ((buffer << bits) | value) & 0xffff;

@@ -1,4 +1,4 @@
-import { ASCII_WHITESPACE } from "./bytes.ts";
+import { ASCII_WHITESPACE, inputIndex } from "./bytes.ts";
 import { DecodeError, named } from "./errors.ts";
 
 /** Options for hex output. */
@@ -44,7 +44,8 @@ export const hex = {
    */
   decode(text: string): Uint8Array {
     let body = text.replaceAll(ASCII_WHITESPACE, "");
-    if (/^0x/iu.test(body)) body = body.slice(2);
+    const prefix = /^0x/iu.test(body) ? 2 : 0;
+    body = body.slice(prefix);
     if (body.length % 2 !== 0) {
       throw new DecodeError("hex", `odd number of digits (${body.length})`);
     }
@@ -54,7 +55,8 @@ export const hex = {
       const value = code < 128 ? DIGITS[code]! : -1;
       if (value === -1) {
         const character = String.fromCodePoint(code);
-        throw new DecodeError("hex", `${named(character)} is not a hex digit`, index);
+        const at = inputIndex(text, ASCII_WHITESPACE.source, prefix + index);
+        throw new DecodeError("hex", `${named(character)} at index ${at} is not a hex digit`, at);
       }
       out[index >> 1] = index % 2 === 0 ? value << 4 : out[index >> 1]! | value;
     }
