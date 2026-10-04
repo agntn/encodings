@@ -69,7 +69,7 @@ Keep AGENTS.md updated with project status.
 
 - `pnpm dev` - `obuild --stub`, so `dist` re-exports `src`. The three `mcp` bundle checks in `test/cli.test.ts` fail against it; run them after a real build
 - `pnpm build` - production build
-- `pnpm test` - run tests once
+- `pnpm test` - run tests once. It and `pnpm typecheck` want `pnpm --dir docs install` too: `test/docs-mcp.test.ts` takes Zod, the toolkit and the MCP SDK from `docs/node_modules`
 - `pnpm test:watch` - run tests in watch mode
 - `pnpm lint` - lint + format check
 - `pnpm fmt` - auto-fix lint + format

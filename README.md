@@ -157,6 +157,7 @@ Implement `Encoding`, call `register`. [Custom encodings](https://encodings.agnt
 
 ```bash
 pnpm install
+pnpm --dir docs install   # the /mcp test borrows Zod, the toolkit and the SDK from the docs site
 pnpm build       # dist/, the CLI and the subpaths
 pnpm test        # vectors from the RFCs and BIPs, plus frozen outputs of other implementations
 pnpm lint        # vp lint and vp fmt --check
