@@ -39,7 +39,8 @@ function runWith(input: string | Uint8Array | undefined, ...args: readonly strin
   return { code: status, stderr, stdout };
 }
 
-describe("encodings CLI", () => {
+/** Every test here starts a handful of CLI processes, which ran 4.7 s of 5 on a CI runner. */
+describe("encodings CLI", { timeout: 20_000 }, () => {
   it("prints the usage and citty's errors without colors into a pipe", () => {
     const help = run("--help");
     const usage = run("encode", "--help");
