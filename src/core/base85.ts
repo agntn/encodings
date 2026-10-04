@@ -1,4 +1,4 @@
-import { alphabetIndex } from "./bytes.ts";
+import { TextWriter, alphabetIndex } from "./bytes.ts";
 import { byAlphabet } from "./alphabets.ts";
 import { DecodeError, EncodingError, InvalidOptionError, named } from "./errors.ts";
 
@@ -36,13 +36,13 @@ export interface Base85Codec {
  * @returns {string} The text.
  */
 function encode85(bytes: Uint8Array, digit: (value: number) => string, zeroGroup?: string): string {
-  let out = "";
+  const out = new TextWriter(Math.ceil((bytes.length * 5) / 4));
   for (let index = 0; index < bytes.length; index += 4) {
     const length = Math.min(4, bytes.length - index);
     let value = 0;
     for (let byte = 0; byte < 4; byte++) value = value * 256 + (bytes[index + byte] ?? 0);
     if (zeroGroup !== undefined && length === 4 && value === 0) {
-      out += zeroGroup;
+      out.text(zeroGroup);
       continue;
     }
     const group: string[] = [];
@@ -50,9 +50,9 @@ function encode85(bytes: Uint8Array, digit: (value: number) => string, zeroGroup
       group.unshift(digit(value % 85));
       value = Math.floor(value / 85);
     }
-    out += group.slice(0, length + 1).join("");
+    out.text(group.slice(0, length + 1).join(""));
   }
-  return out;
+  return out.toString();
 }
 
 /**

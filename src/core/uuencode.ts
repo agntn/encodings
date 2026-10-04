@@ -1,3 +1,4 @@
+import { TextWriter } from "./bytes.ts";
 import { DecodeError, InvalidOptionError, named } from "./errors.ts";
 
 /** Options for uuencode output. */
@@ -123,11 +124,13 @@ export const uuencode = {
     if (name.length === 0 || /[\p{Cc}\p{Zl}\p{Zp}]/u.test(name)) {
       throw new InvalidOptionError("name", name, "must be one non-empty line");
     }
-    const lines = [`begin ${mode} ${name}`];
+    const out = new TextWriter(name.length + Math.ceil((bytes.length * 62) / LINE_BYTES) + 20);
+    out.text(`begin ${mode} ${name}\n`);
     for (let start = 0; start < bytes.length; start += LINE_BYTES) {
-      lines.push(encodeLine(bytes.subarray(start, start + LINE_BYTES)));
+      out.text(`${encodeLine(bytes.subarray(start, start + LINE_BYTES))}\n`);
     }
-    return `${[...lines, "`", "end"].join("\n")}\n`;
+    out.text("`\nend\n");
+    return out.toString();
   },
 
   /**

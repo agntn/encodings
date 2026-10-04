@@ -1,3 +1,4 @@
+import { TextWriter } from "./bytes.ts";
 import { DecodeError } from "./errors.ts";
 
 /** Longest encoded line, `=` of a soft break included (RFC 2045 §6.7 rule 5). */
@@ -98,25 +99,25 @@ export const quotedPrintable = {
    * @returns {string} The text.
    */
   encode(bytes: Uint8Array): string {
-    let out = "";
+    const out = new TextWriter(bytes.length);
     let lineLength = 0;
     for (let index = 0; index < bytes.length; index++) {
       const lineBreak = lineBreakAt(bytes, index);
       if (lineBreak > 0) {
-        out += lineBreak === 2 ? "\r\n" : "\n";
+        out.text(lineBreak === 2 ? "\r\n" : "\n");
         lineLength = 0;
         index += lineBreak - 1;
         continue;
       }
       const next = token(bytes, index);
       if (lineLength + next.length > LINE_LENGTH - 1) {
-        out += "=\n";
+        out.text("=\n");
         lineLength = 0;
       }
-      out += next;
+      out.text(next);
       lineLength += next.length;
     }
-    return out;
+    return out.toString();
   },
 
   /**

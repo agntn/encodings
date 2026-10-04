@@ -1,3 +1,5 @@
+import { spawnSync } from "node:child_process";
+import { join } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
 import {
   ChecksumError,
@@ -947,4 +949,57 @@ describe("hostile input", () => {
   it("decodes a quoted-printable line too long to spread into one call", () => {
     expect(quotedPrintable.decode("a".repeat(500_000))).toHaveLength(500_000);
   });
+});
+
+describe("large input", () => {
+  it("encodes 3 MB in a 64 MB heap, as a Workers isolate would have to", () => {
+    const script = `
+      import { Buffer } from "node:buffer";
+      import * as lib from "./src/index.ts";
+      const bytes = new Uint8Array(3_000_000).map((_, index) => (index * 131 + 7) & 255);
+      const outputs = {
+        base64: lib.base64.encode(bytes),
+        base64url: lib.base64.encode(bytes, { alphabet: "url", padding: false }),
+        base32: lib.base32.encode(bytes),
+        hex: lib.hex.encode(bytes),
+        base45: lib.base45.encode(bytes),
+        base85: lib.base85.encode(bytes),
+        base91: lib.base91.encode(bytes),
+        uuencode: lib.uuencode.encode(bytes),
+        quotedPrintable: lib.quotedPrintable.encode(bytes),
+        latin1: lib.charsets.toText(bytes, { codepage: "latin1" }),
+      };
+      const buffer = Buffer.from(bytes);
+      const lengths = Object.fromEntries(
+        Object.entries(outputs).map(([name, text]) => [name, text.length]),
+      );
+      const matches = [
+        outputs.base64 === buffer.toString("base64"),
+        outputs.base64url === buffer.toString("base64url"),
+        outputs.hex === buffer.toString("hex"),
+        outputs.latin1 === buffer.toString("latin1"),
+      ];
+      console.log(JSON.stringify({ lengths, matches }));
+    `;
+    const { status, stdout, stderr } = spawnSync(
+      process.execPath,
+      ["--max-old-space-size=64", "--input-type=module", "-e", script],
+      { cwd: join(import.meta.dirname, ".."), encoding: "utf8" },
+    );
+    expect(stderr).not.toContain("heap out of memory");
+    expect(status).toBe(0);
+    const { lengths, matches } = JSON.parse(stdout) as {
+      lengths: Record<string, number>;
+      matches: boolean[];
+    };
+    expect(matches).toEqual([true, true, true, true]);
+    expect(lengths).toMatchObject({
+      base64: 4_000_000,
+      base32: 4_800_000,
+      hex: 6_000_000,
+      base45: 4_500_000,
+      base85: 3_750_000,
+      latin1: 3_000_000,
+    });
+  }, 30_000);
 });

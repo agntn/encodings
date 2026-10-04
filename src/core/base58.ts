@@ -1,6 +1,6 @@
 import { sha256 } from "@agntn/hashes/sha2";
 import { byAlphabet } from "./alphabets.ts";
-import { alphabetIndex, concat, equalBytes } from "./bytes.ts";
+import { TextWriter, alphabetIndex, concat, equalBytes } from "./bytes.ts";
 import { ChecksumError, DecodeError, InvalidOptionError, named } from "./errors.ts";
 
 /** A codec over one base58 alphabet, with no options. */
@@ -62,9 +62,12 @@ function base58Codec(name: string, alphabet: string): Base58CheckCodec {
           carry = Math.floor(carry / 58);
         }
       }
-      let out = zero.repeat(zeros);
-      for (let digit = digits.length - 1; digit >= 0; digit--) out += alphabet[digits[digit]!];
-      return out;
+      const out = new TextWriter(zeros + digits.length);
+      for (let index = 0; index < zeros; index++) out.point(alphabet.codePointAt(0)!);
+      for (let digit = digits.length - 1; digit >= 0; digit--) {
+        out.point(alphabet.codePointAt(digits[digit]!)!);
+      }
+      return out.toString();
     },
 
     decode(text) {
