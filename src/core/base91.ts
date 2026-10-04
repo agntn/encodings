@@ -1,4 +1,4 @@
-import { alphabetIndex } from "./bytes.ts";
+import { TextWriter, alphabetIndex } from "./bytes.ts";
 import { DecodeError, named } from "./errors.ts";
 
 const ALPHABET =
@@ -19,7 +19,7 @@ export const base91 = {
    * @returns {string} The text.
    */
   encode(bytes: Uint8Array): string {
-    let out = "";
+    const out = new TextWriter(Math.ceil((bytes.length * 16) / 13) + 2);
     let buffer = 0;
     let held = 0;
     for (const byte of bytes) {
@@ -35,14 +35,15 @@ export const base91 = {
           buffer >>>= 14;
           held -= 14;
         }
-        out += ALPHABET[value % 91]! + ALPHABET[Math.floor(value / 91)]!;
+        out.point(ALPHABET.codePointAt(value % 91)!);
+        out.point(ALPHABET.codePointAt(Math.floor(value / 91))!);
       }
     }
     if (held > 0) {
-      out += ALPHABET[buffer % 91]!;
-      if (held > 7 || buffer > 90) out += ALPHABET[Math.floor(buffer / 91)]!;
+      out.point(ALPHABET.codePointAt(buffer % 91)!);
+      if (held > 7 || buffer > 90) out.point(ALPHABET.codePointAt(Math.floor(buffer / 91))!);
     }
-    return out;
+    return out.toString();
   },
 
   /**

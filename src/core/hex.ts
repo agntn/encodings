@@ -1,4 +1,4 @@
-import { ASCII_WHITESPACE, inputIndex } from "./bytes.ts";
+import { ASCII_WHITESPACE, TextWriter, inputIndex } from "./bytes.ts";
 import { DecodeError, named } from "./errors.ts";
 
 /** Options for hex output. */
@@ -31,9 +31,12 @@ export const hex = {
    */
   encode(bytes: Uint8Array, options: Readonly<HexEncodeOptions> = {}): string {
     const digits = options.upper ? UPPER : LOWER;
-    let out = "";
-    for (const byte of bytes) out += digits[byte >> 4]! + digits[byte & 15]!;
-    return out;
+    const out = new TextWriter(bytes.length * 2);
+    for (const byte of bytes) {
+      out.point(digits.codePointAt(byte >> 4)!);
+      out.point(digits.codePointAt(byte & 15)!);
+    }
+    return out.toString();
   },
 
   /**

@@ -103,3 +103,69 @@ export const MAX_SYMBOL = 16;
 export function graphemes(text: string): Intl.Segments {
   return new Intl.Segmenter("en", { granularity: "grapheme" }).segment(text);
 }
+
+/** Code units per `String.fromCodePoint` call, well under any engine's argument cap. */
+const CHUNK = 8192;
+
+/** Encoder output in one `Uint16Array`: `out +=` per character costs V8 a rope node each. */
+export class TextWriter {
+  #units: Uint16Array;
+  #length = 0;
+
+  /**
+   * @param capacity - Expected length in code units; the buffer doubles past it.
+   */
+  constructor(capacity: number) {
+    this.#units = new Uint16Array(Math.max(capacity, 16));
+  }
+
+  /**
+   * Appends one character, as two code units when it lies past U+FFFF.
+   *
+   * @param point - A code point, such as `alphabet.codePointAt(value)`.
+   */
+  point(point: number): void {
+    if (point > 0xffff) {
+      this.#unit(0xd800 + ((point - 0x10000) >> 10));
+      this.#unit(0xdc00 + ((point - 0x10000) & 0x3ff));
+    } else {
+      this.#unit(point);
+    }
+  }
+
+  /**
+   * Appends every character of a string.
+   *
+   * @param text - Text to append.
+   */
+  text(text: string): void {
+    for (let index = 0; index < text.length; index++) {
+      const point = text.codePointAt(index)!;
+      this.point(point);
+      if (point > 0xffff) index++;
+    }
+  }
+
+  /**
+   * The text so far. A lone surrogate is a valid code point, so every unit comes back as written.
+   *
+   * @returns {string} One string of every code unit, in order.
+   */
+  toString(): string {
+    const parts: string[] = [];
+    for (let start = 0; start < this.#length; start += CHUNK) {
+      const end = Math.min(start + CHUNK, this.#length);
+      parts.push(String.fromCodePoint(...this.#units.subarray(start, end)));
+    }
+    return parts.join("");
+  }
+
+  #unit(unit: number): void {
+    if (this.#length === this.#units.length) {
+      const units = new Uint16Array(Math.max(this.#units.length * 2, 16));
+      units.set(this.#units);
+      this.#units = units;
+    }
+    this.#units[this.#length++] = unit;
+  }
+}
