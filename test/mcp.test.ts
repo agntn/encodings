@@ -1,7 +1,7 @@
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 import { CODE_PAGES, encodingInfos } from "../src/index.ts";
-import { createMcpServer } from "../src/mcp.ts";
+import { callTool, createMcpServer, toolListings } from "../src/mcp.ts";
 import { ALPHABETS, CHARSET_FORMATS } from "../src/tool-contract.ts";
 import {
   encodingsCharsetConvert,
@@ -60,6 +60,35 @@ describe("encodings MCP server", () => {
         openWorldHint: false,
       });
     }
+  });
+
+  it("lists and answers through toolListings and callTool as tools/list and tools/call do", async () => {
+    const client = await connectTestClient();
+    expect((await client.listTools()).tools).toEqual(toolListings);
+    const calls: Array<[string, Record<string, unknown>]> = [
+      ["encodings_decode", { encoding: "base64", text: "SGVsbG8=" }],
+      ["encodings_identify", { text: "SGVsbG8gV29ybGQ=", peel: true }],
+      [
+        "encodings_decode",
+        {
+          encoding: "base58",
+          text: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNb",
+          options: { check: true },
+        },
+      ],
+      ["encodings_encode", { encoding: "base64", input: "x", encodng: "hex" }],
+      ["encodings_decode", { encoding: "base64", text: "QQ==", "x\u202Ey\u2028z": 1 }],
+      ["encodings_nope", {}],
+    ];
+    for (const [name, args] of calls) {
+      expect(await callTool(name, args)).toEqual(await client.callTool({ name, arguments: args }));
+    }
+    const forged = await callTool("encodings_decode", {
+      encoding: "base64",
+      text: "QQ==",
+      "x\u202Ey": 1,
+    });
+    expect(JSON.stringify(forged.content)).not.toMatch(/\u202E/u);
   });
 
   it("encodes text and bytes", async () => {
