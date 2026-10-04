@@ -63,6 +63,25 @@ export function equalBytes(left: Uint8Array, right: Uint8Array): boolean {
 export const ASCII_WHITESPACE = /[\t\n\f\r ]/gu;
 
 /**
+ * Points an error back at the text the caller wrote. Only a throw pays for this walk.
+ *
+ * @param text - The text as the caller passed it.
+ * @param skipped - Source of a pattern for the one-unit characters decoding dropped.
+ * @param index - Index in the text without them.
+ * @returns {number} The index in `text`.
+ */
+export function inputIndex(text: string, skipped: string, index: number): number {
+  const skip = new RegExp(skipped, "u");
+  let kept = 0;
+  for (let at = 0; at < text.length; at++) {
+    if (skip.test(text[at]!)) continue;
+    if (kept === index) return at;
+    kept++;
+  }
+  return text.length;
+}
+
+/**
  * Maps each character of an alphabet to its value, for decoding.
  *
  * @param alphabet - ASCII characters in value order.

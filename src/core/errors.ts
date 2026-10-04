@@ -70,7 +70,7 @@ export class EncodingError extends Error {
 export class DecodeError extends EncodingError {
   /** Registry name of the encoding. */
   readonly encoding: string;
-  /** Index of the offending character in the decoded text, when one character is at fault. */
+  /** Index of the offending character in the text as passed, when one character is at fault. */
   readonly index: number | undefined;
 
   constructor(encoding: string, message: string, index?: number) {

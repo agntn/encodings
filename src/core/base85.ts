@@ -114,19 +114,26 @@ function alphabetDigits(
 /** ASCII whitespace, which Ascii85 decoders skip anywhere. */
 const WHITESPACE = new Set(["\t", "\n", "\f", "\r", " "]);
 
+/** Ascii85 digits with Adobe's delimiters taken off, and where they start in the text. */
+interface Digits {
+  digits: string;
+  start: number;
+}
+
 /**
  * Strips Adobe's `<~` and `~>` from Ascii85 text, or the `~>` alone, which btoa writes.
  *
  * @param text - Ascii85 text.
- * @returns {string} The digits.
+ * @returns {Digits} The digits and the index of the first in `text`.
  */
-function withoutDelimiters(text: string): string {
+function withoutDelimiters(text: string): Digits {
   const body = text.trim();
+  const start = text.length - text.trimStart().length;
   if (body.startsWith("<~")) {
     if (!body.endsWith("~>")) throw new DecodeError("base85", "`<~` without a closing `~>`");
-    return body.slice(2, -2);
+    return { digits: body.slice(2, -2), start: start + 2 };
   }
-  return body.endsWith("~>") ? body.slice(0, -2) : body;
+  return { digits: body.endsWith("~>") ? body.slice(0, -2) : body, start };
 }
 
 /**
@@ -165,8 +172,9 @@ interface Variant {
  */
 function decodeAscii85(text: string): Uint8Array {
   const values: number[] = [];
-  let index = 0;
-  for (const character of withoutDelimiters(text)) {
+  const { digits, start } = withoutDelimiters(text);
+  let index = start;
+  for (const character of digits) {
     if (!WHITESPACE.has(character)) {
       values.push(...ascii85Digits(character, index, values.length % 5 === 0));
     }

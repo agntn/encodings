@@ -192,7 +192,7 @@ describe("hex", () => {
   it("rejects an odd length and a non-digit with its index", () => {
     expect(() => hex.decode("abc")).toThrow("odd number of digits");
     expect(() => hex.decode("zz")).toThrow(DecodeError);
-    expect(() => hex.decode("0g")).toThrow('"g" (U+0067) is not a hex digit');
+    expect(() => hex.decode("0g")).toThrow('"g" (U+0067) at index 1 is not a hex digit');
   });
 });
 
@@ -850,6 +850,26 @@ describe("round trips over every byte value", () => {
     ["quoted-printable", quotedPrintable],
   ] as const)("%s", (_, codec) => {
     expect(codec.decode(codec.encode(all))).toEqual(all);
+  });
+});
+
+describe("decode error index", () => {
+  /* Each text wraps or frames its bad character, and the number is where the caller sees it. */
+  it.each([
+    ["base64 wrapped by MIME", () => base64.decode("YWJj\nZG*l"), 7],
+    ["base64 after padding", () => base64.decode("Zg==\n Zg=="), 6],
+    ["Crockford with hyphens", () => base32crockford.decode("AB-CD-!"), 6],
+    ["hex with 0x and spaces", () => hex.decode("0x00 11 2g"), 9],
+    ["Ascii85 inside <~ ~>", () => ascii85.decode(" <~87cU{~>"), 7],
+    ["Ascii85 z after <~", () => ascii85.decode("<~8 z~>"), 4],
+  ] as const)("%s", (_, decode, index) => {
+    expect(decode).toThrow(expect.objectContaining({ name: "DecodeError", index }));
+    expect(decode).toThrow(new RegExp(`at index ${index}\\b`, "u"));
+  });
+
+  it("keeps the index of text with nothing to skip", () => {
+    expect(() => base64.decode("YWJjZG*l")).toThrow(expect.objectContaining({ index: 6 }));
+    expect(() => hex.decode("00112g")).toThrow(expect.objectContaining({ index: 5 }));
   });
 });
 
