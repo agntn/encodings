@@ -59,7 +59,7 @@ export default defineCommand({
     multibase: { type: "boolean", description: "base256: the 🚀 multibase prefix" },
     canonical: {
       type: "boolean",
-      description: "base32, base64: refuse non-zero bits after the last byte",
+      description: "base32, base64: refuse non-zero spare bits in the last character",
     },
   },
   run({ args, rawArgs }) {

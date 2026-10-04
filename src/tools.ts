@@ -179,7 +179,7 @@ export const decodeSchema = closed({
       canonical: Type.Optional(
         Type.Boolean({
           description:
-            "base32 and base64: refuse a last character with non-zero bits past the last byte, which no encoder writes",
+            "base32 and base64: refuse non-zero spare bits in the last character. Case, whitespace and padding still read as usual",
         }),
       ),
     }),

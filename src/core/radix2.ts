@@ -19,7 +19,7 @@ export interface Radix2Spec {
 
 /** Options for reading a power-of-two alphabet. */
 export interface Radix2DecodeOptions {
-  /** Refuse non-zero bits past the last byte, the text no encoder writes. Default: false. */
+  /** Refuse non-zero spare bits in the last character, and nothing else. Default: false. */
   canonical?: boolean;
 }
 
@@ -109,7 +109,7 @@ function withoutPadding(
 }
 
 /**
- * Refuses a last character with non-zero bits past the last byte, which no encoder writes.
+ * Refuses a last character whose spare bits past the last byte are not zero.
  *
  * @param name - Registry name, for errors.
  * @param data - The text without padding and ignored characters.

@@ -173,7 +173,9 @@ describe("encodings CLI", () => {
     expect(run("list", "base64").stdout).toContain(
       "url (- and _, safe in URLs and file names) (decode too)",
     );
-    expect(run("list", "base32").stdout).toContain("the text no encoder writes (decode only)");
+    expect(run("list", "base32").stdout).toContain(
+      "case, whitespace and padding read as usual (decode only)",
+    );
   });
 
   it("converts between code pages, from an argument or stdin", () => {

@@ -215,14 +215,14 @@ const PRINTABLE_ASCII = `\t${Array.from({ length: 95 }, (_, index) => String.fro
 const BASE32_RFC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 const BASE64_RFC = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-/** The base32 and base64 switch that takes text only as an encoder writes it. */
+/** The base32 and base64 switch for the spare bits of the last character. */
 const CANONICAL: EncodingOption = {
   name: "canonical",
   type: "boolean",
   required: false,
   default: false,
   description:
-    "Refuse a last character with non-zero bits past the last byte, the text no encoder writes",
+    "Refuse non-zero spare bits in the last character; case, whitespace and padding read as usual",
   decode: true,
   narrows: true,
 };
