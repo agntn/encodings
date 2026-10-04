@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import { sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ArgsDef, CommandDef } from "citty";
+import { cittyAnswers, undeclaredOption } from "./cli-args.ts";
 import type McpCommand from "./commands/mcp.ts";
 import { EncodingError, shown } from "./core/errors.ts";
 import { version } from "./version.ts";
@@ -84,82 +85,6 @@ async function loadMcpCommand(): Promise<typeof McpCommand> {
   return module.default;
 }
 
-/** The fields of an argument definition that tell an option from text. */
-type Declared = Readonly<{ type?: string; alias?: string | readonly string[] }>;
-
-/**
- * Maps every name citty takes for an option of the command to whether it takes a value.
- *
- * @param defs - The command's argument definitions.
- * @returns {Record<string, boolean>} Names, spellings, aliases, `no-` forms, help and version.
- */
-function optionNames(defs: Readonly<Record<string, Declared>>): Record<string, boolean> {
-  const names: Record<string, boolean> = { help: false, h: false, version: false, v: false };
-  for (const [key, def] of Object.entries(defs)) {
-    if (def.type === "positional") continue;
-    const camel = key.replaceAll(/-(\w)/gu, (_, letter: string) => letter.toUpperCase());
-    const kebab = key.replaceAll(/[A-Z]/gu, (letter) => `-${letter.toLowerCase()}`);
-    for (const name of [key, camel, kebab, ...[def.alias ?? []].flat()]) {
-      names[name] = def.type !== "boolean";
-      names[`no-${name}`] = false;
-    }
-  }
-  return names;
-}
-
-/**
- * Splits a dashed argument into the option it names and whether it carries its value.
- *
- * @param arg - One argument, longer than `-`.
- * @returns {{ name: string; inline: boolean; short: boolean }} `o` with a value for `-ohex`.
- */
-function flag(arg: string): { name: string; inline: boolean; short: boolean } {
-  if (!arg.startsWith("--")) return { name: arg.charAt(1), inline: arg.length > 2, short: true };
-  const [name = "", ...value] = arg.slice(2).split("=");
-  return { name, inline: value.length > 0, short: false };
-}
-
-/**
- * Tells whether a dashed argument takes the next one as its value.
- *
- * @param arg - The argument, longer than `-`.
- * @param names - What `optionNames` returned.
- * @returns {boolean | undefined} `undefined` when the argument names no option.
- */
-function takesValue(arg: string, names: Readonly<Record<string, boolean>>): boolean | undefined {
-  const { name, inline, short } = flag(arg);
-  if (!Object.hasOwn(names, name)) return undefined;
-  const valued = names[name] === true;
-  if (short && inline && !valued) return undefined;
-  return valued && !inline;
-}
-
-/**
- * Finds a dashed argument before `--` that citty would misread as flags, crashing on `-_8`.
- *
- * @param args - The arguments after the command name.
- * @param defs - The command's argument definitions.
- * @returns {string | undefined} The argument, or `undefined` when every dash is an option.
- */
-function undeclaredOption(
-  args: readonly string[],
-  defs: Readonly<Record<string, Declared>>,
-): string | undefined {
-  const names = optionNames(defs);
-  let value = false;
-  for (const arg of args) {
-    if (arg === "--") return undefined;
-    if (value || arg === "-" || !arg.startsWith("-")) {
-      value = false;
-      continue;
-    }
-    const next = takesValue(arg, names);
-    if (next === undefined) return arg;
-    value = next;
-  }
-  return undefined;
-}
-
 const subCommands = {
   encode: () => command(() => import("./commands/encode.ts")),
   decode: () => command(() => import("./commands/decode.ts")),
@@ -182,10 +107,10 @@ const rawArgs = process.argv.slice(2);
 const [name] = rawArgs;
 const sub = await Object.entries(subCommands).find(([key]) => key === name)?.[1]();
 const args = await sub?.args;
-const dashed = undeclaredOption(
-  sub ? rawArgs.slice(1) : rawArgs,
-  (typeof args === "function" ? await args() : args) ?? {},
-);
+const defs = typeof args === "function" ? await args() : args;
+const dashed = cittyAnswers(rawArgs)
+  ? undefined
+  : undeclaredOption(sub ? rawArgs.slice(1) : rawArgs, defs ?? {});
 if (dashed === undefined) {
   await runMain(main);
 } else {
