@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.1
+
+[compare changes](https://github.com/agntn/encodings/compare/v0.1.0...v0.1.1)
+
+### 🚀 Enhancements
+
+- **docs:** Serve the encoding tools at /mcp ([#38](https://github.com/agntn/encodings/pull/38))
+
+### 🩹 Fixes
+
+- Point decode errors at the caller's text ([#37](https://github.com/agntn/encodings/pull/37))
+
+### ❤️ Contributors
+
+- Aeitwoen ([@aeitwoen](https://github.com/aeitwoen))
+
 ## v0.1.0
 
 
