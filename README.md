@@ -24,7 +24,7 @@ Docs and a live playground: [encodings.agntn.dev](https://encodings.agntn.dev).
 - 🪙 **Segwit aware.** A `bc1…` address comes back as its witness version and program.
 - 🔍 **`identify`.** Tries every encoding, ranks the ones that work, and tells you why. Three layers deep? `peel` takes them off one by one.
 - 🖥️ **Code pages too.** EBCDIC, Latin-1 and Windows-1252. Mojibake goes back to what it was.
-- 🤖 **Agent tools.** The same ones over MCP, Pi, OMP and the AI SDK.
+- 🤖 **Agent tools.** The same ones over MCP, Pi, OMP and the AI SDK. The MCP ones also answer at [encodings.agntn.dev/mcp](https://encodings.agntn.dev/guide/agents#remote-mcp), nothing to install.
 - 📦 **One subpath per family.** Need base58 only? Import base58 only.
 - 🌐 **Runs anywhere.** Nothing from `node:*`, no network. The docs site runs it in your tab.
 - 🧩 **Bring your own.** An encoding is one object. Register it and `identify` knows it too.
@@ -134,6 +134,14 @@ omp install @agntn/encodings
   }
 }
 ```
+
+Nothing to install at all? The docs site serves the same tools over HTTP, plus `list-pages` and `get-page` for reading the guide:
+
+```bash
+claude mcp add --transport http encodings https://encodings.agntn.dev/mcp
+```
+
+Your arguments pass through a Cloudflare worker there. Great for an address, a bad idea for a private key.
 
 The tools are `encodings_encode`, `encodings_decode`, `encodings_identify`, `encodings_info` and `encodings_charset_convert`. Same ones in `@agntn/encodings/ai`. Typo in an argument name? You hear about it. Decoded bytes come back as text only when they're clean text, hex otherwise. [Agents guide](https://encodings.agntn.dev/guide/agents).
 
