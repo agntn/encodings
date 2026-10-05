@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v0.1.2
+
+[compare changes](https://github.com/agntn/encodings/compare/v0.1.1...v0.1.2)
+
+### 🚀 Enhancements
+
+- Let base32 and base64 refuse stray bits ([#44](https://github.com/agntn/encodings/pull/44))
+- Leave SHA-256 out of plain base58 ([#53](https://github.com/agntn/encodings/pull/53))
+
+### 🩹 Fixes
+
+- **docs:** Serve /mcp calls without arguments ([#41](https://github.com/agntn/encodings/pull/41))
+- **cli:** Refuse --version citty would drop ([#43](https://github.com/agntn/encodings/pull/43))
+- Encode 3 MB without 124 MB of heap ([#46](https://github.com/agntn/encodings/pull/46))
+
+### ❤️ Contributors
+
+- Ori
+- Aeitwoen
+
 ## v0.1.1
 
 [compare changes](https://github.com/agntn/encodings/compare/v0.1.0...v0.1.1)
