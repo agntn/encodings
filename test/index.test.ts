@@ -65,7 +65,7 @@ describe("family subpaths", () => {
     hex: ["hex"],
     base32: ["BASE32_ALPHABETS", "base32"],
     base45: ["base45"],
-    base58: ["BASE58_ALPHABETS", "base58", "createBase58check"],
+    base58: ["BASE58_ALPHABETS", "base58", "createBase58", "createBase58check"],
     base64: ["BASE64_ALPHABETS", "base64"],
     base85: ["BASE85_ALPHABETS", "base85"],
     base91: ["base91"],
@@ -84,7 +84,13 @@ describe("family subpaths", () => {
     charsets: ["CODE_PAGES", "charsets"],
   };
 
-  const subpathOnly = new Set(["createBase58check", "fromWords", "fromWordsUnsafe", "toWords"]);
+  const subpathOnly = new Set([
+    "createBase58",
+    "createBase58check",
+    "fromWords",
+    "fromWordsUnsafe",
+    "toWords",
+  ]);
 
   it.each(Object.entries(expected))("./%s exposes only its codecs", async (family, names) => {
     const module = (await import(`../src/${family}.ts`)) as Record<string, unknown>;

@@ -60,14 +60,16 @@ afterAll(() => {
 });
 
 /**
- * Bundles a consumer of everything one built entry exports, minified.
+ * Bundles a consumer of one built entry, minified.
  *
  * @param entry - Entry file name without extension.
+ * @param consumer - What the consumer re-exports, every export by default.
  * @returns {Promise<string>} The bundle.
  */
-async function bundle(entry: string): Promise<string> {
+async function bundle(entry: string, consumer = "*"): Promise<string> {
   const input = join(packed, `consumer-${entry}.mjs`);
-  writeFileSync(input, `export * from ${JSON.stringify(join(packed, `${entry}.mjs`))};\n`);
+  const from = JSON.stringify(join(packed, `${entry}.mjs`));
+  writeFileSync(input, `export ${consumer} from ${from};\n`);
   const build = await rolldown({ input, platform: "node", logLevel: "silent" });
   const { output } = await build.generate({ format: "esm", minify: true });
   return output.map((chunk) => ("code" in chunk ? chunk.code : "")).join("\n");
@@ -82,6 +84,12 @@ describe("family subpaths", () => {
       expect(code, `${family} pulled in ${other}`).not.toContain(marker);
     }
     for (const marker of registryMarkers) expect(code).not.toContain(marker);
+  });
+
+  it("leaves SHA-256 out of a consumer of createBase58 alone", async () => {
+    const roundConstant = String(0x42_8a_2f_98);
+    expect(await bundle("base58")).toContain(roundConstant);
+    expect(await bundle("base58", "{ createBase58 }")).not.toContain(roundConstant);
   });
 
   it("keeps the root entry whole: the registry and every family", async () => {

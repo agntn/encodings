@@ -213,3 +213,13 @@ export function createBase58check(
   }
   return withChecksum("base58check", base58Codec("base58check", alphabet), hash);
 }
+
+/**
+ * Builds plain base58 in one alphabet, with no `check`, so its bundle never reaches SHA-256.
+ *
+ * @param alphabet - `bitcoin`, `flickr` or `ripple`. Default: `bitcoin`.
+ * @returns {Base58CheckCodec} A codec of its own. Its errors name `base58`.
+ */
+export function createBase58(alphabet: Base58Alphabet = "bitcoin"): Base58CheckCodec {
+  return base58Codec("base58", byAlphabet(DIGITS, alphabet, "bitcoin"));
+}

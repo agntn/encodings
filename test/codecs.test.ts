@@ -28,7 +28,7 @@ import {
 import { blake256 } from "@agntn/hashes/blake256";
 import { crc16Xmodem } from "@agntn/hashes/crc";
 import { sha256 } from "@agntn/hashes/sha2";
-import { createBase58check, type Base58Options } from "../src/base58.ts";
+import { createBase58, createBase58check, type Base58Options } from "../src/base58.ts";
 import { fromWords, fromWordsUnsafe, toWords } from "../src/bech32.ts";
 import { base58checkVariants, codePages, gsmg, javascript, python } from "./fixtures/references.ts";
 
@@ -442,6 +442,37 @@ describe("base58 with check", () => {
   it("refuses an alphabet it does not have, even one named like an Object member", () => {
     const odd = { alphabet: "toString" } as unknown as Base58Options;
     expect(() => base58.encode(new Uint8Array(1), odd)).toThrow(
+      "Invalid option alphabet=toString: use one of bitcoin, flickr, ripple",
+    );
+  });
+});
+
+describe("createBase58", () => {
+  it("reads and writes what base58 does in each alphabet", () => {
+    const bytes = hex.decode("0000287fb4cd");
+    for (const alphabet of ["bitcoin", "flickr", "ripple"] as const) {
+      const written = base58.encode(bytes, { alphabet });
+      expect(createBase58(alphabet).encode(bytes)).toBe(written);
+      expect(createBase58(alphabet).decode(written)).toEqual(bytes);
+    }
+    expect(createBase58().encode(bytes)).toBe("11233QC4");
+  });
+
+  it("checks no checksum, so a Base58Check string reads back whole", () => {
+    expect(createBase58().decode("1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNb")).toHaveLength(25);
+  });
+
+  it("hands out a codec of its own, so patching it leaves base58 alone", () => {
+    const codec = createBase58();
+    codec.decode = () => new Uint8Array(1);
+    expect(base58.decode("11233QC4")).toHaveLength(6);
+    expect(createBase58().decode("11233QC4")).toHaveLength(6);
+  });
+
+  it("names its errors base58 and refuses an alphabet it does not have", () => {
+    expect(() => createBase58().decode("10")).toThrow('base58: "0" (U+0030) at index 1');
+    const odd = "toString" as unknown as "bitcoin";
+    expect(() => createBase58(odd)).toThrow(
       "Invalid option alphabet=toString: use one of bitcoin, flickr, ripple",
     );
   });
