@@ -1,6 +1,7 @@
 export {
   BASE58_ALPHABETS,
   base58,
+  createBase58,
   createBase58check,
   type Base58Alphabet,
   type Base58CheckCodec,
