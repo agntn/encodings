@@ -77,6 +77,7 @@ The worker encodes whatever an MCP client sends it and keeps none of it. The pag
 
 - `seo.schema` in `app/app.config.ts` emits the landing JSON-LD: `WebSite`, the agntn `Organization` as publisher, and a free `SoftwareApplication` with `sameAs` on GitHub and npm.
 - `server/routes/sitemap.xml.ts` wraps the Docus sitemap and appends the Vue pages listed in `PAGES`; a new page under `app/pages/` goes there too.
+- An old address points at its new page through `moved()` in `nuxt.config.ts`, which keeps it out of the prerender so the worker answers with a 301. Prerendered, it became a refresh page answering 200, and curl, link checkers and agents stopped at a blank page (#54). `test/docs-config.test.ts` fails on any redirect rule that forgets.
 - `public/favicon.svg` is the source, the PNGs and the `.ico` are cut from it with ImageMagick.
 
 ## OG images

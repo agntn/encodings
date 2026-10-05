@@ -7,6 +7,11 @@ const librarySource = resolve(import.meta.dirname, "../src");
 /** Runtime deps under src/index.ts and src/mcp.ts, installed here so they resolve from docs/node_modules. */
 const libraryDependencies = ["@agntn/hashes", "@agntn/tools", "@modelcontextprotocol/server"];
 
+/** A page that moved for good. Prerendered, it'd be a refresh page answering 200, not a 301. */
+function moved(to: string) {
+  return { redirect: { to, statusCode: 301 }, prerender: false } as const;
+}
+
 export default defineNuxtConfig({
   extends: ["docus"],
   /** The repo root is its own pnpm workspace; Nuxt must not treat it as this site's. */
@@ -154,18 +159,16 @@ export default defineNuxtConfig({
   },
   /** Variants became options of their family; their old pages point at the section there. */
   routeRules: {
-    "/encodings/base32hex": { redirect: { to: "/encodings/base32#the-hex-alphabet", statusCode: 301 } },
-    "/encodings/base32-crockford": {
-      redirect: { to: "/encodings/base32#the-crockford-alphabet", statusCode: 301 },
-    },
-    "/encodings/z-base-32": { redirect: { to: "/encodings/base32#the-z-alphabet", statusCode: 301 } },
-    "/encodings/base58check": { redirect: { to: "/encodings/base58#base58check", statusCode: 301 } },
-    "/encodings/base58-flickr": { redirect: { to: "/encodings/base58#the-flickr-alphabet", statusCode: 301 } },
-    "/encodings/base58-ripple": { redirect: { to: "/encodings/base58#the-ripple-alphabet", statusCode: 301 } },
-    "/encodings/base64url": { redirect: { to: "/encodings/base64#the-url-alphabet", statusCode: 301 } },
-    "/encodings/ascii85": { redirect: { to: "/encodings/base85#the-ascii85-alphabet", statusCode: 301 } },
-    "/encodings/z85": { redirect: { to: "/encodings/base85#the-z85-alphabet", statusCode: 301 } },
-    "/encodings/bech32m": { redirect: { to: "/encodings/bech32#bech32m", statusCode: 301 } },
+    "/encodings/base32hex": moved("/encodings/base32#the-hex-alphabet"),
+    "/encodings/base32-crockford": moved("/encodings/base32#the-crockford-alphabet"),
+    "/encodings/z-base-32": moved("/encodings/base32#the-z-alphabet"),
+    "/encodings/base58check": moved("/encodings/base58#base58check"),
+    "/encodings/base58-flickr": moved("/encodings/base58#the-flickr-alphabet"),
+    "/encodings/base58-ripple": moved("/encodings/base58#the-ripple-alphabet"),
+    "/encodings/base64url": moved("/encodings/base64#the-url-alphabet"),
+    "/encodings/ascii85": moved("/encodings/base85#the-ascii85-alphabet"),
+    "/encodings/z85": moved("/encodings/base85#the-z85-alphabet"),
+    "/encodings/bech32m": moved("/encodings/bech32#bech32m"),
   },
   nitro: {
     preset: "cloudflare_module",
