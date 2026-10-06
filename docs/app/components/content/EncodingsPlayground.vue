@@ -141,12 +141,32 @@ const encodingItems = computed(() =>
 const inputFormatItems = INPUT_FORMATS.map((value) => ({ label: value, value }));
 const outputFormatItems = OUTPUT_FORMATS.map((value) => ({ label: value, value }));
 const charsetItems = CHARSET_FORMATS.map((value) => ({ label: value, value }));
+/** Reka won't take `""` as a menu value, so "every" goes on the menu as `*`. */
+const EVERY = "*";
+
+/**
+ * A menu model for a filter that's empty for "every": `*` and anything unknown read as `""`.
+ *
+ * @param {Ref<string>} state - The filter as the call reads it.
+ * @param {readonly string[]} known - The values the menu offers besides "every".
+ * @returns {WritableComputedRef<string>} The model for `USelectMenu`.
+ */
+function everyModel(state: Ref<string>, known: readonly string[]): WritableComputedRef<string> {
+  return computed({
+    get: () => state.value || EVERY,
+    set: (value: string) => {
+      state.value = known.find((option) => option === value) ?? "";
+    },
+  });
+}
+const describeModel = everyModel(describe, ENCODINGS.map((row) => row.slug));
+const familyModel = everyModel(family, encodingFamilies);
 const describeItems = [
-  { label: "every encoding", value: "" },
+  { label: "every encoding", value: EVERY },
   ...ENCODINGS.map((row) => ({ label: row.slug, value: row.slug, icon: row.icon })),
 ];
 const familyItems = [
-  { label: "every family", value: "" },
+  { label: "every family", value: EVERY },
   ...encodingFamilies.map((key) => ({ label: familyLabel(key), value: key })),
 ];
 
@@ -651,7 +671,7 @@ const identifyLimit = MAX_CANDIDATES;
                 <dd>
                   <USelectMenu
                     id="playground-describe"
-                    v-model="describe"
+                    v-model="describeModel"
                     :items="describeItems"
                     value-key="value"
                     variant="none"
@@ -664,7 +684,7 @@ const identifyLimit = MAX_CANDIDATES;
                 <dd>
                   <USelectMenu
                     id="playground-family"
-                    v-model="family"
+                    v-model="familyModel"
                     :items="familyItems"
                     value-key="value"
                     variant="none"
