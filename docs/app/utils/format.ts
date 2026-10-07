@@ -14,6 +14,29 @@ export function shellArg(value: string): string {
   return /^[\w./:@-]+$/u.test(value) ? value : `'${value.replaceAll("'", `'\\''`)}'`;
 }
 
+/** A CLI line. `-x` would pass for a flag, so `--` ends the flags; a lone `-` stays as it is. */
+export function commandLine(
+  command: string,
+  positionals: readonly string[],
+  flags: readonly string[] = [],
+): string {
+  const words = positionals.map(shellArg);
+  const set = flags.filter(Boolean);
+  return positionals.some((word) => word.length > 1 && word.startsWith("-"))
+    ? [command, ...set, "--", ...words].join(" ")
+    : [command, ...words, ...set].join(" ");
+}
+
+/** Texts the CLI never takes as an argument: `-` is stdin, and help wins even after `--`. */
+const PIPED = new Set(["-", "-h", "--help"]);
+
+/** A line with one typed text, piped in when the argument would mean something else. */
+export function textLine(command: string, text: string, flags: readonly string[] = []): string {
+  return PIPED.has(text)
+    ? `printf %s ${text} | ${commandLine(command, ["-"], flags)}`
+    : commandLine(command, [text], flags);
+}
+
 /** A candidate named like the tool text, `base32 (alphabet=hex)`, as `optionLabel` does. */
 export function readingName(encoding: string, options: Record<string, unknown> = {}): string {
   const parts = Object.entries(options)
