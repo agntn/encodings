@@ -26,7 +26,7 @@ import {
   familyLabel,
   overhead,
 } from "../../utils/encodings";
-import { optionFlags, readingName, shellArg } from "../../utils/format";
+import { optionFlags, readingName, textLine } from "../../utils/format";
 import { jsonTokens, shellTokens } from "../../utils/tokens";
 import type { ToolName } from "../../utils/tools";
 
@@ -338,32 +338,29 @@ const answeredChecksum = computed(() => {
 /** The same call as one CLI line. */
 const cliLine = computed(() => {
   switch (operation.value) {
-    case "encode": {
-      const flags = [
+    case "encode":
+      return textLine(`encodings encode ${encodingName.value}`, input.value, [
         inputFormat.value === "utf8" ? "" : `--input-format ${inputFormat.value}`,
         optionFlags(options.value),
-      ].filter(Boolean);
-      return [`encodings encode ${encodingName.value} ${shellArg(input.value)}`, ...flags].join(" ");
-    }
-    case "decode": {
-      const output = outputFormat.value === "hex" || outputFormat.value === "base64" ? ` -o ${outputFormat.value}` : "";
-      const flags = optionFlags(options.value);
-      return `encodings decode ${encodingName.value} ${shellArg(text.value)}${output}${flags ? ` ${flags}` : ""}`;
-    }
-    case "identify": {
-      const flags = [
+      ]);
+    case "decode":
+      return textLine(`encodings decode ${encodingName.value}`, text.value, [
+        outputFormat.value === "hex" || outputFormat.value === "base64" ? `-o ${outputFormat.value}` : "",
+        optionFlags(options.value),
+      ]);
+    case "identify":
+      return textLine("encodings identify", unknown.value, [
         peeling.value ? "--peel" : "",
         limitArg.value === undefined ? "" : `-n ${limitArg.value}`,
-      ].filter(Boolean);
-      return [`encodings identify ${shellArg(unknown.value)}`, ...flags].join(" ");
-    }
+      ]);
     case "info":
       if (describe.value) return `encodings list ${describe.value}`;
       return family.value ? `encodings list --family ${family.value}` : "encodings list";
-    case "convert": {
-      const to = convertTo.value === "utf8" ? "" : ` --to ${convertTo.value}`;
-      return `encodings convert ${shellArg(convertText.value)} --from ${convertFrom.value}${to}`;
-    }
+    case "convert":
+      return textLine("encodings convert", convertText.value, [
+        `--from ${convertFrom.value}`,
+        convertTo.value === "utf8" ? "" : `--to ${convertTo.value}`,
+      ]);
   }
 });
 
