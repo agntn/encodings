@@ -130,7 +130,7 @@
   },
   "dependencies": {
     "@agntn/hashes": "0.6.1",
-    "@agntn/tools": "0.0.0",
+    "@agntn/tools": "0.2.1",
     "@modelcontextprotocol/server": "2.2.0",
     "citty": "0.2.2",
     "consola": "3.4.2",

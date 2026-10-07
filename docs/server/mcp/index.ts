@@ -1,4 +1,4 @@
-import { version } from "../../../src/version.ts";
+import { serverInfo } from "../../../src/server-info.ts";
 
-/** The server `encodings mcp` names over stdio, with the Docus page tools beside the encoding ones. */
-export default defineMcpHandler({ name: "encodings", version });
+/** Introduces itself like `encodings mcp`, with the Docus page tools beside the encoding ones. */
+export default defineMcpHandler({ ...serverInfo });

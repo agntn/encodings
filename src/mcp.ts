@@ -5,8 +5,8 @@ import {
   toolAnnotations,
 } from "@agntn/tools/mcp";
 import type { CallToolResult, Server, Tool } from "@modelcontextprotocol/server";
+import { serverInfo } from "./server-info.ts";
 import { encodingTools } from "./tools.ts";
-import { version } from "./version.ts";
 
 /** The `tools/list` entries shared by `encodings mcp` and the MCP server of the docs site. */
 export const toolListings: readonly Tool[] = encodingTools.map((tool) => ({
@@ -54,5 +54,5 @@ export async function callTool(
  * @returns {Server} Unconnected MCP server.
  */
 export function createMcpServer(): Server {
-  return createToolServer({ name: "encodings", version }, encodingTools);
+  return createToolServer(serverInfo, encodingTools);
 }

@@ -1,7 +1,9 @@
+import { existsSync } from "node:fs";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 import { CODE_PAGES, encodingInfos } from "../src/index.ts";
 import { callTool, createMcpServer, toolListings } from "../src/mcp.ts";
+import { serverInfo } from "../src/server-info.ts";
 import { ALPHABETS, CHARSET_FORMATS } from "../src/tool-contract.ts";
 import {
   encodingsCharsetConvert,
@@ -41,6 +43,16 @@ async function call(name: string, args: Readonly<Record<string, unknown>>): Prom
 }
 
 describe("encodings MCP server", () => {
+  it("introduces itself with a description and icons the site serves", async () => {
+    const client = await connectTestClient();
+
+    expect(client.getServerVersion()).toEqual(serverInfo);
+    for (const icon of serverInfo.icons) {
+      const file = new URL(`../docs/public${new URL(icon.src).pathname}`, import.meta.url);
+      expect(existsSync(file), icon.src).toBe(true);
+    }
+  });
+
   it("advertises every tool as read-only", async () => {
     const client = await connectTestClient();
 

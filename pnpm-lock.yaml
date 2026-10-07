@@ -182,8 +182,8 @@ importers:
         specifier: 0.6.1
         version: 0.6.1(@earendil-works/pi-coding-agent@0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3))(@oh-my-pi/pi-coding-agent@18.0.0)(ai@7.0.127(zod@4.4.3))
       '@agntn/tools':
-        specifier: 0.0.0
-        version: 0.0.0(@earendil-works/pi-coding-agent@0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.0.0)(ai@7.0.127(zod@4.4.3))
+        specifier: 0.2.1
+        version: 0.2.1(@earendil-works/pi-coding-agent@0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.0.0)(ai@7.0.127(zod@4.4.3))
       '@modelcontextprotocol/server':
         specifier: 2.2.0
         version: 2.2.0
@@ -273,6 +273,27 @@ packages:
       '@oh-my-pi/pi-coding-agent':
         optional: true
       ai:
+        optional: true
+
+  '@agntn/tools@0.2.1':
+    resolution: {integrity: sha512-+wvN9R6NRozD4Mk9w9I9qJZIUKkPhalwVcAcvvx9lG2Msp0CdOVrVVusPK58MrGBvmUfhJWu+Re4E0ZCmpXU6w==}
+    engines: {node: '>=26'}
+    peerDependencies:
+      '@earendil-works/pi-coding-agent': '>=0.84.2 <2'
+      '@modelcontextprotocol/server': '>=2.2.0 <3'
+      '@oh-my-pi/pi-coding-agent': '>=18.0.0 <19'
+      ai: '>=7.0.0 <8'
+      h3-mcp: '>=0.2.0 <0.3'
+    peerDependenciesMeta:
+      '@earendil-works/pi-coding-agent':
+        optional: true
+      '@modelcontextprotocol/server':
+        optional: true
+      '@oh-my-pi/pi-coding-agent':
+        optional: true
+      ai:
+        optional: true
+      h3-mcp:
         optional: true
 
   '@ai-sdk/gateway@4.0.103':
@@ -3689,6 +3710,13 @@ snapshots:
       oxlint-tsgolint: 7.0.2003
 
   '@agntn/tools@0.0.0(@earendil-works/pi-coding-agent@0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.0.0)(ai@7.0.127(zod@4.4.3))':
+    optionalDependencies:
+      '@earendil-works/pi-coding-agent': 0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3)
+      '@modelcontextprotocol/server': 2.2.0
+      '@oh-my-pi/pi-coding-agent': 18.0.0
+      ai: 7.0.127(zod@4.4.3)
+
+  '@agntn/tools@0.2.1(@earendil-works/pi-coding-agent@0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.0.0)(ai@7.0.127(zod@4.4.3))':
     optionalDependencies:
       '@earendil-works/pi-coding-agent': 0.84.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(ws@8.21.3)(zod@4.4.3)
       '@modelcontextprotocol/server': 2.2.0
