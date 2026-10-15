@@ -88,8 +88,8 @@ src/commands/            - encode, decode, identify, convert, list, mcp
 docs/                    - Docus site for encodings.agntn.dev
 test/                    - tests
 test/fixtures/           - typed Pi and OMP extension test hosts, frozen outputs of other implementations
-packages/omp/extensions/ - OMP extension sources shipped with the package
-packages/pi/extensions/  - Pi extension sources shipped with the package
+extensions/omp/ - OMP extension sources shipped with the package
+extensions/pi/  - Pi extension sources shipped with the package
 dist/                    - build output (generated)
 ```
 

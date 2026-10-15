@@ -4,10 +4,10 @@ import { fileURLToPath } from "node:url";
 import { registerPiTools } from "@agntn/tools/pi";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
-import type * as EncodingTools from "../../../dist/tools.d.mts";
+import type * as EncodingTools from "../../dist/tools.d.mts";
 
-const sourceModuleUrl = new URL("../../../src/tools.ts", import.meta.url);
-const distributionModuleUrl = new URL("../../../dist/tools.mjs", import.meta.url);
+const sourceModuleUrl = new URL("../../src/tools.ts", import.meta.url);
+const distributionModuleUrl = new URL("../../dist/tools.mjs", import.meta.url);
 
 /**
  * Loads the tool definitions, from the source in a checkout and the build in the package.
