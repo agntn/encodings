@@ -5,12 +5,12 @@ import { sanitizeLine } from "@agntn/tools";
 import { registerOmpTools, type OmpRenderers, type OmpResultView } from "@agntn/tools/omp";
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 
-import type * as EncodingTools from "../../../dist/tools.d.mts";
+import type * as EncodingTools from "../../dist/tools.d.mts";
 
 /** Longest value a status line shows, cut before `sanitizeLine`, which is slow on long escapes. */
 const PREVIEW_LENGTH = 40;
 
-const sourceModulePath = fileURLToPath(new URL("../../../src/tools.ts", import.meta.url));
+const sourceModulePath = fileURLToPath(new URL("../../src/tools.ts", import.meta.url));
 
 /**
  * Both specifiers stay literal: compiled OMP resolves bare imports only where it sees them.
@@ -19,9 +19,7 @@ const sourceModulePath = fileURLToPath(new URL("../../../src/tools.ts", import.m
  */
 function loadTools(): Promise<typeof EncodingTools> {
   return (
-    existsSync(sourceModulePath)
-      ? import("../../../src/tools.ts")
-      : import("../../../dist/tools.mjs")
+    existsSync(sourceModulePath) ? import("../../src/tools.ts") : import("../../dist/tools.mjs")
   ) as Promise<typeof EncodingTools>;
 }
 
