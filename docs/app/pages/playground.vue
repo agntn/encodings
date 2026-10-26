@@ -8,8 +8,8 @@ definePageMeta({ layout: "default" });
 
 const title = "Playground";
 const description = `Encode and decode with any of the ${spellOut(ENCODINGS.length)} encodings, identify a string nobody named, or list them all. In the browser, with the same executors the CLI and the agent tools run.`;
-/** The OG pipeline drops commas from its props, so the card gets a version written without them. */
-const cardDescription = `Encode and decode and identify with any of the ${spellOut(ENCODINGS.length)} encodings. In the browser with the library itself.`;
+/** The card fits two short lines, not the whole description. */
+const cardDescription = `Encode, decode and identify with any of the ${spellOut(ENCODINGS.length)} encodings. In the browser, with the library itself.`;
 
 useSeo({
   title,
@@ -17,6 +17,12 @@ useSeo({
   type: "article",
   breadcrumbs: [{ title: "Playground", path: "/playground" }],
 });
+
+/** `useSeo` points agents at `/playground.md`, a twin this page doesn't have, so the link goes. */
+const dropMarkdownTwin = injectHead().hooks?.hook("tags:resolve", (ctx) => {
+  ctx.tags = ctx.tags.filter((tag) => !(tag.tag === "link" && tag.props.type === "text/markdown"));
+});
+onScopeDispose(() => dropMarkdownTwin?.());
 
 defineOgImage(
   "Docs.takumi",
