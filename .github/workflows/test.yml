@@ -23,8 +23,6 @@ jobs:
           run-install: |
             - cwd: .
               args: ['--frozen-lockfile']
-            - cwd: docs
-              args: ['--frozen-lockfile']
 
       - name: Lint
         run: pnpm lint

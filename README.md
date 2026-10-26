@@ -164,13 +164,15 @@ Implement `Encoding`, call `register`. [Custom encodings](https://encodings.agnt
 ## 🛠️ Development
 
 ```bash
-pnpm install
-pnpm --dir docs install   # the /mcp test borrows Zod, the toolkit and the SDK from the docs site
+pnpm install     # docs/ too, one workspace and one lockfile
 pnpm build       # dist/, the CLI and the subpaths
 pnpm test        # vectors from the RFCs and BIPs, plus frozen outputs of other implementations
 pnpm lint        # vp lint and vp fmt --check
 pnpm typecheck   # src, the extensions and the tests
+pnpm docs        # the site on localhost:3000
 ```
+
+One `pnpm install` covers the site as well. The second trip into `docs/` is gone, and so is its lockfile.
 
 The house rules, and why the docs site cares about your Node version, live in [CONTRIBUTING.md](CONTRIBUTING.md).
 
