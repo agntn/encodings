@@ -83,6 +83,7 @@ describe("family subpaths", () => {
     "quoted-printable": ["quotedPrintable"],
     charsets: ["CODE_PAGES", "charsets"],
     rlp: ["rlp"],
+    armor: ["armor"],
   };
 
   const subpathOnly = new Set([

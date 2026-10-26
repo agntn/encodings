@@ -80,6 +80,14 @@ export { quotedPrintable } from "./quoted-printable.ts";
 export { CODE_PAGES, charsets, type CharsetOptions, type CodePage } from "./charsets.ts";
 export { rlp, type RlpInput, type RlpItem } from "./rlp.ts";
 export {
+  armor,
+  type ArmorBlock,
+  type ArmorChecksum,
+  type ArmorDecodeOptions,
+  type ArmorEncodeOptions,
+  type ArmorHeader,
+} from "./armor.ts";
+export {
   create,
   decode,
   encode,

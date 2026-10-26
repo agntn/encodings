@@ -19,10 +19,11 @@ export const familyEntries = [
 ] as const;
 
 /**
- * Subpaths with no registry entry: code pages read bytes as text in another character set, and
- * RLP turns bytes into nested lists, which no `Encoding` returns.
+ * Subpaths with no registry entry: code pages read bytes as text in another character set, RLP
+ * turns bytes into nested lists, and armor hands back a label and headers along with the bytes,
+ * none of which an `Encoding` returns.
  */
-export const standaloneEntries = ["charsets", "rlp"] as const;
+export const standaloneEntries = ["charsets", "rlp", "armor"] as const;
 
 export default defineBuildConfig({
   entries: [

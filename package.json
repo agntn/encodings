@@ -4,6 +4,7 @@
   "description": "Base58, base64, bech32 and a dozen more binary-to-text encodings, written from the specs",
   "keywords": [
     "agent",
+    "armor",
     "ascii85",
     "base256",
     "base32",
@@ -16,6 +17,7 @@
     "bech32m",
     "encoding",
     "mcp",
+    "openpgp",
     "quoted-printable",
     "rlp",
     "uuencode",
@@ -109,6 +111,10 @@
     "./rlp": {
       "types": "./dist/rlp.d.mts",
       "import": "./dist/rlp.mjs"
+    },
+    "./armor": {
+      "types": "./dist/armor.d.mts",
+      "import": "./dist/armor.mjs"
     },
     "./ai": {
       "types": "./dist/ai.d.mts",

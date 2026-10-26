@@ -7,6 +7,7 @@ import {
   DecodeError,
   EncodingError,
   InvalidOptionError,
+  armor,
   base32,
   base45,
   base58,
@@ -38,6 +39,7 @@ import { fromWords, fromWordsUnsafe, toWords } from "../src/bech32.ts";
 import {
   base58checkVariants,
   codePages,
+  gnupg,
   gsmg,
   javascript,
   monero,
@@ -1105,6 +1107,199 @@ describe("rlp", () => {
     expect(() => rlp.encode(-1n)).toThrow("rlp: -1 is negative");
     expect(() => rlp.encode(7 as unknown as bigint)).toThrow(EncodingError);
     expect(() => rlp.encode(["dog"] as unknown as RlpInput)).toThrow("cannot encode a string");
+  });
+});
+
+describe("armor (RFC 9580 §6)", () => {
+  /* RFC 9580 A.2: the sample Ed25519Legacy signature packet, printed in hex and in armor. */
+  const signature = hex.decode(
+    "885e040016080006050255f95f95000a09108cfde12197965a9af62200ff56f90cca98e2102637bd983fdb16c131dfd27ed82bf4dde5606e0d756aed33660100d09c4fa11527f038e0f57f2201d82f2ea2c9033265fa6ceb489e854bae61b404",
+  );
+  const signatureArmor = [
+    "-----BEGIN PGP SIGNATURE-----",
+    "",
+    "iF4EABYIAAYFAlX5X5UACgkQjP3hIZeWWpr2IgD/VvkMypjiECY3vZg/2xbBMd/S",
+    "ftgr9N3lYG4NdWrtM2YBANCcT6EVJ/A44PV/IgHYLy6iyQMyZfps60iehUuuYbQE",
+    "-----END PGP SIGNATURE-----",
+  ].join("\n");
+
+  it("writes and reads the RFC 9580 sample signature", () => {
+    expect(armor.encode(signature, { label: "SIGNATURE" })).toBe(signatureArmor);
+    expect(armor.decode(signatureArmor)).toEqual({
+      label: "SIGNATURE",
+      headers: [],
+      bytes: signature,
+      checksum: "absent",
+    });
+  });
+
+  it("reads the RFC 9580 sample key as the RFC prints it, indented", () => {
+    /* The RFC prints this packet in hex with an old format header, 98, but its armor holds c6. */
+    const block = armor.decode(
+      [
+        "   -----BEGIN PGP PUBLIC KEY BLOCK-----",
+        "",
+        "   xjMEU/NfCxYJKwYBBAHaRw8BAQdAPwmJlL3ZFu1AUxl5NOSofIBzOhKA1i+AEJku",
+        "   Q+47JAY=",
+        "   -----END PGP PUBLIC KEY BLOCK-----",
+      ].join("\r\n"),
+    );
+    expect(block.label).toBe("PUBLIC KEY BLOCK");
+    expect(hex.encode(block.bytes)).toBe(
+      "c6330453f35f0b16092b06010401da470f010107403f098994bdd916ed4053197934e4a87c80733a1280d62f8010992e43ee3b2406",
+    );
+  });
+
+  it("reads and writes what gpg --enarmor writes, header and CRC24 included", () => {
+    const comment = ["Comment", 'Use "gpg --dearmor" for unpacking'] as const;
+    expect(armor.decode(gnupg.armored)).toEqual({
+      label: "ARMORED FILE",
+      headers: [comment],
+      bytes: hex.decode(gnupg.hex),
+      checksum: "match",
+    });
+    const written = armor.encode(hex.decode(gnupg.hex), {
+      label: "ARMORED FILE",
+      headers: [comment],
+      checksum: true,
+    });
+    expect(`${written}\n`).toBe(gnupg.armored);
+  });
+
+  it("reports a wrong or broken CRC24 instead of throwing", () => {
+    const bytes = hex.decode(gnupg.hex);
+    expect(armor.decode(gnupg.armored.replace("=z6pb", "=z6pc"))).toMatchObject({
+      bytes,
+      checksum: "mismatch",
+    });
+    expect(armor.decode(gnupg.armored.replace("=z6pb", "=!?"))).toMatchObject({
+      bytes,
+      checksum: "mismatch",
+    });
+  });
+
+  it("round trips any label, empty data and repeated or empty headers", () => {
+    const headers = [
+      ["Comment", "first"],
+      ["Comment", "second: with a colon"],
+      ["Charset", ""],
+    ] as const;
+    for (const bytes of [new Uint8Array(), Uint8Array.from({ length: 200 }, (_, i) => i)]) {
+      const written = armor.encode(bytes, { label: "MESSAGE, PART 1/2", headers, checksum: true });
+      expect(armor.decode(written)).toEqual({
+        label: "MESSAGE, PART 1/2",
+        headers,
+        bytes,
+        checksum: "match",
+      });
+    }
+  });
+
+  it("wraps the base64 at 64 characters", () => {
+    const lines = armor.encode(new Uint8Array(100), { label: "MESSAGE" }).split("\n");
+    expect(lines.slice(2, -1).map((line) => line.length)).toEqual([64, 64, 8]);
+  });
+
+  it("reads a block whose blank line after the headers got lost", () => {
+    const squeezed = gnupg.armored.replace("unpacking\n\n", "unpacking\n");
+    expect(armor.decode(squeezed)).toEqual(armor.decode(gnupg.armored));
+  });
+
+  it("reads a header with no space after its colon", () => {
+    const tight = gnupg.armored.replace("Comment: Use", "Comment:Use");
+    expect(armor.decode(tight).headers).toEqual([["Comment", 'Use "gpg --dearmor" for unpacking']]);
+  });
+
+  it("skips blank lines and spaces inside the data and under the checksum", () => {
+    const loose = signatureArmor.replace("Wpr2", "Wpr 2").replace("/S\n", "/S\n\n  \n");
+    expect(armor.decode(loose).bytes).toEqual(signature);
+    const spaced = gnupg.armored.replace("=z6pb\n", "=z6pb\n\n");
+    expect(armor.decode(spaced).checksum).toBe("match");
+  });
+
+  it("finds the block inside other text and stops at its END line", () => {
+    const mail = `Hi,\n\nhere it is:\n\n${signatureArmor}\n\n-- \nsent from a phone\n`;
+    expect(armor.decode(mail).bytes).toEqual(signature);
+  });
+
+  it("reads only the label asked for", () => {
+    const key = armor.encode(text("key"), { label: "PUBLIC KEY BLOCK" });
+    const both = `${key}\n${signatureArmor}`;
+    expect(armor.decode(both).label).toBe("PUBLIC KEY BLOCK");
+    expect(armor.decode(both, { label: "SIGNATURE" }).bytes).toEqual(signature);
+    expect(() => armor.decode(key, { label: "SIGNATURE" })).toThrow(
+      "armor: no -----BEGIN PGP SIGNATURE----- line, only PUBLIC KEY BLOCK",
+    );
+  });
+
+  it("steps over a cleartext signed message to its signature", () => {
+    const message = [
+      "-----BEGIN PGP SIGNED MESSAGE-----",
+      "Hash: SHA256",
+      "",
+      "OpenPGP",
+      signatureArmor,
+    ].join("\n");
+    expect(armor.decode(message)).toMatchObject({ label: "SIGNATURE", bytes: signature });
+    expect(() => armor.decode(message, { label: "SIGNED MESSAGE" })).toThrow(InvalidOptionError);
+  });
+
+  it.each([
+    ["no block at all", "just text", "armor: no -----BEGIN PGP ...----- line"],
+    [
+      "no END line",
+      signatureArmor.replace("-----END PGP SIGNATURE-----", ""),
+      "armor: no -----END PGP SIGNATURE----- line after the data",
+    ],
+    [
+      "an END line for another label",
+      signatureArmor.replace("END PGP SIGNATURE", "END PGP MESSAGE"),
+      "armor: expected -----END PGP SIGNATURE-----, found -----END PGP MESSAGE-----",
+    ],
+    [
+      "a stray dashed line too long to quote",
+      signatureArmor.replace("/S\n", `/S\n-----${"x".repeat(100_000)}\n`),
+      "armor: expected -----END PGP SIGNATURE-----, found a line of 100005 characters",
+    ],
+    [
+      "data after the checksum",
+      signatureArmor.replace("/S\n", "/S\n=abcd\n"),
+      "armor: the checksum line must sit right above -----END PGP SIGNATURE-----",
+    ],
+    [
+      "data that is not base64",
+      signatureArmor.replace("Wpr2", "Wpr!"),
+      'armor: the data is not base64: "!" (U+0021)',
+    ],
+  ])("refuses %s", (_, armored, message) => {
+    expect(() => armor.decode(armored)).toThrow(DecodeError);
+    expect(() => armor.decode(armored)).toThrow(message);
+  });
+
+  it.each([
+    ["a lowercase label", { label: "message" }, "label"],
+    ["a label with PGP in it", { label: "PGP MESSAGE" }, "label"],
+    ["a label ending in a space", { label: "MESSAGE " }, "label"],
+    ["the cleartext frame", { label: "SIGNED MESSAGE" }, "label"],
+    ["no label", {}, "label"],
+    ["a header name with a colon", { label: "MESSAGE", headers: [["A:B", "c"]] }, "headers"],
+    ["a header name with a space", { label: "MESSAGE", headers: [["A B", "c"]] }, "headers"],
+    ["a header value over two lines", { label: "MESSAGE", headers: [["A", "b\nc"]] }, "headers"],
+    ["headers that are no list", { label: "MESSAGE", headers: { A: "b" } }, "headers"],
+    ["a checksum that is no boolean", { label: "MESSAGE", checksum: "yes" }, "checksum"],
+  ])("refuses to write %s", (_, options, option) => {
+    const write = () => armor.encode(signature, options as never);
+    expect(write).toThrow(InvalidOptionError);
+    expect(write).toThrow(`Invalid option ${option}=`);
+  });
+
+  it("refuses input of the wrong type from a caller without types", () => {
+    expect(() => armor.encode("abc" as never, { label: "MESSAGE" })).toThrow(
+      "armor: encode takes bytes, got string",
+    );
+    expect(() => armor.encode(signature, undefined as never)).toThrow(InvalidOptionError);
+    expect(() => armor.decode(null as never)).toThrow("armor: decode takes text, got object");
+    expect(() => armor.decode(signatureArmor, { label: 7 } as never)).toThrow(InvalidOptionError);
   });
 });
 

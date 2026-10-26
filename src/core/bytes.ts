@@ -15,6 +15,18 @@ export function toBytes(input: BytesInput): Uint8Array {
 }
 
 /**
+ * Tells bytes from any other value by their tag, so a `Uint8Array` from another realm counts too.
+ *
+ * @param value - Any value.
+ * @returns {boolean} Whether it is a `Uint8Array` or a subclass such as `Buffer`.
+ */
+export function isBytes(value: unknown): value is Uint8Array {
+  return (
+    ArrayBuffer.isView(value) && Object.prototype.toString.call(value) === "[object Uint8Array]"
+  );
+}
+
+/**
  * Reads bytes as UTF-8 text, or nothing when they are not valid UTF-8.
  *
  * @param bytes - Decoded bytes.
