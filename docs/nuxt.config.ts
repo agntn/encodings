@@ -4,8 +4,8 @@ import { encodingsTheme } from "./shiki-theme";
 /** Bundled from the checkout's sources: a deploy needs neither dist/ nor the root node_modules. */
 const librarySource = resolve(import.meta.dirname, "../src");
 
-/** Runtime deps under src/index.ts and src/mcp.ts, installed here so they resolve from docs/node_modules. */
-const libraryDependencies = ["@agntn/hashes", "@agntn/tools", "@modelcontextprotocol/server"];
+/** Runtime deps under src/index.ts and src/tools.ts, installed here so they resolve from docs/node_modules. */
+const libraryDependencies = ["@agntn/hashes", "@agntn/tools"];
 
 /** A page that moved for good. Prerendered, it'd be a refresh page answering 200, not a 301. */
 function moved(to: string) {
@@ -17,8 +17,6 @@ export default defineNuxtConfig({
   /** The repo root is its own pnpm workspace; Nuxt must not treat it as this site's. */
   workspaceDir: import.meta.dirname,
   alias: {
-    /** The tool listings and the executor `encodings mcp` serves, for the MCP server at /mcp. */
-    "@agntn/encodings/mcp": resolve(librarySource, "mcp.ts"),
     "@agntn/encodings": resolve(librarySource, "index.ts"),
     /** The text the agent tools answer with; it imports nothing beyond the library. */
     "#tool-operations": resolve(librarySource, "tool-operations.ts"),
