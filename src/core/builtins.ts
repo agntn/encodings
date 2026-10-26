@@ -20,7 +20,7 @@ import { BECH32_LIMIT, bech32, bech32m, segwit, type SegwitAddress } from "./bec
 import { binary, type BinaryOptions, type BitOrder } from "./binary.ts";
 import { isBytes, requireText, toBytes, typeName, type BytesInput } from "./bytes.ts";
 import { decimal } from "./decimal.ts";
-import { EncodingError, InvalidOptionError } from "./errors.ts";
+import { EncodingError, InvalidOptionError, MissingOptionError } from "./errors.ts";
 import { hex } from "./hex.ts";
 import { html } from "./html.ts";
 import { octal } from "./octal.ts";
@@ -84,7 +84,7 @@ function checked(options: readonly EncodingOption[], given: EncodeOptions = {}):
   const out: Record<string, string | number | boolean> = Object.fromEntries(present);
   for (const option of options) {
     if (option.name in out) continue;
-    if (option.required) throw new InvalidOptionError(option.name, undefined, "is required");
+    if (option.required) throw new MissingOptionError(option.name, option.description);
     if (option.default !== undefined) out[option.name] = option.default;
   }
   return out;

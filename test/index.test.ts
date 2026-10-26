@@ -179,7 +179,9 @@ describe("encode and decode through the registry", () => {
     );
     expect(() => encode("base45", "f", { padding: false })).toThrow("takes no options");
     expect(() => encode("bech32", "x")).toThrow(InvalidOptionError);
-    expect(() => encode("bech32", "x")).toThrow("prefix=undefined: is required");
+    expect(() => encode("bech32", "x")).toThrow(
+      "Option prefix is missing: Human-readable part, such as bc, tb or npub",
+    );
   });
 
   it("reads with the options marked decode and refuses the rest", () => {

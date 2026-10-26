@@ -1,6 +1,6 @@
 import { base64 } from "./base64.ts";
 import { equalBytes, requireBytes, requireText } from "./bytes.ts";
-import { DecodeError, InvalidOptionError, shown } from "./errors.ts";
+import { DecodeError, InvalidOptionError, MissingOptionError, shown } from "./errors.ts";
 
 /** Base64 characters a line, as GnuPG writes them and as the samples in RFC 9580 appendix A do. */
 const LINE_LENGTH = 64;
@@ -107,12 +107,11 @@ function crc24(bytes: Uint8Array): Uint8Array {
  * @throws {InvalidOptionError} When it is not a label, or names the cleartext frame.
  */
 function checkLabel(label: unknown): string {
+  const reason =
+    "a label is what follows BEGIN PGP, in capitals, such as MESSAGE or PUBLIC KEY BLOCK";
+  if (label === undefined) throw new MissingOptionError("label", reason);
   if (typeof label !== "string" || !LABEL.test(label)) {
-    throw new InvalidOptionError(
-      "label",
-      label,
-      "a label is what follows BEGIN PGP, in capitals, such as MESSAGE or PUBLIC KEY BLOCK",
-    );
+    throw new InvalidOptionError("label", label, reason);
   }
   if (label.startsWith("PGP ")) {
     throw new InvalidOptionError(

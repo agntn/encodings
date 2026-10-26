@@ -1042,6 +1042,9 @@ describe("charsets", () => {
     expect(() => charsets.toText(all, { codepage: "constructor" as typeof codepage })).toThrow(
       "use one of ibm037",
     );
+    expect(() => charsets.toText(all, {} as never)).toThrow(
+      "Option codepage is missing: use one of ibm037",
+    );
   });
 });
 
@@ -1352,7 +1355,6 @@ describe("armor (RFC 9580 §6)", () => {
     ["a label with PGP in it", { label: "PGP MESSAGE" }, "label"],
     ["a label ending in a space", { label: "MESSAGE " }, "label"],
     ["the cleartext frame", { label: "SIGNED MESSAGE" }, "label"],
-    ["no label", {}, "label"],
     ["a header name with a colon", { label: "MESSAGE", headers: [["A:B", "c"]] }, "headers"],
     ["a header name with a space", { label: "MESSAGE", headers: [["A B", "c"]] }, "headers"],
     ["a header value over two lines", { label: "MESSAGE", headers: [["A", "b\nc"]] }, "headers"],
@@ -1363,6 +1365,22 @@ describe("armor (RFC 9580 §6)", () => {
     const write = () => armor.encode(signature, options as never);
     expect(write).toThrow(InvalidOptionError);
     expect(write).toThrow(`Invalid option ${option}=`);
+  });
+
+  it("names a missing label instead of showing it as undefined", () => {
+    expect(() => armor.encode(signature, {} as never)).toThrow(
+      "Option label is missing: a label is what follows BEGIN PGP",
+    );
+  });
+
+  it("keeps a header given with an undefined part invalid, not missing", () => {
+    for (const header of [
+      ["A", undefined],
+      [undefined, "b"],
+    ]) {
+      const write = () => armor.encode(signature, { label: "MESSAGE", headers: [header] } as never);
+      expect(write).toThrow("Invalid option headers=undefined");
+    }
   });
 
   it("refuses input of the wrong type from a caller without types", () => {

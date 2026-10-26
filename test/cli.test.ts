@@ -127,6 +127,11 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
       stderr: "Invalid option prefix=bc: base64 does not take it\n",
     });
     expect(run("decode", "base64", "SGk=", "--padding")).toMatchObject({ code: 1, stdout: "" });
+    expect(run("encode", "bech32", "hi")).toMatchObject({
+      code: 1,
+      stdout: "",
+      stderr: "Option prefix is missing: Human-readable part, such as bc, tb or npub\n",
+    });
   });
 
   it("writes decoded bytes raw, or as hex with the details on stderr", () => {

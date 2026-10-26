@@ -122,6 +122,14 @@ export class InvalidOptionError extends EncodingError {
   }
 }
 
+/** An option the caller left out, named as missing: `prefix=undefined` explains nothing. */
+export class MissingOptionError extends InvalidOptionError {
+  constructor(option: string, reason: string) {
+    super(option, undefined, reason);
+    this.message = `Option ${shown(option)} is missing: ${reason}`;
+  }
+}
+
 /**
  * Normalizes any thrown value into an EncodingError.
  *
