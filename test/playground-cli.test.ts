@@ -51,7 +51,7 @@ describe("the playground's CLI line", { timeout: 20_000 }, () => {
   it("identifies text that starts with a dash", () => {
     const identified = shell(textLine("encodings identify", "-_8", ["-n 3"]));
     expect(identified.code).toBe(0);
-    expect(identified.stdout).toContain("base64 --alphabet=url");
+    expect(identified.stdout).toContain("base64 (alphabet=url)");
   });
 
   it("pipes a lone dash, which the CLI reads as stdin", () => {
@@ -63,8 +63,9 @@ describe("the playground's CLI line", { timeout: 20_000 }, () => {
     );
   });
 
-  it("pipes -h and --help, which print usage even after --", () => {
+  it("hands -h and --help over after --, as text and not as a call for help", () => {
     for (const text of ["-h", "--help"]) {
+      expect(textLine("encodings encode hex", text)).toBe(`encodings encode hex -- ${text}`);
       expect(shell(textLine("encodings encode hex", text))).toMatchObject({
         code: 0,
         stdout: Buffer.from(text).toString("hex"),

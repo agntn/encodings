@@ -6,7 +6,7 @@ The commands are in the README. Here's what they don't tell you.
 
 Build before you test. The `encodings mcp` checks in `test/cli.test.ts` start `dist/cli.mjs`. Against the `pnpm dev` stub, three of them fail. The release workflow builds first on the tag for the same reason, and `test/release.test.ts` keeps it honest.
 
-Serving `encodings mcp` from your checkout? The built bin loads that command from `src/`. A change wants a server restart, not a build. Only an edit to `src/cli.ts` itself needs one. That's also why relative imports end in `.ts` and `erasableSyntaxOnly` holds: plain Node runs `src/` as it is.
+Serving `encodings mcp` from your checkout? The built bin loads the server from `src/mcp.ts`. A change wants a server restart, not a build. Only an edit to `src/cli.ts` itself needs one. That's also why relative imports end in `.ts` and `erasableSyntaxOnly` holds: plain Node runs `src/` as it is.
 
 The site starts with `pnpm run docs`, and that `run` isn't decoration. pnpm 12 has a `docs` command of its own. It wants a package name and beats our script every time.
 

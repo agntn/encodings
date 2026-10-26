@@ -147,9 +147,7 @@
   "dependencies": {
     "@agntn/hashes": "catalog:deps",
     "@agntn/tools": "catalog:deps",
-    "@modelcontextprotocol/server": "catalog:deps",
-    "citty": "catalog:deps",
-    "scule": "catalog:deps"
+    "@modelcontextprotocol/server": "catalog:deps"
   },
   "devDependencies": {
     "@agntn/ox": "catalog:dev",
