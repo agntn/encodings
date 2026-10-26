@@ -38,8 +38,22 @@ export function token(text: string): string {
  * @returns {string} The value as it appears in the message.
  */
 export function shown(value: unknown): string {
-  const text = String(value);
+  const text = textOf(value);
   return UNSAFE.test(text) ? quote(text) : text;
+}
+
+/**
+ * `String(value)` that never throws, so the error explaining a value can't die on it.
+ *
+ * @param value - Anything a caller without types can pass.
+ * @returns {string} The value as text.
+ */
+function textOf(value: unknown): string {
+  try {
+    return String(value);
+  } catch {
+    return "a value with no text form";
+  }
 }
 
 /**
