@@ -1,6 +1,5 @@
 import { StdioServerTransport } from "@modelcontextprotocol/server/stdio";
 import { defineCommand } from "citty";
-import { consola, LogLevels } from "consola";
 import { createMcpServer } from "../mcp.ts";
 
 export default defineCommand({
@@ -8,15 +7,8 @@ export default defineCommand({
     name: "mcp",
     description: "Run the encodings MCP server over stdio",
   },
-  /**
-   * stdout carries the JSON-RPC frames. consola's default reporter sends
-   * anything at log level or below to that same descriptor, and `DEBUG` in the
-   * environment raises the level on import, so one stray line would corrupt
-   * the stream. Warnings and errors still reach stderr.
-   */
+  /** stdout belongs to the JSON-RPC frames, and one stray line there breaks the stream. */
   async run() {
-    consola.level = LogLevels.warn;
-
     await createMcpServer().connect(new StdioServerTransport());
   },
 });
