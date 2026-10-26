@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
 import { encodingsTheme } from "./shiki-theme";
 
-/** Bundled from the checkout's sources: a deploy needs neither dist/ nor the root node_modules. */
+/** Bundled from the checkout's sources: no dist/, and its imports resolve from the root. */
 const librarySource = resolve(import.meta.dirname, "../src");
 
 /** Runtime deps under src/index.ts and src/tools.ts, installed here so they resolve from docs/node_modules. */
@@ -14,8 +14,6 @@ function moved(to: string) {
 
 export default defineNuxtConfig({
   extends: ["docus"],
-  /** The repo root is its own pnpm workspace; Nuxt must not treat it as this site's. */
-  workspaceDir: import.meta.dirname,
   alias: {
     "@agntn/encodings": resolve(librarySource, "index.ts"),
     /** The text the agent tools answer with; it imports nothing beyond the library. */
@@ -29,10 +27,6 @@ export default defineNuxtConfig({
     },
     optimizeDeps: {
       include: ["@agntn/hashes/sha2"],
-    },
-    server: {
-      /** Dev serves the library from outside the workspace, which Vite refuses without this. */
-      fs: { allow: [librarySource] },
     },
   },
   devtools: { enabled: false },

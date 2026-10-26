@@ -30,8 +30,6 @@ jobs:
           run-install: |
             - cwd: .
               args: ['--frozen-lockfile']
-            - cwd: docs
-              args: ['--frozen-lockfile']
 
       - run: pnpm build
 

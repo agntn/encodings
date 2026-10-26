@@ -24,8 +24,9 @@ Serving `encodings mcp` from your checkout? The built bin loads that command fro
 
 ## Docs site
 
-- Workers Builds installs `docs/` alone and reads the Node.js version from the root `.node-version` only. Not from `engines`. Lose that file and the build quietly runs on Node.js 24.
-- The site bundles `../src`, and a bare import there resolves from the repo root, never from `docs/node_modules`. So a new npm import under `src/` needs a pin in `docs/package.json` at the root's version and an entry in `vite.resolve.dedupe`. Does the browser load it? Then `vite.optimizeDeps.include` too. Bump those pins together with the root's.
+- `docs/` is a member of the root workspace. Workers Builds runs its install there, pnpm walks up to the root lockfile and fills both `node_modules`. Node.js still comes from the root `.node-version` only, not from `engines`. Lose that file and the build quietly runs on Node.js 24.
+- Nothing is hoisted, so every package the site imports sits in `docs/package.json`, and `test/docs-dependencies.test.ts` fails on the one you forgot. Versions live in the `deps` and `dev` catalogs of `pnpm-workspace.yaml`: one line moves the library and the site together.
+- The site bundles `../src`, and a bare import there resolves from the repo root. `vite.resolve.dedupe` pins the library's runtime deps to the site's copy, so a new import under `src/` goes there and into `docs/package.json`. Does the browser load it? Then `vite.optimizeDeps.include` too.
 - Every vector in `content/` came out of the library. Counts come from code through `spellOut`, so `content/` and frontmatter never state one.
 - Samples stay deterministic, so the server render and hydration agree: no `Math.random`, no clock inside a computed.
 - Text a visitor types is rendered as text. Never `v-html`, never evaluated.
