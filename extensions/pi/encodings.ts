@@ -21,7 +21,8 @@ function loadTools(): Promise<typeof EncodingTools> {
 }
 
 /**
- * Registers the encoding tools; the executors load on the first call.
+ * Registers the encoding tools; the executors load on the first call. Failures keep the default
+ * `throw`, the only kind Pi before 0.99 records as an error, and the peer range still reaches 0.84.
  *
  * @param pi - Pi extension API.
  */

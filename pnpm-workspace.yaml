@@ -7,6 +7,7 @@ allowBuilds:
   protobufjs: false
   sharp: false
 
+# A frozen install refuses day-old releases. The @agntn glob keeps CI green the day a sibling ships.
 minimumReleaseAgeExclude:
   - "@agntn/*"
   - "@oh-my-pi/hashline@18.0.0"

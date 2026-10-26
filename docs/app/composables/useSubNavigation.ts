@@ -1,6 +1,7 @@
 import type { ContentNavigationItem } from "@nuxt/content";
 import { ENCODINGS } from "../utils/encodings";
 
+/** Sidebar icons by path. They beat a page's frontmatter `icon`, so a new guide page goes here. */
 const NAV_ICONS: Record<string, string> = {
   "/guide": "i-lucide-book-open",
   "/guide/encoding": "i-lucide-arrow-right-left",
