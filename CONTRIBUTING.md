@@ -8,6 +8,8 @@ Build before you test. The `encodings mcp` checks in `test/cli.test.ts` start `d
 
 Serving `encodings mcp` from your checkout? The built bin loads that command from `src/`. A change wants a server restart, not a build. Only an edit to `src/cli.ts` itself needs one. That's also why relative imports end in `.ts` and `erasableSyntaxOnly` holds: plain Node runs `src/` as it is.
 
+The site starts with `pnpm run docs`, and that `run` isn't decoration. pnpm 12 has a `docs` command of its own. It wants a package name and beats our script every time.
+
 ## Codecs
 
 - Every codec is written here from its spec: the RFC, the BIP, the reference C code. No `@scure/base`, no `bs58`, no codec library at all, and that's the point. The one dependency is `@agntn/hashes`, for the double SHA-256 of Base58Check. `createBase58check` takes any other hash from the caller, so `src/` never imports one.
