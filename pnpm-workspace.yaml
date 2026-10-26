@@ -80,7 +80,6 @@ catalogs:
     "@types/node": 26.2.0
     "@vueuse/core": 15.0.0
     ai: 7.0.127
-    changelogen: 0.6.2
     obuild: 0.4.43
     shiki: 4.5.0
     typescript: 7.0.2

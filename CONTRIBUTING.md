@@ -4,7 +4,7 @@
 
 The commands are in the README. Here's what they don't tell you.
 
-Build before you test. The `encodings mcp` checks in `test/cli.test.ts` start `dist/cli.mjs`. Against the `pnpm dev` stub, three of them fail. `pnpm release` and the Publish workflow build first for the same reason, and `test/release.test.ts` keeps them honest.
+Build before you test. The `encodings mcp` checks in `test/cli.test.ts` start `dist/cli.mjs`. Against the `pnpm dev` stub, three of them fail. The release workflow builds first on the tag for the same reason, and `test/release.test.ts` keeps it honest.
 
 Serving `encodings mcp` from your checkout? The built bin loads that command from `src/`. A change wants a server restart, not a build. Only an edit to `src/cli.ts` itself needs one. That's also why relative imports end in `.ts` and `erasableSyntaxOnly` holds: plain Node runs `src/` as it is.
 
@@ -34,4 +34,8 @@ Serving `encodings mcp` from your checkout? The built bin loads that command fro
 
 ## Releasing
 
-`pnpm release` builds, tests and releases, in CI's order. Publish failed? Bring it back with `gh workflow run publish.yml --ref main -f tag=vX.Y.Z`, not a rerun. A rerun takes `publish.yml` from the tag's commit, so a workflow fix merged since never reaches it.
+There's no release command anymore. Merging a PR is the release command. Every push to `main` refreshes a draft release PR from [uppt](https://github.com/danielroe/uppt). The version comes from the conventional commits, and the notes are already written. Merge it when the version looks right.
+
+That tags `vX.Y.Z` and cuts the GitHub release. Then `release.yml` runs on the tag to test, pack and stage the tarball on npm. Nothing goes public until you approve it on npmjs.com. The notes live in GitHub Releases, and so does every section the old `CHANGELOG.md` had.
+
+Publish failed? `gh workflow run release.yml --ref vX.Y.Z` runs test, pack and publish on the tag again. It runs the tag's own `release.yml`. A workflow fix merged since waits for the next version.
