@@ -18,7 +18,7 @@ import {
 } from "./base256.ts";
 import { BECH32_LIMIT, bech32, bech32m, segwit, type SegwitAddress } from "./bech32.ts";
 import { binary, type BinaryOptions, type BitOrder } from "./binary.ts";
-import { isBytes, toBytes, typeName, type BytesInput } from "./bytes.ts";
+import { isBytes, requireText, toBytes, typeName, type BytesInput } from "./bytes.ts";
 import { decimal } from "./decimal.ts";
 import { EncodingError, InvalidOptionError } from "./errors.ts";
 import { hex } from "./hex.ts";
@@ -122,6 +122,7 @@ function define(
       return write(toBytes(input), checked(writing, options));
     },
     decode(text: string, options?: DecodeOptions) {
+      requireText(`${name}: decode`, text);
       const reading = info.options.filter((option) => option.decode === true);
       const result = read(text, checked(reading, options));
       return result instanceof Uint8Array ? { bytes: result, details: {} } : result;

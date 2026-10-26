@@ -142,6 +142,13 @@ describe("encode and decode through the registry", () => {
     expect(() => decode("base64", null as never)).toThrow("base64: decode takes text, got null");
   });
 
+  it.each(encodings())("%s refuses null with an EncodingError", (name) => {
+    expect(() => encode(name, null as never)).toThrow(
+      `${name}: encode takes text or bytes, got null`,
+    );
+    expect(() => decode(name, null as never)).toThrow(`${name}: decode takes text, got null`);
+  });
+
   it("checks options against what the encoding declares", () => {
     expect(encode("hex", "A", { upper: true })).toBe("41");
     expect(encode("hex", "ÿ", { upper: true })).toBe("C3BF");
