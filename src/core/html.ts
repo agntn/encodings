@@ -1,5 +1,5 @@
 import { requireBytes, requireText, toBytes } from "./bytes.ts";
-import { EncodingError } from "./errors.ts";
+import { EncodingError, named } from "./errors.ts";
 import { LEGACY_NAMES, NAMED_REFERENCES } from "./html-references.ts";
 import { WINDOWS1252_C1 } from "./windows1252.ts";
 
@@ -30,8 +30,8 @@ const utf8Decoder = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
 /** U+FFFD, what the parser makes of a number that names no character. */
 const REPLACEMENT = String.fromCodePoint(0xff_fd);
 
-let named: Map<string, string> | undefined;
-let legacy: Set<string> | undefined;
+let namedTable: Map<string, string> | undefined;
+let legacyTable: Set<string> | undefined;
 
 /**
  * The named references by name, built from the table on first use.
@@ -39,7 +39,7 @@ let legacy: Set<string> | undefined;
  * @returns {Map<string, string>} The text each name stands for.
  */
 function namedReferences(): Map<string, string> {
-  named ??= new Map(
+  namedTable ??= new Map(
     NAMED_REFERENCES.trim()
       .split(/\s+/u)
       .map((entry) => {
@@ -50,7 +50,7 @@ function namedReferences(): Map<string, string> {
         return [name, text] as const;
       }),
   );
-  return named;
+  return namedTable;
 }
 
 /**
@@ -59,8 +59,8 @@ function namedReferences(): Map<string, string> {
  * @returns {Set<string>} The names.
  */
 function legacyNames(): Set<string> {
-  legacy ??= new Set(LEGACY_NAMES.trim().split(/\s+/u));
-  return legacy;
+  legacyTable ??= new Set(LEGACY_NAMES.trim().split(/\s+/u));
+  return legacyTable;
 }
 
 /**
@@ -87,6 +87,24 @@ function numeric(point: number): string {
     return REPLACEMENT;
   if (point >= 0x80 && point <= 0x9f) return WINDOWS1252_C1[point - 0x80]!;
   return String.fromCodePoint(point);
+}
+
+/**
+ * A hex reference for one character, refusing a C1 control HTML would read back as another.
+ *
+ * @param character - One code point past ASCII.
+ * @returns {string} Such as `&#xE9;`.
+ */
+function hexReference(character: string): string {
+  const point = character.codePointAt(0)!;
+  const reference = `&#x${point.toString(16).toUpperCase()};`;
+  const read = numeric(point);
+  if (read !== character) {
+    throw new EncodingError(
+      `html: ${named(character)} has no reference that reads back as itself; HTML reads ${reference} as ${named(read)}, so encode it without ascii`,
+    );
+  }
+  return reference;
 }
 
 /**
@@ -132,11 +150,7 @@ export const html = {
       );
     }
     const pattern = options.ascii === true ? /[&<>"']|[^\0-\x7F]/gu : /[&<>"']/gu;
-    return text.replaceAll(
-      pattern,
-      (character) =>
-        ESCAPES[character] ?? `&#x${character.codePointAt(0)!.toString(16).toUpperCase()};`,
-    );
+    return text.replaceAll(pattern, (character) => ESCAPES[character] ?? hexReference(character));
   },
 
   /**

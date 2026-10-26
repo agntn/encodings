@@ -964,6 +964,14 @@ describe("html (WHATWG character references)", () => {
     expect(html.encode(text("café 😀 <"), { ascii: true })).toBe("caf&#xE9; &#x1F600; &lt;");
   });
 
+  it("refuses with ascii a C1 control that HTML would read back as something else", () => {
+    expect(() => html.encode(text("\u0085"), { ascii: true })).toThrow(
+      `html: U+0085 has no reference that reads back as itself; HTML reads &#x85; as "…" (U+2026)`,
+    );
+    expect(html.encode(text("\u0085"))).toBe("\u0085");
+    expect(read(html.decode(html.encode(text("\u0081"), { ascii: true })))).toBe("\u0081");
+  });
+
   it("round trips text, and bytes that open with a byte order mark", () => {
     const sample = "a&b <c> \"d\" 'e' &amp; 😀 \u0000";
     for (const ascii of [false, true]) {
