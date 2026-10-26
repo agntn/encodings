@@ -15,7 +15,7 @@ const { title, description, headline } = defineProps<{
 
 const { name: siteName } = useSiteConfig();
 
-/** An encoding page shows its facts. The description would arrive with its commas stripped. */
+/** An encoding page shows its facts from the registry, which say more than its description. */
 const entry = ENCODINGS.find((row) => row.info.label === title || row.slug === title?.toLowerCase());
 
 const subtitle = entry
