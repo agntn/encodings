@@ -19,8 +19,7 @@ Serving `encodings mcp` from your checkout? The built bin loads that command fro
 
 ## Agent tools
 
-- Each tool is declared once in `src/tools.ts`. The MCP server, both extensions and `src/ai.ts` serve that list, so a fix never lands on one surface only.
-- A new tool also needs its file in `docs/server/mcp/tools/`. `test/docs-mcp.test.ts` nags until it has one.
+- Each tool is declared once in `src/tools.ts`. The MCP server, the site's `/mcp`, both extensions and `src/ai.ts` serve that list, so a fix never lands on one surface only.
 - Limits live in `src/tool-contract.ts` and are checked twice, in the schema and again in the executor.
 
 ## Docs site

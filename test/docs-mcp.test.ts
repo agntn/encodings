@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs";
+import type { ToolkitTool } from "../docs/node_modules/@agntn/tools/dist/toolkit.mjs";
 import { Client as SiteClient } from "../docs/node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js";
 import { InMemoryTransport as SiteTransport } from "../docs/node_modules/@modelcontextprotocol/sdk/dist/esm/inMemory.js";
 import { McpServer } from "../docs/node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.js";
@@ -6,32 +6,46 @@ import type { CallToolResult } from "../docs/node_modules/@modelcontextprotocol/
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { callTool, toolListings } from "../src/mcp.ts";
 
-/* The toolkit's entry pulls in Nitro, and `defineMcpTool` only hands its input back. */
+/* What the handler asked the Docus page tools for, one entry per request. */
+const pageToolRequests = vi.hoisted((): unknown[] => []);
+
+/* The toolkit's entry pulls in Nitro, so the handler gets its page tools and options here. */
 vi.mock(
   "../docs/node_modules/@nuxtjs/mcp-toolkit/dist/runtime/server/mcp/definitions/index.js",
   () => ({
-    defineMcpTool: (definition: unknown) => definition,
+    defineMcpHandler: (options: unknown) => options,
+    getMcpTools: async (options: unknown) => {
+      pageToolRequests.push(options);
+      return [{ name: "list-pages" }, { name: "get-page" }];
+    },
   }),
 );
 
-const toolsDir = new URL("../docs/server/mcp/tools/", import.meta.url);
+/* Stands in for the h3 event of one `/mcp` request. */
+const siteEvent = { path: "/mcp" };
 
 const openConnections: Array<{ close(): Promise<void> }> = [];
 
 afterEach(async () => {
   await Promise.all(openConnections.splice(0).map((connection) => connection.close()));
+  pageToolRequests.length = 0;
 });
 
-/* An SDK client on every docs tool, through the same SDK copy the worker runs. */
+/* What `server/mcp/index.ts` serves for one request, Docus page tools included. */
+async function siteTools(): Promise<ReadonlyArray<Readonly<ToolkitTool>>> {
+  const { default: handler } = await import("../docs/server/mcp/index.ts");
+  const { tools } = handler;
+  if (typeof tools !== "function") throw new TypeError("the handler should resolve its tools");
+  return (await tools(siteEvent as never)) as ToolkitTool[];
+}
+
+/* An SDK client on every encoding tool, through the same SDK copy the worker runs. */
 async function siteClient(): Promise<SiteClient> {
-  const { encodingsMcpTool } = await import("../docs/server/utils/encodings-mcp.ts");
   const server = new McpServer({ name: "encodings-docs", version: "0.0.0" });
-  for (const listing of toolListings) {
-    const tool = encodingsMcpTool(listing.name);
-    const handler = tool.handler as (
-      args: Readonly<Record<string, unknown>>,
-    ) => Promise<CallToolResult>;
-    server.registerTool(listing.name, tool, handler);
+  for (const tool of await siteTools()) {
+    if (!tool.name.startsWith("encodings_")) continue;
+    const handler = tool.handler as (args: unknown) => Promise<CallToolResult>;
+    server.registerTool(tool.name, tool as never, handler);
   }
   const [clientTransport, serverTransport] = SiteTransport.createLinkedPair();
   const client = new SiteClient({ name: "encodings-docs-test", version: "0.0.0" });
@@ -41,17 +55,47 @@ async function siteClient(): Promise<SiteClient> {
 }
 
 describe("docs MCP tools", () => {
-  it("serves every tool `encodings mcp` lists, one file each", () => {
-    const files = readdirSync(toolsDir).toSorted();
-    expect(files).toEqual(
-      toolListings.map((tool) => `${tool.name.replaceAll("_", "-")}.ts`).toSorted(),
+  it("serves every tool `encodings mcp` lists after the Docus page tools", async () => {
+    expect((await siteTools()).map((tool) => tool.name)).toEqual([
+      "list-pages",
+      "get-page",
+      ...toolListings.map((tool) => tool.name),
+    ]);
+    expect(pageToolRequests).toStrictEqual([{ event: siteEvent }]);
+  });
+
+  it("lists the names, titles, annotations and input schemas `encodings mcp` lists", async () => {
+    const { tools } = await (await siteClient()).listTools();
+    expect(
+      tools.map(({ name, title, description, annotations, inputSchema }) => ({
+        name,
+        title,
+        description,
+        annotations,
+        inputSchema,
+      })),
+    ).toEqual(
+      toolListings.map(({ name, title, description, annotations, inputSchema }) => ({
+        name,
+        title,
+        description,
+        annotations,
+        inputSchema: { $schema: "http://json-schema.org/draft-07/schema#", ...inputSchema },
+      })),
     );
-    for (const file of files) {
-      const name = file.slice(0, -".ts".length).replaceAll("-", "_");
-      expect(readFileSync(new URL(file, toolsDir), "utf8")).toBe(
-        `export default encodingsMcpTool(${JSON.stringify(name)});\n`,
-      );
-    }
+  });
+
+  it("answers like `encodings mcp`, a typo in the arguments included", async () => {
+    const client = await siteClient();
+    const args = { encoding: "base58", text: "2NEpo7TZRRrLZSi2U" };
+    const served = await client.callTool({ name: "encodings_decode", arguments: args });
+    expect(served.isError).toBeFalsy();
+    expect(served.content).toEqual((await callTool("encodings_decode", args)).content);
+
+    const typo = { encodng: "base58", input: "Hello World!" };
+    const refused = await client.callTool({ name: "encodings_encode", arguments: typo });
+    expect(refused.isError).toBe(true);
+    expect(refused.content).toEqual((await callTool("encodings_encode", typo)).content);
   });
 
   it("reads a call without arguments as `{}`, like `encodings mcp`", async () => {

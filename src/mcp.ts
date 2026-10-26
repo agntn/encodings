@@ -8,7 +8,7 @@ import type { CallToolResult, Server, Tool } from "@modelcontextprotocol/server"
 import { serverInfo } from "./server-info.ts";
 import { encodingTools } from "./tools.ts";
 
-/** The `tools/list` entries shared by `encodings mcp` and the MCP server of the docs site. */
+/** The `tools/list` entries `encodings mcp` answers with. */
 export const toolListings: readonly Tool[] = encodingTools.map((tool) => ({
   name: tool.name,
   title: tool.title,
