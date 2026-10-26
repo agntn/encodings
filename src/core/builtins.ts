@@ -84,7 +84,7 @@ function checked(options: readonly EncodingOption[], given: EncodeOptions = {}):
   const out: Record<string, string | number | boolean> = Object.fromEntries(present);
   for (const option of options) {
     if (option.name in out) continue;
-    if (option.required) throw new InvalidOptionError(option.name, undefined, "is required");
+    if (option.required) throw new InvalidOptionError(option.name, undefined, option.description);
     if (option.default !== undefined) out[option.name] = option.default;
   }
   return out;

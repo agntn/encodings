@@ -107,14 +107,18 @@ export class UnknownEncodingError extends EncodingError {
   }
 }
 
-/** Invalid option value. */
+/** Invalid option value, or no value where one is needed. */
 export class InvalidOptionError extends EncodingError {
   readonly option: string;
   readonly value: unknown;
   readonly reason: string;
 
   constructor(option: string, value: unknown, reason: string) {
-    super(`Invalid option ${shown(option)}=${shown(value)}: ${reason}`);
+    super(
+      value === undefined
+        ? `Option ${shown(option)} is missing: ${reason}`
+        : `Invalid option ${shown(option)}=${shown(value)}: ${reason}`,
+    );
     this.name = "InvalidOptionError";
     this.option = option;
     this.value = value;

@@ -471,7 +471,9 @@ describe("executors without the schema", () => {
     expect(() => encodingsInfo({ family: "base62" })).toThrow(
       "use one of binary, octal, decimal, hex",
     );
-    expect(() => encodingsCharsetConvert({ text: "x" })).toThrow("Invalid option from=undefined");
+    expect(() => encodingsCharsetConvert({ text: "x" })).toThrow(
+      "Option from is missing: use one of utf8, hex, base64, ibm037",
+    );
     expect(() => encodingsCharsetConvert({ text: "x", from: "cp037" })).toThrow(
       "use one of utf8, hex, base64, ibm037",
     );
