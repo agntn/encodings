@@ -24,6 +24,7 @@ Docs and a live playground: [encodings.agntn.dev](https://encodings.agntn.dev).
 - 🪙 **Segwit aware.** A `bc1…` address comes back as its witness version and program.
 - 🔍 **`identify`.** Tries every encoding, ranks the ones that work, and tells you why. Three layers deep? `peel` takes them off one by one.
 - 🖥️ **Code pages too.** EBCDIC, Latin-1 and Windows-1252. Mojibake goes back to what it was.
+- ⛓️ **RLP as well.** Ethereum transactions apart and back, as strict as geth.
 - 🤖 **Agent tools.** The same ones over MCP, Pi, OMP and the AI SDK. The MCP ones also answer at [encodings.agntn.dev/mcp](https://encodings.agntn.dev/guide/agents#remote-mcp), nothing to install.
 - 📦 **One subpath per family.** Need base58 only? Import base58 only.
 - 🌐 **Runs anywhere.** Nothing from `node:*`, no network. The docs site runs it in your tab.
@@ -119,6 +120,8 @@ That's most of it, really. Strings go in as UTF-8, bytes come out as `Uint8Array
 Base58Check is `base58` with `check`. z-base-32 is `base32` with `alphabet: "z"`. Got a puzzle in card suits or runes? `base256` takes your own table as `symbols`, or reads its order off a `sample`, and gives you the digits. Decoding takes the same options, so a variant reads back the way it was written. Each family is also a subpath, like `@agntn/encodings/base58`. Alphabets, overhead and options per encoding are on [the encodings page](https://encodings.agntn.dev/encodings).
 
 EBCDIC isn't an encoding, it's a different alphabet for the same bytes. So `charsets` sits outside the registry, on `@agntn/encodings/charsets`. `charsets.toText(bytes, { codepage: "ibm037" })` and back with `fromText`. [Code pages](https://encodings.agntn.dev/guide/code-pages).
+
+RLP isn't text at all. It's Ethereum's wire format, bytes and lists with their length up front. `rlp.encode([bytes, 1000n, []])` builds one. `rlp.decode(bytes)` takes it apart. Anything geth refuses, it refuses. It lives on `@agntn/encodings/rlp`, outside the registry too. [RLP](https://encodings.agntn.dev/guide/rlp).
 
 ## 🤖 Agents
 

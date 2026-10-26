@@ -18,8 +18,11 @@ export const familyEntries = [
   "quoted-printable",
 ] as const;
 
-/** Subpaths with no registry entry: code pages read bytes as text in another character set. */
-export const standaloneEntries = ["charsets"] as const;
+/**
+ * Subpaths with no registry entry: code pages read bytes as text in another character set, and
+ * RLP turns bytes into nested lists, which no `Encoding` returns.
+ */
+export const standaloneEntries = ["charsets", "rlp"] as const;
 
 export default defineBuildConfig({
   entries: [

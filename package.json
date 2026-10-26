@@ -17,6 +17,7 @@
     "encoding",
     "mcp",
     "quoted-printable",
+    "rlp",
     "uuencode",
     "z85"
   ],
@@ -104,6 +105,10 @@
     "./charsets": {
       "types": "./dist/charsets.d.mts",
       "import": "./dist/charsets.mjs"
+    },
+    "./rlp": {
+      "types": "./dist/rlp.d.mts",
+      "import": "./dist/rlp.mjs"
     },
     "./ai": {
       "types": "./dist/ai.d.mts",
