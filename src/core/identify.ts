@@ -1,4 +1,4 @@
-import { equalBytes, toBytes, utf8 } from "./bytes.ts";
+import { equalBytes, toBytes, utf8, requireText } from "./bytes.ts";
 import { InvalidOptionError } from "./errors.ts";
 import { create, encodings } from "./registry.ts";
 import type { Decoded, Encoding, EncodingInfo, EncodingOption } from "./types.ts";
@@ -349,6 +349,7 @@ export function identify(
   text: string,
   options: Readonly<IdentifyOptions> = {},
 ): EncodingCandidate[] {
+  requireText("identify", text);
   const { limit = 5 } = options;
   const names = tried(limit, options.encodings);
   return rank(text, names)
@@ -394,6 +395,7 @@ function nextLayer(text: string, names: readonly string[]): Scored | undefined {
  * @returns {PeelLayer[]} Layers, outermost first; empty when nothing decodes the text.
  */
 export function peel(text: string, options: Readonly<PeelOptions> = {}): PeelLayer[] {
+  requireText("peel", text);
   const { limit = 10 } = options;
   const names = tried(limit, options.encodings);
   const layers: PeelLayer[] = [];

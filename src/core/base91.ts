@@ -1,4 +1,4 @@
-import { TextWriter, alphabetIndex } from "./bytes.ts";
+import { TextWriter, alphabetIndex, requireBytes, requireText } from "./bytes.ts";
 import { DecodeError, named } from "./errors.ts";
 
 const ALPHABET =
@@ -19,6 +19,7 @@ export const base91 = {
    * @returns {string} The text.
    */
   encode(bytes: Uint8Array): string {
+    requireBytes("base91: encode", bytes);
     const out = new TextWriter(Math.ceil((bytes.length * 16) / 13) + 2);
     let buffer = 0;
     let held = 0;
@@ -53,6 +54,7 @@ export const base91 = {
    * @returns {Uint8Array} The bytes.
    */
   decode(text: string): Uint8Array {
+    requireText("base91: decode", text);
     const out: number[] = [];
     let pending = -1;
     let buffer = 0;

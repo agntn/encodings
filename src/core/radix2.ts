@@ -1,4 +1,4 @@
-import { TextWriter, alphabetIndex, inputIndex } from "./bytes.ts";
+import { TextWriter, alphabetIndex, inputIndex, requireBytes, requireText } from "./bytes.ts";
 import { DecodeError, named } from "./errors.ts";
 
 /** How one power-of-two alphabet writes bytes: base32, base64 and their variants. */
@@ -151,6 +151,7 @@ export function radix2(spec: Radix2Spec): PaddedCodec {
 
   return {
     encode(bytes, options = {}) {
+      requireBytes(`${name}: encode`, bytes);
       const characters = Math.ceil((bytes.length * 8) / bits);
       const out = new TextWriter(Math.ceil(characters / blockChars) * blockChars);
       let buffer = 0;
@@ -172,6 +173,7 @@ export function radix2(spec: Radix2Spec): PaddedCodec {
     },
 
     decode(text, options = {}) {
+      requireText(`${name}: decode`, text);
       const body = ignore ? text.replaceAll(new RegExp(ignore.source, "gu"), "") : text;
       const at = (index: number): number =>
         ignore ? inputIndex(text, ignore.source, index) : index;

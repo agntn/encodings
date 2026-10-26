@@ -1,4 +1,4 @@
-import { TextWriter } from "./bytes.ts";
+import { TextWriter, requireBytes, requireText } from "./bytes.ts";
 import { DecodeError, InvalidOptionError, named } from "./errors.ts";
 
 /** Options for uuencode output. */
@@ -117,6 +117,7 @@ export const uuencode = {
    * @returns {string} The text, ending in a line break.
    */
   encode(bytes: Uint8Array, options: Readonly<UuencodeOptions> = {}): string {
+    requireBytes("uuencode: encode", bytes);
     const { name = "data", mode = "644" } = options;
     if (!/^[0-7]{3,4}$/u.test(mode)) {
       throw new InvalidOptionError("mode", mode, "use three or four octal digits, such as 644");
@@ -140,6 +141,7 @@ export const uuencode = {
    * @returns {Uint8Array} The bytes.
    */
   decode(text: string): Uint8Array {
+    requireText("uuencode: decode", text);
     const lines = text.split(/\r?\n/u);
     const start = bodyStart(lines);
     const end = lines.indexOf("end", start);

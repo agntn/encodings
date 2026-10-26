@@ -1,4 +1,4 @@
-import { TextWriter, alphabetIndex } from "./bytes.ts";
+import { TextWriter, alphabetIndex, requireBytes, requireText } from "./bytes.ts";
 import { DecodeError, named } from "./errors.ts";
 
 const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
@@ -17,6 +17,7 @@ export const base45 = {
    * @returns {string} Three characters per two bytes, two for a last odd byte.
    */
   encode(bytes: Uint8Array): string {
+    requireBytes("base45: encode", bytes);
     const out = new TextWriter(Math.ceil((bytes.length * 3) / 2));
     for (let index = 0; index + 1 < bytes.length; index += 2) {
       const value = bytes[index]! * 256 + bytes[index + 1]!;
@@ -39,6 +40,7 @@ export const base45 = {
    * @returns {Uint8Array} The bytes.
    */
   decode(text: string): Uint8Array {
+    requireText("base45: decode", text);
     const digits: number[] = [];
     let index = 0;
     for (const character of text) {

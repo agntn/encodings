@@ -1,4 +1,4 @@
-import { TextWriter } from "./bytes.ts";
+import { TextWriter, requireBytes, requireText } from "./bytes.ts";
 import { DecodeError } from "./errors.ts";
 
 /** Longest encoded line, `=` of a soft break included (RFC 2045 §6.7 rule 5). */
@@ -99,6 +99,7 @@ export const quotedPrintable = {
    * @returns {string} The text.
    */
   encode(bytes: Uint8Array): string {
+    requireBytes("quoted-printable: encode", bytes);
     const out = new TextWriter(bytes.length);
     let lineLength = 0;
     for (let index = 0; index < bytes.length; index++) {
@@ -128,6 +129,7 @@ export const quotedPrintable = {
    * @returns {Uint8Array} The bytes.
    */
   decode(text: string): Uint8Array {
+    requireText("quoted-printable: decode", text);
     const out: number[] = [];
     const parts = text.split(/(\r?\n)/u);
     for (let part = 0; part < parts.length; part += 2) {

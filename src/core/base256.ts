@@ -1,5 +1,5 @@
 import { byAlphabet } from "./alphabets.ts";
-import { MAX_SYMBOL, graphemes } from "./bytes.ts";
+import { MAX_SYMBOL, graphemes, requireBytes, requireText } from "./bytes.ts";
 import { DecodeError, EncodingError, InvalidOptionError, named, quote } from "./errors.ts";
 
 /** The base256 alphabets, in the order `info().options` lists them. */
@@ -282,6 +282,7 @@ export const base256 = {
    * @returns {string} One symbol per byte.
    */
   encode(bytes: Uint8Array, options: Readonly<Base256Options> = {}): string {
+    requireBytes("base256: encode", bytes);
     const checked = table(options);
     const { spelled } = checked;
     const symbols = Array.from(bytes, (byte, index) => {
@@ -306,6 +307,7 @@ export const base256 = {
    * @returns {Uint8Array} One byte per symbol.
    */
   decode(text: string, options: Readonly<Base256Options> = {}): Uint8Array {
+    requireText("base256: decode", text);
     const checked = table(options);
     return Uint8Array.from(read(text, start(text, options.multibase === true), checked));
   },

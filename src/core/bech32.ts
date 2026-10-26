@@ -1,4 +1,4 @@
-import { alphabetIndex } from "./bytes.ts";
+import { alphabetIndex, requireBytes, requireText } from "./bytes.ts";
 import { ChecksumError, DecodeError, InvalidOptionError, named, shown } from "./errors.ts";
 
 const CHARSET = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
@@ -119,6 +119,7 @@ function isWord(value: number): boolean {
  * @returns {number[]} The words, 0 to 31 each.
  */
 export function toWords(bytes: Uint8Array): number[] {
+  requireBytes("bech32: toWords", bytes);
   return convertBits(bytes, 8, 5, true)!;
 }
 
@@ -280,6 +281,7 @@ function bech32Codec(name: string, constant: number): Bech32Codec {
     },
 
     decodeWords(text, limit = BECH32_LIMIT) {
+      requireText(`${name}: decode`, text);
       const { prefix, separator } = splitPrefix(name, text, limit);
       const words = dataWords(name, text, separator);
       const remainder = polymod([...expandPrefix(prefix), ...words]);
@@ -294,6 +296,7 @@ function bech32Codec(name: string, constant: number): Bech32Codec {
     },
 
     encode(prefix, bytes, limit) {
+      requireBytes(`${name}: encode`, bytes);
       return codec.encodeWords(prefix, toWords(bytes), limit);
     },
 
@@ -321,6 +324,9 @@ const OTHER: Readonly<Record<string, number>> = { bech32: 0x2bc830a3, bech32m: 1
  * @param prefix - Prefix as given.
  */
 function checkPrefix(prefix: string): void {
+  if (typeof prefix !== "string") {
+    throw new InvalidOptionError("prefix", prefix, "must be a string");
+  }
   if (prefix.length < 1 || prefix.length > 83) {
     throw new InvalidOptionError("prefix", prefix, "must be 1 to 83 characters");
   }
@@ -352,6 +358,7 @@ export const segwit = {
    * @returns {string} The address.
    */
   encode(prefix: string, version: number, program: Uint8Array): string {
+    requireBytes("segwit: encode", program);
     const problem = witnessProblem(version, program);
     if (problem) throw new InvalidOptionError("program", program.length, problem);
     const codec = version === 0 ? bech32 : bech32m;
@@ -365,6 +372,7 @@ export const segwit = {
    * @returns {SegwitAddress} Its parts.
    */
   decode(text: string): SegwitAddress {
+    requireText("segwit: decode", text);
     let decoded: Bech32Words;
     let variant: "bech32" | "bech32m";
     try {

@@ -1,4 +1,4 @@
-import { isBytes } from "./bytes.ts";
+import { isBytes, requireBytes } from "./bytes.ts";
 import { DecodeError, EncodingError } from "./errors.ts";
 
 /** What `rlp.encode` takes: bytes, a non-negative integer, or a list of those, nested freely. */
@@ -313,6 +313,7 @@ export const rlp = {
    * @throws {DecodeError} At the byte `index` that breaks the canonical form, or on empty input.
    */
   decode(bytes: Uint8Array): RlpItem {
+    requireBytes("rlp: decode", bytes);
     if (bytes.length === 0) throw new DecodeError("rlp", "no item in an empty input");
     const root: RlpItem[] = [];
     const stack: Reading[] = [{ items: root, end: bytes.length }];

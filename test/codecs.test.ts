@@ -1307,8 +1307,73 @@ describe("armor (RFC 9580 §6)", () => {
       "armor: encode takes bytes, got string",
     );
     expect(() => armor.encode(signature, undefined as never)).toThrow(InvalidOptionError);
-    expect(() => armor.decode(null as never)).toThrow("armor: decode takes text, got object");
+    expect(() => armor.decode(null as never)).toThrow("armor: decode takes text, got null");
     expect(() => armor.decode(signatureArmor, { label: 7 } as never)).toThrow(InvalidOptionError);
+  });
+});
+
+describe("input of the wrong type", () => {
+  const codecs = [
+    ["binary", binary],
+    ["octal", octal],
+    ["decimal", decimal],
+    ["hex", hex],
+    ["base32", base32],
+    ["base45", base45],
+    ["base58", base58],
+    ["base58", createBase58("flickr")],
+    ["base58check", createBase58check(blake256)],
+    ["base64", base64],
+    ["base85", base85],
+    ["base91", base91],
+    ["base256", base256],
+    ["uuencode", uuencode],
+    ["quoted-printable", quotedPrintable],
+  ] as const;
+
+  it.each(codecs)("%s refuses a string to encode instead of writing zeros", (name, codec) => {
+    expect(() => codec.encode("abc" as never)).toThrow(EncodingError);
+    expect(() => codec.encode("abc" as never)).toThrow(
+      `${name}: encode takes bytes, got string; turn the string into bytes first`,
+    );
+    expect(() => codec.encode(null as never)).toThrow(`${name}: encode takes bytes, got null`);
+    expect(() => codec.encode([97] as never)).toThrow(`${name}: encode takes bytes, got array`);
+  });
+
+  it.each(codecs)("%s refuses anything but text to decode", (name, codec) => {
+    expect(() => codec.decode(null as never)).toThrow(EncodingError);
+    expect(() => codec.decode(null as never)).toThrow(`${name}: decode takes text, got null`);
+    expect(() => codec.decode(5 as never)).toThrow(`${name}: decode takes text, got number`);
+  });
+
+  it("checks before every option of base58 and the base58check factory", () => {
+    for (const options of [{ check: true }, { blocks: true }, { blocks: true, check: true }]) {
+      expect(() => base58.encode("abc" as never, options)).toThrow("base58: encode takes bytes");
+      expect(() => base58.decode(null as never, options)).toThrow("base58: decode takes text");
+    }
+  });
+
+  it("refuses the wrong type in the codecs with more than one argument", () => {
+    expect(() => bech32.encode("bc", "abc" as never)).toThrow("bech32: encode takes bytes");
+    expect(() => bech32m.decode(null as never)).toThrow("bech32m: decode takes text, got null");
+    expect(() => bech32.encode(5 as never, text("a"))).toThrow(InvalidOptionError);
+    expect(() => toWords("abc" as never)).toThrow("bech32: toWords takes bytes, got string");
+    expect(() => segwit.encode("bc", 0, "abc" as never)).toThrow("segwit: encode takes bytes");
+    expect(() => segwit.decode(undefined as never)).toThrow(
+      "segwit: decode takes text, got undefined",
+    );
+    expect(() => charsets.toText("abc" as never, { codepage: "latin1" })).toThrow(
+      "charsets: toText takes bytes, got string",
+    );
+    expect(() => charsets.fromText(null as never, { codepage: "latin1" })).toThrow(
+      "charsets: fromText takes text, got null",
+    );
+    expect(() => rlp.decode("c3826162" as never)).toThrow("rlp: decode takes bytes, got string");
+  });
+
+  it("still takes a Buffer and bytes from another realm", () => {
+    expect(base64.encode(Buffer.from("abc"))).toBe("YWJj");
+    expect(hex.encode(runInNewContext("new Uint8Array([1, 2])") as Uint8Array)).toBe("0102");
   });
 });
 
