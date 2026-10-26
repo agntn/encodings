@@ -27,6 +27,7 @@ const markers: Record<(typeof entries)[number], string> = {
   uuencode: "begin-base64",
   "quoted-printable": "must be escaped",
   charsets: "has no byte",
+  rlp: "wraps a single byte",
 };
 
 /** Strings of the registry and `identify`, which no family subpath should load. */

@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
+import { runInNewContext } from "node:vm";
 import { describe, expect, it } from "vite-plus/test";
 import {
   ChecksumError,
@@ -18,19 +19,24 @@ import {
   binary,
   charsets,
   CODE_PAGES,
+  type RlpInput,
+  type RlpItem,
   decimal,
   hex,
   octal,
   quotedPrintable,
+  rlp,
   segwit,
   uuencode,
 } from "../src/index.ts";
 import { blake256 } from "@agntn/hashes/blake256";
 import { crc16Xmodem } from "@agntn/hashes/crc";
+import { keccak256 } from "@agntn/hashes/keccak";
 import { sha256 } from "@agntn/hashes/sha2";
 import { createBase58, createBase58check, type Base58Options } from "../src/base58.ts";
 import { fromWords, fromWordsUnsafe, toWords } from "../src/bech32.ts";
 import { base58checkVariants, codePages, gsmg, javascript, python } from "./fixtures/references.ts";
+import { rlpInvalid, rlpValid, type RlpVector } from "./fixtures/rlp.ts";
 
 const text = (value: string) => new TextEncoder().encode(value);
 const read = (bytes: Uint8Array) => new TextDecoder().decode(bytes);
@@ -905,6 +911,130 @@ describe("charsets", () => {
     expect(() => charsets.toText(all, { codepage: "constructor" as typeof codepage })).toThrow(
       "use one of ibm037",
     );
+  });
+});
+
+describe("rlp", () => {
+  /* The input ethereum/tests describes, as rlp.encode takes it. */
+  const input = (vector: RlpVector): RlpInput =>
+    typeof vector === "string"
+      ? text(vector)
+      : typeof vector === "bigint"
+        ? vector
+        : vector.map(input);
+
+  /* What decoding gives back: integers as their big-endian bytes, zero as no bytes. */
+  const item = (vector: RlpVector): RlpItem => {
+    if (typeof vector === "string") return text(vector);
+    if (typeof vector !== "bigint") return vector.map(item);
+    const digits = vector === 0n ? "" : vector.toString(16);
+    return hex.decode(digits.length % 2 === 0 ? digits : `0${digits}`);
+  };
+
+  /* A list nested `depth` deep around one byte string. */
+  const nested = (depth: number): RlpInput => {
+    let list: RlpInput = text("x");
+    for (let level = 0; level < depth; level++) list = [list];
+    return list;
+  };
+
+  it.each(rlpValid)("%s encodes and decodes as ethereum/tests says", (_, vector, encoded) => {
+    expect(hex.encode(rlp.encode(input(vector)))).toBe(encoded);
+    expect(rlp.decode(hex.decode(encoded))).toEqual(item(vector));
+  });
+
+  it.each(rlpInvalid)("%s is refused", (_, encoded) => {
+    expect(() => rlp.decode(hex.decode(encoded))).toThrow(DecodeError);
+  });
+
+  it("points at the byte that breaks the canonical form", () => {
+    const at = (encoded: string) => {
+      try {
+        rlp.decode(hex.decode(encoded));
+      } catch (error) {
+        return [(error as DecodeError).index, (error as Error).message];
+      }
+      return [];
+    };
+    expect(at("c28100")).toEqual([1, "rlp: header at index 1 wraps a single byte under 0x80"]);
+    expect(at("c2b800")).toEqual([2, "rlp: length at index 2 starts with a zero byte"]);
+    expect(at("f80180")).toEqual([0, "rlp: length 1 at index 0 belongs in the short form"]);
+    expect(at("c0c0")).toEqual([1, "rlp: extra bytes from index 1 after the item"]);
+    expect(at("c2820102")).toEqual([1, "rlp: length 2 at index 1 runs 1 past the end"]);
+    expect(at("b9")).toEqual([0, "rlp: header at index 0 needs 2 length bytes"]);
+    expect(at("bfffffffffffffffff")).toEqual([
+      0,
+      "rlp: length 18446744073709551615 at index 0 runs 18446744073709551615 past the end",
+    ]);
+    expect(at("")).toEqual([undefined, "rlp: no item in an empty input"]);
+  });
+
+  it("keeps a list's items inside it", () => {
+    expect(() => rlp.decode(hex.decode("c2c20000"))).toThrow(
+      "length 2 at index 1 runs 1 past the end",
+    );
+    expect(rlp.decode(hex.decode("c3c20000"))).toEqual([[Uint8Array.of(0), Uint8Array.of(0)]]);
+  });
+
+  it("nests a hundred thousand lists without running out of stack", () => {
+    const encoded = rlp.encode(nested(100_000));
+    expect(rlp.encode(rlp.decode(encoded))).toEqual(encoded);
+  });
+
+  it("writes a list that appears twice the same both times", () => {
+    const pair = [text("a"), 1n];
+    expect(hex.encode(rlp.encode([pair, pair]))).toBe("c6c26101c26101");
+  });
+
+  it("takes bytes from another realm and refuses an output larger than memory", () => {
+    expect(hex.encode(rlp.encode([runInNewContext("new Uint8Array([0x80])") as Uint8Array]))).toBe(
+      "c28180",
+    );
+    let shared: RlpInput = [Uint8Array.of(1, 2, 3, 4)];
+    for (let level = 0; level < 40; level++) shared = [shared, shared];
+    expect(() => rlp.encode(shared)).toThrow("more than fits in memory");
+  });
+
+  it("copies the bytes out of the input", () => {
+    const encoded = hex.decode("c3826162");
+    const [decoded] = rlp.decode(encoded) as Uint8Array[];
+    encoded[2] = 0;
+    expect(decoded).toEqual(text("ab"));
+  });
+
+  /* The two mainnet transactions of agntn/keys#270: each digest recovers the listed `from`. */
+  it.each([
+    [
+      "legacy with EIP-155",
+      "f8a980850649534e0082cb32946b175474e89094c44da98b954eedeac495271d0f80b844a9059cbb000000000000000000000000d8d8bc3bb68ec59a8491af4257522dfe4f0b94120000000000000000000000000000000000000000000000056bc75e2d6310000026a06c4de940075ed7c67661cc141747c80bffdd5a48d0a9c49fedc95ff53270a72ca034f8ce13d98c42ff8af4e93f399aa20e44988973c1b0ae24d3c9bfbb4ef7ba81",
+      6,
+      [1n, 0n, 0n],
+      "464935fd6a513df7a77f031ce2b4e0e4b14e3675832b16ccd18274e05b28c35d",
+    ],
+    [
+      "type 2",
+      "02f87301068405f5e100850299e45aba82520894f755aaace22fcfdcd4e300a3f26249000d95f1b28803b4860307b3664f80c080a03945159237a25c17a158194a90cf98a8cac028616751fc9b318a9aa2cdfd2beea05195431bd190114cb0562ca747c5784b0833369520916ee35ba8d2a78147d662",
+      9,
+      [],
+      "9b5cfa17969993d9a389747871fd5a80e82d829b276fa8245492806182b84ea6",
+    ],
+  ] as const)("rebuilds the signing digest of a %s transaction", (_, raw, kept, tail, digest) => {
+    const bytes = hex.decode(raw);
+    const typed = bytes[0] === 2;
+    const body = typed ? bytes.subarray(1) : bytes;
+    const fields = rlp.decode(body) as RlpItem[];
+    expect(rlp.encode(fields)).toEqual(body);
+    const unsigned = rlp.encode([...fields.slice(0, kept), ...tail]);
+    expect(hex.encode(keccak256(typed ? Uint8Array.of(2, ...unsigned) : unsigned))).toBe(digest);
+  });
+
+  it("refuses what has no encoding", () => {
+    const cycle: RlpInput[] = [];
+    cycle.push(cycle);
+    expect(() => rlp.encode([cycle])).toThrow("rlp: a list contains itself");
+    expect(() => rlp.encode(-1n)).toThrow("rlp: -1 is negative");
+    expect(() => rlp.encode(7 as unknown as bigint)).toThrow(EncodingError);
+    expect(() => rlp.encode(["dog"] as unknown as RlpInput)).toThrow("cannot encode a string");
   });
 });
 

@@ -82,6 +82,7 @@ describe("family subpaths", () => {
     uuencode: ["uuencode"],
     "quoted-printable": ["quotedPrintable"],
     charsets: ["CODE_PAGES", "charsets"],
+    rlp: ["rlp"],
   };
 
   const subpathOnly = new Set([

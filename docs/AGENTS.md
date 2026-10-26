@@ -24,7 +24,7 @@ docs/
 ├── server/utils/encodings-mcp.ts  # a tool from `@agntn/encodings/mcp`: its entry in `toolListings`, run through `callTool`
 ├── public/                        # fonts, favicon.svg and the icons and manifest cut from it
 ├── content/index.md               # landing
-├── content/1.guide/               # getting started, encoding and decoding, checksums, identify, code pages, CLI, agents, custom, playground
+├── content/1.guide/               # getting started, encoding and decoding, checksums, identify, CLI, agents, code pages, RLP, custom, playground
 └── content/2.encodings/           # overview, one page per encoding in listing order
 ```
 
