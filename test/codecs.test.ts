@@ -993,10 +993,14 @@ describe("rlp", () => {
     let shared: RlpInput = [Uint8Array.of(1, 2, 3, 4)];
     for (let level = 0; level < 40; level++) shared = [shared, shared];
     expect(() => rlp.encode(shared)).toThrow("more than fits in memory");
+    for (let level = 40; level < 1100; level++) shared = [shared, shared];
+    expect(() => rlp.encode(shared)).toThrow("over 9007199254740991 bytes");
   });
 
-  it("copies the bytes out of the input", () => {
-    const encoded = hex.decode("c3826162");
+  it.each([
+    ["a Uint8Array", hex.decode("c3826162")],
+    ["a Buffer", Buffer.from("c3826162", "hex")],
+  ])("copies the bytes out of %s", (_, encoded) => {
     const [decoded] = rlp.decode(encoded) as Uint8Array[];
     encoded[2] = 0;
     expect(decoded).toEqual(text("ab"));

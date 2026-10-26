@@ -109,6 +109,24 @@ function leafLength(bytes: Uint8Array): number {
 }
 
 /**
+ * Adds to a payload length, refusing one past what a number counts exactly.
+ *
+ * @param payload - The length so far.
+ * @param more - Bytes to add.
+ * @returns {number} The new length.
+ * @throws {EncodingError} Past `Number.MAX_SAFE_INTEGER`, where a list shared over and over lands.
+ */
+function grown(payload: number, more: number): number {
+  const total = payload + more;
+  if (total > Number.MAX_SAFE_INTEGER) {
+    throw new EncodingError(
+      `rlp: the encoding takes over ${Number.MAX_SAFE_INTEGER} bytes, more than fits in memory`,
+    );
+  }
+  return total;
+}
+
+/**
  * Measures each list's payload on a stack of its own, so deep nesting costs memory, not stack.
  *
  * @param root - A list.
@@ -125,16 +143,16 @@ function measure(root: readonly RlpInput[]): Map<readonly RlpInput[], number> {
       open.delete(frame.list);
       sizes.set(frame.list, frame.payload);
       const parent = stack.at(-1);
-      if (parent) parent.payload += headed(frame.payload);
+      if (parent) parent.payload = grown(parent.payload, headed(frame.payload));
       continue;
     }
     const child = frame.list[frame.next++]!;
     if (!isList(child)) {
-      frame.payload += leafLength(leafBytes(child));
+      frame.payload = grown(frame.payload, leafLength(leafBytes(child)));
     } else if (open.has(child)) {
       throw new EncodingError("rlp: a list contains itself, and RLP has no end for that");
     } else if (sizes.has(child)) {
-      frame.payload += headed(sizes.get(child)!);
+      frame.payload = grown(frame.payload, headed(sizes.get(child)!));
     } else {
       open.add(child);
       stack.push({ list: child, next: 0, payload: 0 });
@@ -326,7 +344,7 @@ export const rlp = {
         stack.push({ items, end: head.end });
         offset = head.start;
       } else {
-        frame.items.push(bytes.slice(head.start, head.end));
+        frame.items.push(new Uint8Array(bytes.subarray(head.start, head.end)));
         offset = head.end;
       }
     }
