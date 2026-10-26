@@ -1,5 +1,5 @@
 import { TextWriter, requireBytes, requireText } from "./bytes.ts";
-import { DecodeError, InvalidOptionError, named } from "./errors.ts";
+import { DecodeError, InvalidOptionError, MissingOptionError, named } from "./errors.ts";
 import { WINDOWS1252_C1 } from "./windows1252.ts";
 
 /** IBM EBCDIC 037, 273, 500, 1140 and 1141 (037 and 273 with €), ISO 8859-1 and Windows-1252. */
@@ -75,9 +75,9 @@ const TABLES: Readonly<Record<CodePage, string>> = {
  */
 function lookup(options: CharsetOptions): { name: CodePage; table: string } {
   const name = options.codepage;
-  if (!Object.hasOwn(TABLES, name)) {
-    throw new InvalidOptionError("codepage", name, `use one of ${CODE_PAGES.join(", ")}`);
-  }
+  const reason = `use one of ${CODE_PAGES.join(", ")}`;
+  if (name === undefined) throw new MissingOptionError("codepage", reason);
+  if (!Object.hasOwn(TABLES, name)) throw new InvalidOptionError("codepage", name, reason);
   return { name, table: TABLES[name] };
 }
 

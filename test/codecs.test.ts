@@ -1042,6 +1042,9 @@ describe("charsets", () => {
     expect(() => charsets.toText(all, { codepage: "constructor" as typeof codepage })).toThrow(
       "use one of ibm037",
     );
+    expect(() => charsets.toText(all, {} as never)).toThrow(
+      "Option codepage is missing: use one of ibm037",
+    );
   });
 });
 
@@ -1368,6 +1371,16 @@ describe("armor (RFC 9580 §6)", () => {
     expect(() => armor.encode(signature, {} as never)).toThrow(
       "Option label is missing: a label is what follows BEGIN PGP",
     );
+  });
+
+  it("keeps a header given with an undefined part invalid, not missing", () => {
+    for (const header of [
+      ["A", undefined],
+      [undefined, "b"],
+    ]) {
+      const write = () => armor.encode(signature, { label: "MESSAGE", headers: [header] } as never);
+      expect(write).toThrow("Invalid option headers=undefined");
+    }
   });
 
   it("refuses input of the wrong type from a caller without types", () => {

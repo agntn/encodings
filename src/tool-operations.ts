@@ -9,7 +9,7 @@
 
 import { base64 } from "./core/base64.ts";
 import { utf8 } from "./core/bytes.ts";
-import { InvalidOptionError, quote, token } from "./core/errors.ts";
+import { InvalidOptionError, MissingOptionError, quote, token } from "./core/errors.ts";
 import { hex } from "./core/hex.ts";
 import { identify, peel, type EncodingCandidate, type PeelLayer } from "./core/identify.ts";
 import { create, encodingInfos } from "./core/registry.ts";
@@ -121,6 +121,7 @@ const PREVIEW_LENGTH = 200;
  * @returns {string} The value.
  */
 function stringArgument(name: string, value: unknown, max: number, min = 1): string {
+  if (value === undefined) throw new MissingOptionError(name, "must be a string");
   if (typeof value !== "string") throw new InvalidOptionError(name, value, "must be a string");
   if (value.length < min || value.length > max) {
     throw new InvalidOptionError(
@@ -150,7 +151,9 @@ function enumArgument<T extends string>(
   if (value === undefined && fallback !== undefined) return fallback;
   if (typeof value === "string" && (allowed as readonly string[]).includes(value))
     return value as T;
-  throw new InvalidOptionError(name, value, `use one of ${allowed.join(", ")}`);
+  const reason = `use one of ${allowed.join(", ")}`;
+  if (value === undefined) throw new MissingOptionError(name, reason);
+  throw new InvalidOptionError(name, value, reason);
 }
 
 /**
