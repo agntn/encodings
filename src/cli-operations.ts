@@ -156,8 +156,8 @@ export function convert(params: Readonly<Static<typeof convertSchema>>): ToolRes
 }
 
 /**
- * Runs `encodings_identify` on the text or stdin. Finding nothing is a failure here, with the
- * tool's line on stderr and exit code 1, so `identify x || ...` works in a script.
+ * Answers like `encodings_identify`, without its caps on length and count. Finding nothing is a
+ * failure here, with the tool's line on stderr and exit code 1, so `identify x || ...` works.
  *
  * @param params - The parsed command line.
  * @returns {Promise<ToolResult<IdentifyDetails>>} The tool's answer.
@@ -165,8 +165,12 @@ export function convert(params: Readonly<Static<typeof convertSchema>>): ToolRes
 export async function identify(
   params: Readonly<Static<typeof identifyCommandSchema>>,
 ): Promise<ToolResult<IdentifyDetails>> {
-  const { encodingsIdentify } = await import("./tool-operations.ts");
-  const result = encodingsIdentify({ ...params, text: readText(params.text) });
+  const { identifyAnswer } = await import("./tool-operations.ts");
+  const peel = params.peel ?? false;
+  const result = identifyAnswer(readText(params.text), {
+    peel,
+    limit: params.limit ?? (peel ? 10 : 5),
+  });
   const { candidates, layers = [] } = result.details;
   return candidates.length + layers.length === 0 ? { ...result, isError: true } : result;
 }

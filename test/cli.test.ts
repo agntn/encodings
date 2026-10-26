@@ -156,6 +156,13 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
     });
   });
 
+  it("identifies past the caps the agent tool keeps", () => {
+    const long = runWith("SGk=".padEnd(150_000, " "), "identify", "-", "-n", "1");
+    expect(long).toMatchObject({ code: 0, stderr: "" });
+    expect(long.stdout).toContain('2 bytes, text "Hi"');
+    expect(run("identify", "SGk=", "-n", "25")).toMatchObject({ code: 0, stderr: "" });
+  });
+
   it("prints the candidates as JSON with --json", () => {
     const { code, stdout } = run("identify", "SGk=", "-n", "1", "--json");
     expect(code).toBe(0);

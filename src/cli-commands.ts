@@ -130,8 +130,14 @@ export const convertSchema = closed({
 });
 
 export const identifyCommandSchema = closed({
-  ...identifySchema.properties,
   text: Type.String({ description: "Text in an unknown encoding, or - for stdin" }),
+  limit: Type.Optional(
+    Type.Integer({
+      minimum: 1,
+      description: "Most candidates to show (default 5), or most layers with --peel (default 10)",
+    }),
+  ),
+  peel: identifySchema.properties.peel,
 });
 
 export const encodeCommand = defineTool({
