@@ -6,19 +6,29 @@ import type { CallToolResult } from "../docs/node_modules/@modelcontextprotocol/
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { callTool, toolListings } from "../src/mcp.ts";
 
+/* What the handler asked the Docus page tools for, one entry per request. */
+const pageToolRequests = vi.hoisted((): unknown[] => []);
+
 /* The toolkit's entry pulls in Nitro, so the handler gets its page tools and options here. */
 vi.mock(
   "../docs/node_modules/@nuxtjs/mcp-toolkit/dist/runtime/server/mcp/definitions/index.js",
   () => ({
     defineMcpHandler: (options: unknown) => options,
-    getMcpTools: async () => [{ name: "list-pages" }, { name: "get-page" }],
+    getMcpTools: async (options: unknown) => {
+      pageToolRequests.push(options);
+      return [{ name: "list-pages" }, { name: "get-page" }];
+    },
   }),
 );
+
+/* Stands in for the h3 event of one `/mcp` request. */
+const siteEvent = { path: "/mcp" };
 
 const openConnections: Array<{ close(): Promise<void> }> = [];
 
 afterEach(async () => {
   await Promise.all(openConnections.splice(0).map((connection) => connection.close()));
+  pageToolRequests.length = 0;
 });
 
 /* What `server/mcp/index.ts` serves for one request, Docus page tools included. */
@@ -26,7 +36,7 @@ async function siteTools(): Promise<ReadonlyArray<Readonly<ToolkitTool>>> {
   const { default: handler } = await import("../docs/server/mcp/index.ts");
   const { tools } = handler;
   if (typeof tools !== "function") throw new TypeError("the handler should resolve its tools");
-  return (await tools(undefined as never)) as ToolkitTool[];
+  return (await tools(siteEvent as never)) as ToolkitTool[];
 }
 
 /* An SDK client on every encoding tool, through the same SDK copy the worker runs. */
@@ -51,6 +61,7 @@ describe("docs MCP tools", () => {
       "get-page",
       ...toolListings.map((tool) => tool.name),
     ]);
+    expect(pageToolRequests).toStrictEqual([{ event: siteEvent }]);
   });
 
   it("lists the names, titles, annotations and input schemas `encodings mcp` lists", async () => {
