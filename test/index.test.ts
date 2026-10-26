@@ -45,6 +45,7 @@ describe("@agntn/encodings", () => {
       "bech32",
       "uuencode",
       "quoted-printable",
+      "html",
     ]);
   });
 
@@ -81,6 +82,7 @@ describe("family subpaths", () => {
     ],
     uuencode: ["uuencode"],
     "quoted-printable": ["quotedPrintable"],
+    html: ["html"],
     charsets: ["CODE_PAGES", "charsets"],
     rlp: ["rlp"],
     armor: ["armor"],
@@ -112,6 +114,7 @@ describe("resolveEncoding", () => {
     ["BASE_58", "base58"],
     ["Quoted Printable", "quoted-printable"],
     ["qp", "quoted-printable"],
+    ["HTML entities", "html"],
     ["b64", "base64"],
     ["base16", "hex"],
     ["basE91", "base91"],

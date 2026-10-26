@@ -25,10 +25,13 @@ const ORDER: readonly EncodingEntry["slug"][] = [
   "uuencode",
 ];
 
+/** Sits the walk out: `hello world!` is already HTML, so the panels would show it unchanged. */
+const QUIET: readonly EncodingEntry["slug"][] = ["html"];
+
 /** Every built-in, in `ORDER` first; a newcomer missing from it joins at the end. */
 const WALK: readonly EncodingEntry[] = [
   ...ORDER.map((slug) => ENCODINGS.find((row) => row.slug === slug)!),
-  ...ENCODINGS.filter((row) => !ORDER.includes(row.slug)),
+  ...ENCODINGS.filter((row) => !ORDER.includes(row.slug) && !QUIET.includes(row.slug)),
 ];
 
 export interface LandingSample {

@@ -167,8 +167,13 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
     );
   });
 
+  it("writes HTML references, past ASCII too with --ascii", () => {
+    expect(run("encode", "html", "café <3").stdout).toBe("café &lt;3\n");
+    expect(run("encode", "html", "café <3", "--ascii").stdout).toBe("caf&#xE9; &lt;3\n");
+  });
+
   it("lists encodings and shows one", () => {
-    expect(run("list").stdout.trim().split("\n")).toHaveLength(14);
+    expect(run("list").stdout.trim().split("\n")).toHaveLength(15);
     expect(run("list", "--family", "base64").stdout.trim().split("\n")).toHaveLength(1);
     expect(run("list", "bech32").stdout).toContain("--prefix  Human-readable part");
     expect(run("list", "base64").stdout).toContain(

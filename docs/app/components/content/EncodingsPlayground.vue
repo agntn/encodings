@@ -24,7 +24,7 @@ import {
   codePoints,
   encodingEntry,
   familyLabel,
-  overhead,
+  overheadLine,
 } from "../../utils/encodings";
 import { optionFlags, readingName, textLine } from "../../utils/format";
 import { jsonTokens, shellTokens } from "../../utils/tokens";
@@ -1105,7 +1105,7 @@ const identifyLimit = MAX_CANDIDATES;
               </div>
               <div>
                 <dt>Overhead</dt>
-                <dd>+{{ overhead(answeredEntry) }}% on random bytes</dd>
+                <dd>{{ overheadLine(answeredEntry) }}</dd>
               </div>
               <div>
                 <dt>{{ answeredChecksum ? "Checksum" : "Padding" }}</dt>

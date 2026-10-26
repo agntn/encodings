@@ -1,4 +1,5 @@
 import {
+  EncodingError,
   create,
   encodingFamilies,
   encodings,
@@ -25,6 +26,7 @@ const BUILTINS = [
   "bech32",
   "uuencode",
   "quoted-printable",
+  "html",
 ] as const;
 
 /** An icon, a one-liner and who writes it, per encoding. Everything else comes from `info()`. */
@@ -63,6 +65,11 @@ const PRESENTATION: Record<BuiltinEncoding, { icon: string; blurb: string; usedB
   },
   uuencode: { icon: "i-lucide-mail", blurb: "How Usenet mailed binaries before MIME" },
   "quoted-printable": { icon: "i-lucide-quote", blurb: "Mostly text stays text, the rest gets =XX", usedBy: "Email" },
+  html: {
+    icon: "i-lucide-code-xml",
+    blurb: "&amp; and friends. How a page spells what it can't type",
+    usedBy: "HTML, RSS, every web archive",
+  },
 };
 
 /** Labels a page shows per family. The keys come from the library. */
@@ -81,6 +88,7 @@ const FAMILY_LABELS: Record<(typeof encodingFamilies)[number], string> = {
   bech32: "Bech32",
   uuencode: "uuencode",
   "quoted-printable": "Quoted-Printable",
+  html: "HTML",
 };
 
 /** How the landing groups the registry: by how an encoding turns bytes into text. */
@@ -91,6 +99,7 @@ export const GROUPS = [
   { key: "blocks", label: "Fixed blocks", about: "a few bytes at a time as a few characters" },
   { key: "words", label: "Checksummed words", about: "5-bit words behind a prefix, with a BCH checksum" },
   { key: "mail", label: "Mail", about: "line formats from before MIME and from MIME" },
+  { key: "markup", label: "Markup", about: "text that spells the characters a page can't hold" },
 ] as const;
 
 export type GroupKey = (typeof GROUPS)[number]["key"];
@@ -110,6 +119,7 @@ const GROUP_OF: Record<BuiltinEncoding, GroupKey> = {
   bech32: "words",
   uuencode: "mail",
   "quoted-printable": "mail",
+  html: "markup",
 };
 
 export interface EncodingEntry {
@@ -249,13 +259,30 @@ const OVERHEAD_BYTES = Uint8Array.from({ length: 600 }, (_, index) => (index * 1
  * base64 is 33, hex 100, base256 0. Whitespace and line breaks don't count, framing does.
  *
  * @param {EncodingEntry} entry - A built-in.
- * @returns {number} The overhead in percent.
+ * @returns {number | undefined} The overhead in percent, or nothing for an encoding of text only.
  */
-export function overhead(entry: EncodingEntry): number {
+export function overhead(entry: EncodingEntry): number | undefined {
   const options = SAMPLE_OPTIONS[entry.slug] ?? {};
   const limit = entry.info.options.some((option) => option.name === "limit") ? { limit: 10_000 } : {};
-  const text = create(entry.slug).encode(OVERHEAD_BYTES, { ...options, ...limit });
+  let text: string;
+  try {
+    text = create(entry.slug).encode(OVERHEAD_BYTES, { ...options, ...limit });
+  } catch (error) {
+    if (error instanceof EncodingError) return undefined;
+    throw error;
+  }
   return Math.round((characterCount(text) / OVERHEAD_BYTES.length - 1) * 100);
+}
+
+/**
+ * The overhead as a readout line says it.
+ *
+ * @param {EncodingEntry} entry - A built-in.
+ * @returns {string} Such as `+33% on random bytes`.
+ */
+export function overheadLine(entry: EncodingEntry): string {
+  const value = overhead(entry);
+  return value === undefined ? "text only" : `+${value}% on random bytes`;
 }
 
 /**

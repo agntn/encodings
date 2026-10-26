@@ -9,6 +9,7 @@ const OPTION_FLAGS = [
   "prefix",
   "limit",
   "upper",
+  "ascii",
   "separate",
   "delimiters",
   "alphabet",
@@ -76,6 +77,7 @@ export default defineCommand({
     limit: { type: "string", description: "bech32: longest result (default 90)" },
     m: { type: "boolean", description: "bech32: Bech32m checksum (segwit v1+)" },
     upper: { type: "boolean", description: "hex: write A-F" },
+    ascii: { type: "boolean", description: "html: write characters past ASCII as &#x...; too" },
     separate: { type: "boolean", description: "binary: space between bytes (default true)" },
     symbols: {
       type: "string",

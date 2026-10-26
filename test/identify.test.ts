@@ -26,6 +26,7 @@ describe("identify", () => {
     ["<~87cURD_*#4DfTZ)+T~>", "base85", "Hello, World!"],
     [">OwJh>}AQ;r@@Y?F", "base91", "Hello, World!"],
     ["caf=C3=A9", "quoted-printable", "café"],
+    ["Universit&auml;t, it&#146;s 1999", "html", "Universität, it’s 1999"],
     ["begin 644 cat.txt\n#0V%T\n`\nend\n", "uuencode", "Cat"],
   ])("puts %j first as %s", (text, encoding, decoded) => {
     expect(top(text)).toMatchObject({ encoding, text: decoded });
@@ -60,6 +61,12 @@ describe("identify", () => {
     expect(identify("SGVsbG8=").map((candidate) => candidate.encoding)).not.toContain(
       "quoted-printable",
     );
+  });
+
+  it("wants a reference with its semicolon before it calls a text HTML", () => {
+    for (const text of ["R&D and AT&T", "?a=1&copy=2", "&nosuchname;"]) {
+      expect(identify(text).map((candidate) => candidate.encoding)).not.toContain("html");
+    }
   });
 
   it("tries the alphabet options and names the one a reading needs", () => {

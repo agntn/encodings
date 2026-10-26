@@ -16,6 +16,7 @@ export const encodingFamilies = [
   "bech32",
   "uuencode",
   "quoted-printable",
+  "html",
 ] as const;
 
 /** Family of an encoding. Registered encodings may name others. */

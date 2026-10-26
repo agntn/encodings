@@ -12,6 +12,7 @@ import {
   encodingsIdentify,
   encodingsInfo,
 } from "../src/tool-operations.ts";
+import { decodeSchema, encodeSchema } from "../src/tools.ts";
 
 const openConnections: Array<{ close(): Promise<void> }> = [];
 
@@ -214,6 +215,31 @@ describe("encodings MCP server", () => {
     expect([...ALPHABETS].toSorted()).toEqual([...new Set(choices)].toSorted());
   });
 
+  it("writes HTML references with ascii and reads a Windows-1252 apostrophe", async () => {
+    expect(
+      await call("encodings_encode", {
+        encoding: "html",
+        input: "café <3",
+        options: { ascii: true },
+      }),
+    ).toBe("html (8 bytes):\ncaf&#xE9; &lt;3");
+    expect(await call("encodings_decode", { encoding: "entities", text: "it&#146;s" })).toBe(
+      'html → 6 bytes as utf8:\n"it’s"',
+    );
+  });
+
+  it("offers in the schema every option an encoding writes or reads with", () => {
+    const writes = Object.keys(encodeSchema.properties.options.properties);
+    const reads = Object.keys(decodeSchema.properties.options.properties);
+    for (const info of encodingInfos()) {
+      for (const option of info.options) {
+        const label = `${info.name} ${option.name}`;
+        if (option.narrows !== true) expect(writes, label).toContain(option.name);
+        if (option.decode === true) expect(reads, label).toContain(option.name);
+      }
+    }
+  });
+
   it("offers in the schema every code page the library has, after utf8, hex and base64", () => {
     expect(CHARSET_FORMATS).toEqual(["utf8", "hex", "base64", ...CODE_PAGES]);
   });
@@ -241,7 +267,7 @@ describe("encodings MCP server", () => {
   });
 
   it("lists encodings and shows one", async () => {
-    expect((await call("encodings_info", {})).split("\n")).toHaveLength(14);
+    expect((await call("encodings_info", {})).split("\n")).toHaveLength(15);
     expect(await call("encodings_info", { encoding: "base32" })).toContain(
       'alphabet (string, default "standard", decode too)',
     );

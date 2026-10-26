@@ -1,5 +1,6 @@
 import { TextWriter, requireBytes, requireText } from "./bytes.ts";
 import { DecodeError, InvalidOptionError, named } from "./errors.ts";
+import { WINDOWS1252_C1 } from "./windows1252.ts";
 
 /** IBM EBCDIC 037, 273, 500, 1140 and 1141 (037 and 273 with €), ISO 8859-1 and Windows-1252. */
 export const CODE_PAGES = [
@@ -45,9 +46,6 @@ const IBM500 =
 
 /** ISO 8859-1: every byte is the code point of the same number. */
 const LATIN1 = String.fromCodePoint(...Array.from({ length: 256 }, (_, byte) => byte));
-
-/** Windows-1252 bytes 0x80 to 0x9F as WHATWG reads them; the rest is Latin-1. */
-const WINDOWS1252_C1 = "€\u0081‚ƒ„…†‡ˆ‰Š‹Œ\u008DŽ\u008F\u0090‘’“”•–—˜™š›œ\u009DžŸ";
 
 /**
  * Puts the euro sign on byte 0x9F, which is how IBM made 1140 from 037 and 1141 from 273.

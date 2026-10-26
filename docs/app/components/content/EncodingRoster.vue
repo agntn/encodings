@@ -15,8 +15,8 @@ interface Row {
   readonly label: string;
   /** Characters in the alphabet. */
   readonly alphabet: number;
-  /** Percent longer than the bytes, measured on pseudo-random input. */
-  readonly overhead: number;
+  /** Percent longer than the bytes, measured on pseudo-random input; none for text only. */
+  readonly overhead: number | undefined;
   readonly checksum: string;
   readonly required: readonly string[];
   readonly optional: readonly string[];
@@ -63,6 +63,7 @@ const allColumns: TableColumn<Row>[] = [
     accessorKey: "overhead",
     header: "Overhead",
     sortingFn: "basic",
+    sortUndefined: "last",
     meta: { class: { th: "w-[6.5rem]" } },
   },
   {
@@ -137,9 +138,10 @@ const order = computed(() => {
       </template>
       <template #overhead-cell="{ row }">
         <span class="whitespace-nowrap text-highlighted"
-          ><span class="@min-[52rem]/roster:hidden text-dimmed">overhead </span>+{{
-            row.original.overhead
-          }}%</span
+          ><span class="@min-[52rem]/roster:hidden text-dimmed">overhead </span
+          ><template v-if="row.original.overhead === undefined"
+            ><span class="text-dimmed">text only</span></template
+          ><template v-else>+{{ row.original.overhead }}%</template></span
         >
       </template>
       <template #checksum-cell="{ row }">

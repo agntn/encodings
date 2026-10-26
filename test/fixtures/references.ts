@@ -15,6 +15,9 @@
  *   `jpXCZedGfVR` as eight zero bytes, where Monero's own C++ refuses the overflow.
  * - `gnupg`: GnuPG 2.4.9 `gpg --enarmor` over 100 bytes, `(i * 37 + 11) % 256`. It labels the
  *   block ARMORED FILE, adds a Comment header and still writes the CRC24.
+ * - `whatwg`: entities 8.1.0 `decodeHTML`, the text-content reading of HTML references, over
+ *   the corners of the WHATWG tokenizer: legacy names without `;`, the Windows-1252 remap,
+ *   out-of-range numbers and names that stand for two code points.
  */
 
 /** Rows keyed by encoding name; `hex` is the input. */
@@ -902,3 +905,30 @@ export const gnupg = {
   armored:
     '-----BEGIN PGP ARMORED FILE-----\nComment: Use "gpg --dearmor" for unpacking\n\nCzBVep/E6Q4zWH2ix+wRNluApcrvFDleg6jN8hc8YYar0PUaP2SJrtP4HUJnjLHW\n+yBFao+02f4jSG2St9wBJktwlbrfBClOc5i94gcsUXabwOUKL1R5nsPoDTJXfKHG\n6xA1Wg==\n=z6pb\n-----END PGP ARMORED FILE-----\n',
 } as const;
+
+export const whatwg: Readonly<Record<string, string>> = {
+  "Universit&auml;t": "Universität",
+  "it&#146;s": "it’s",
+  "&copy 2001": "© 2001",
+  "&copy2001": "©2001",
+  "&notit;": "¬it;",
+  "&notin;": "∉",
+  "AT&T": "AT&T",
+  "&ampere": "&ere",
+  "&#x;": "&#x;",
+  "&#0;": "\uFFFD",
+  "&#x110000;": "\uFFFD",
+  "&#xD800;": "\uFFFD",
+  "&#129;": "\u0081",
+  "&#x80;": "€",
+  "&#x1F600;": "😀",
+  "&#0000065;": "A",
+  "&#99999999999;": "\uFFFD",
+  "&hellip": "&hellip",
+  "&hellip;": "…",
+  "&fjlig;": "fj",
+  "&nvlt;": "<\u20D2",
+  "&NotEqualTilde;": "≂\u0338",
+  "&Amp;": "&Amp;",
+  "&;": "&;",
+};

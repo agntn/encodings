@@ -61,9 +61,11 @@ const { samples, paused, current, step } = useLandingSample();
           <p class="mt-4 text-sm leading-6 text-muted">
             Bit groups, where every character carries the same few bits. Base58, which treats the
             whole input as one huge number. Fixed blocks like Ascii85 and basE91. Bech32, where a
-            checksum catches your typos for you. And two mail formats older than most of the
-            internet. {{ spellOutCapital(CHECKSUM_COUNT) }} of them check themselves on decode. Every
-            one written from its RFC, BIP or reference code, with no codec library underneath.
+            checksum catches your typos for you. Two mail formats older than most of the internet.
+            And HTML, where an apostrophe still turns up as <code>&amp;#146;</code>, courtesy of Windows.
+            {{ spellOutCapital(CHECKSUM_COUNT) }} of them check themselves on decode. Every one
+            written from its RFC, BIP, WHATWG spec or reference code, with no codec library
+            underneath.
           </p>
           <p class="landing-entry">
             <span class="console-tag">Import</span>
