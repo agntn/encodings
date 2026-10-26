@@ -1,3 +1,4 @@
+import { isBytes } from "./bytes.ts";
 import { DecodeError, EncodingError } from "./errors.ts";
 
 /** What `rlp.encode` takes: bytes, a non-negative integer, or a list of those, nested freely. */
@@ -40,18 +41,6 @@ interface Header {
  */
 function isList(item: RlpInput): item is readonly RlpInput[] {
   return Array.isArray(item);
-}
-
-/**
- * Tells bytes from any other value by their tag, so a `Uint8Array` from another realm counts too.
- *
- * @param value - Any value.
- * @returns {boolean} Whether it is a `Uint8Array` or a subclass such as `Buffer`.
- */
-function isBytes(value: unknown): value is Uint8Array {
-  return (
-    ArrayBuffer.isView(value) && Object.prototype.toString.call(value) === "[object Uint8Array]"
-  );
 }
 
 /**

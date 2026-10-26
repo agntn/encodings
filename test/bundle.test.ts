@@ -28,6 +28,12 @@ const markers: Record<(typeof entries)[number], string> = {
   "quoted-printable": "must be escaped",
   charsets: "has no byte",
   rlp: "wraps a single byte",
+  armor: "a cleartext signed message is not armor",
+};
+
+/** Families a subpath is built on, whose code belongs in its bundle: armor is base64 inside. */
+const builtOn: Partial<Record<(typeof entries)[number], readonly string[]>> = {
+  armor: ["base64"],
 };
 
 /** Strings of the registry and `identify`, which no family subpath should load. */
@@ -82,6 +88,7 @@ describe("family subpaths", () => {
     expect(code).toContain(markers[family]);
     for (const [other, marker] of Object.entries(markers)) {
       if (other === family || markers[family].includes(marker)) continue;
+      if (builtOn[family]?.includes(other) === true) continue;
       expect(code, `${family} pulled in ${other}`).not.toContain(marker);
     }
     for (const marker of registryMarkers) expect(code).not.toContain(marker);

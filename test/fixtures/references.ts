@@ -13,6 +13,8 @@
  *   cp1141 and reads 0xBC in cp273 as U+203E where IBM and glibc have U+00AF.
  * - `monero`: monero-python 1.1.1 `monero.base58.encode`, Monero's block base58. It reads
  *   `jpXCZedGfVR` as eight zero bytes, where Monero's own C++ refuses the overflow.
+ * - `gnupg`: GnuPG 2.4.9 `gpg --enarmor` over 100 bytes, `(i * 37 + 11) % 256`. It labels the
+ *   block ARMORED FILE, adds a Comment header and still writes the CRC24.
  */
 
 /** Rows keyed by encoding name; `hex` is the input. */
@@ -894,3 +896,9 @@ export const monero: readonly VectorRow[] = [
   { hex: "06156013762879f7ffffffffff", "base58-blocks": "22222222222VtB5VXc" },
   { hex: "48656c6c6f2c204d6f6e65726f21", "base58-blocks": "D7LMXYjYZ7S1xVPgU67i" },
 ];
+
+export const gnupg = {
+  hex: "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a",
+  armored:
+    '-----BEGIN PGP ARMORED FILE-----\nComment: Use "gpg --dearmor" for unpacking\n\nCzBVep/E6Q4zWH2ix+wRNluApcrvFDleg6jN8hc8YYar0PUaP2SJrtP4HUJnjLHW\n+yBFao+02f4jSG2St9wBJktwlbrfBClOc5i94gcsUXabwOUKL1R5nsPoDTJXfKHG\n6xA1Wg==\n=z6pb\n-----END PGP ARMORED FILE-----\n',
+} as const;

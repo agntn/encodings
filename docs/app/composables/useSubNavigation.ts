@@ -9,6 +9,7 @@ const NAV_ICONS: Record<string, string> = {
   "/guide/identify": "i-lucide-scan-search",
   "/guide/code-pages": "i-lucide-languages",
   "/guide/rlp": "i-lucide-list-tree",
+  "/guide/armor": "i-lucide-file-key",
   "/guide/cli": "i-lucide-terminal",
   "/guide/agents": "i-lucide-bot",
   "/guide/custom": "i-lucide-plus",
