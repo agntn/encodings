@@ -103,21 +103,23 @@ That's most of it, really. Strings go in as UTF-8, bytes come out as `Uint8Array
 
 ## 🗂️ Encodings
 
-| Encoding                       | Variants as options                                   |
-| ------------------------------ | ----------------------------------------------------- |
-| `binary`                       | `symbols`, `bits`, `order`: `msb`, `lsb`              |
-| `octal`, `decimal`, `hex`      |                                                       |
-| `base32`                       | `alphabet`: `standard`, `hex`, `crockford`, `z`       |
-| `base45`                       |                                                       |
-| `base58`                       | `alphabet`: `bitcoin`, `flickr`, `ripple`; `check`    |
-| `base64`                       | `alphabet`: `standard`, `url`                         |
-| `base85`                       | `alphabet`: `rfc1924`, `ascii85`, `z85`               |
-| `base91`                       |                                                       |
-| `base256`                      | `alphabet`: `emoji`; `multibase`, `symbols`, `sample` |
-| `bech32`                       | `m` for Bech32m                                       |
-| `uuencode`, `quoted-printable` |                                                       |
+| Encoding                       | Variants as options                                          |
+| ------------------------------ | ------------------------------------------------------------ |
+| `binary`                       | `symbols`, `bits`, `order`: `msb`, `lsb`                     |
+| `octal`, `decimal`, `hex`      |                                                              |
+| `base32`                       | `alphabet`: `standard`, `hex`, `crockford`, `z`              |
+| `base45`                       |                                                              |
+| `base58`                       | `alphabet`: `bitcoin`, `flickr`, `ripple`; `check`, `blocks` |
+| `base64`                       | `alphabet`: `standard`, `url`                                |
+| `base85`                       | `alphabet`: `rfc1924`, `ascii85`, `z85`                      |
+| `base91`                       |                                                              |
+| `base256`                      | `alphabet`: `emoji`; `multibase`, `symbols`, `sample`        |
+| `bech32`                       | `m` for Bech32m                                              |
+| `uuencode`, `quoted-printable` |                                                              |
 
-Base58Check is `base58` with `check`. z-base-32 is `base32` with `alphabet: "z"`. Got a puzzle in card suits or runes? `base256` takes your own table as `symbols`, or reads its order off a `sample`, and gives you the digits. Decoding takes the same options, so a variant reads back the way it was written. Each family is also a subpath, like `@agntn/encodings/base58`. Alphabets, overhead and options per encoding are on [the encodings page](https://encodings.agntn.dev/encodings).
+Base58Check is `base58` with `check`. Monero's addresses are `base58` with `blocks`. z-base-32 is `base32` with `alphabet: "z"`. Decoding takes the same options, so a variant reads back the way it was written.
+
+Got a puzzle in card suits or runes? `base256` takes your own table as `symbols`, or reads its order off a `sample`, and gives you the digits. Each family is also a subpath, like `@agntn/encodings/base58`. Alphabets, overhead and options per encoding are on [the encodings page](https://encodings.agntn.dev/encodings).
 
 EBCDIC isn't an encoding, it's a different alphabet for the same bytes. So `charsets` sits outside the registry, on `@agntn/encodings/charsets`. `charsets.toText(bytes, { codepage: "ibm037" })` and back with `fromText`. [Code pages](https://encodings.agntn.dev/guide/code-pages).
 

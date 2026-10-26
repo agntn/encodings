@@ -35,7 +35,14 @@ import { keccak256 } from "@agntn/hashes/keccak";
 import { sha256 } from "@agntn/hashes/sha2";
 import { createBase58, createBase58check, type Base58Options } from "../src/base58.ts";
 import { fromWords, fromWordsUnsafe, toWords } from "../src/bech32.ts";
-import { base58checkVariants, codePages, gsmg, javascript, python } from "./fixtures/references.ts";
+import {
+  base58checkVariants,
+  codePages,
+  gsmg,
+  javascript,
+  monero,
+  python,
+} from "./fixtures/references.ts";
 import { rlpInvalid, rlpValid, type RlpVector } from "./fixtures/rlp.ts";
 
 const text = (value: string) => new TextEncoder().encode(value);
@@ -117,6 +124,12 @@ const z85 = {
   decode: (encoded: string) => base85.decode(encoded, { alphabet: "z85" }),
 };
 
+/* base58 in Monero's blocks. */
+const base58blocks = {
+  encode: (bytes: Uint8Array) => base58.encode(bytes, { blocks: true }),
+  decode: (encoded: string) => base58.decode(encoded, { blocks: true }),
+};
+
 /* base64 with the URL alphabet, unpadded as JWT writes it. */
 const base64url = {
   encode: (bytes: Uint8Array) => base64.encode(bytes, { alphabet: "url", padding: false }),
@@ -128,6 +141,7 @@ describe("frozen outputs of independent implementations", () => {
     base58,
     "base58-flickr": base58flickr,
     "base58-ripple": base58ripple,
+    "base58-blocks": base58blocks,
     base91,
     base256,
     "base32-crockford": base32crockford,
@@ -147,7 +161,7 @@ describe("frozen outputs of independent implementations", () => {
     );
   });
 
-  it.each([...javascript, ...python])("matches row $hex", (row) => {
+  it.each([...javascript, ...python, ...monero])("matches row $hex", (row) => {
     const bytes = hex.decode(row["hex"]!);
     for (const [name, codec] of Object.entries(codecs)) {
       const expected = row[name];
@@ -537,6 +551,58 @@ describe("createBase58check", () => {
     );
     const short = createBase58check((bytes) => sha256(bytes).subarray(0, 3));
     expect(() => short.encode(new Uint8Array(1))).toThrow("must return at least 4 bytes");
+  });
+});
+
+describe("base58 with blocks", () => {
+  /* The Monero General Fund address, a 0x12 network byte, two keys and a Keccak checksum. */
+  const FUND =
+    "44AFFq5kSiGBoZ4NMDwYtN18obc8AemS33DBLWs3H7otXft3XjrpDtQGv7SqSsaBYBb98uNbr2VBBEt7f2wfn3RVGQBEP3A";
+
+  it("reads a real Monero address whose Keccak checksum then matches", () => {
+    const bytes = base58blocks.decode(FUND);
+    expect(bytes).toHaveLength(69);
+    expect(bytes[0]).toBe(0x12);
+    expect(bytes.subarray(65)).toEqual(keccak256(bytes.subarray(0, 65)).subarray(0, 4));
+    expect(base58blocks.encode(bytes)).toBe(FUND);
+  });
+
+  it("writes the length from the byte count alone", () => {
+    expect(base58blocks.encode(new Uint8Array(69))).toBe("1".repeat(95));
+    expect(hex.encode(base58blocks.decode("1".repeat(95)))).toBe("00".repeat(69));
+    expect(base58.encode(new Uint8Array(2), { blocks: true, alphabet: "ripple" })).toBe("rrr");
+  });
+
+  it("refuses an overflowing block and a last block no byte count writes", () => {
+    expect(() => base58blocks.decode("jpXCZedGfVR")).toThrow(
+      "base58: the block at index 0 overflows its 8 bytes",
+    );
+    expect(() => base58blocks.decode("11111111111zz")).toThrow("block at index 11 overflows");
+    for (const text of ["1", "1111", "1111111111111111111"]) {
+      expect(() => base58blocks.decode(text), text).toThrow("no byte count writes a last block");
+    }
+  });
+
+  it("points at a bad character in the whole text, not in its block", () => {
+    expect(() => base58blocks.decode("11111111111110")).toThrow(
+      expect.objectContaining({
+        message: 'base58: "0" (U+0030) at index 13 is not in the alphabet',
+        index: 13,
+      }),
+    );
+    expect(() => base58blocks.decode("1111111111\u{1F600}")).toThrow(
+      expect.objectContaining({
+        message: 'base58: "\u{1F600}" (U+1F600) at index 10 is not in the alphabet',
+        index: 10,
+      }),
+    );
+  });
+
+  it("sums the payload with check before cutting it into blocks", () => {
+    const options = { blocks: true, check: true } as const;
+    const written = base58.encode(text("monero"), options);
+    expect(written).toHaveLength(14);
+    expect(base58.decode(written, options)).toEqual(text("monero"));
   });
 });
 
