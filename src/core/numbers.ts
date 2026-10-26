@@ -1,3 +1,4 @@
+import { requireBytes, requireText } from "./bytes.ts";
 import { DecodeError, named } from "./errors.ts";
 
 /** Options for writing bytes as numbers. */
@@ -103,6 +104,7 @@ function bytesOf(numbers: Readonly<Numbers>, token: string, start: number): numb
 export function createNumbers(numbers: Readonly<Numbers>): NumbersCodec {
   return {
     encode(bytes, options = {}) {
+      requireBytes(`${numbers.name}: encode`, bytes);
       const separate = options.separate !== false;
       const values = Array.from(bytes, (byte) => {
         const digits = byte.toString(numbers.radix);
@@ -111,6 +113,7 @@ export function createNumbers(numbers: Readonly<Numbers>): NumbersCodec {
       return values.join(separate ? " " : "");
     },
     decode(text) {
+      requireText(`${numbers.name}: decode`, text);
       const out: number[] = [];
       for (const match of text.matchAll(/[^\t\n\f\r ,]+/gu)) {
         out.push(...bytesOf(numbers, match[0], match.index));

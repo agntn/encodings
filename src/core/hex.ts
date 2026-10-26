@@ -1,4 +1,4 @@
-import { ASCII_WHITESPACE, TextWriter, inputIndex } from "./bytes.ts";
+import { ASCII_WHITESPACE, TextWriter, inputIndex, requireBytes, requireText } from "./bytes.ts";
 import { DecodeError, named } from "./errors.ts";
 
 /** Options for hex output. */
@@ -30,6 +30,7 @@ export const hex = {
    * @returns {string} Two digits per byte.
    */
   encode(bytes: Uint8Array, options: Readonly<HexEncodeOptions> = {}): string {
+    requireBytes("hex: encode", bytes);
     const digits = options.upper ? UPPER : LOWER;
     const out = new TextWriter(bytes.length * 2);
     for (const byte of bytes) {
@@ -46,6 +47,7 @@ export const hex = {
    * @returns {Uint8Array} The bytes.
    */
   decode(text: string): Uint8Array {
+    requireText("hex: decode", text);
     let body = text.replaceAll(ASCII_WHITESPACE, "");
     const prefix = /^0x/iu.test(body) ? 2 : 0;
     body = body.slice(prefix);

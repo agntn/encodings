@@ -1,4 +1,4 @@
-import { MAX_SYMBOL, graphemes } from "./bytes.ts";
+import { MAX_SYMBOL, graphemes, requireBytes, requireText } from "./bytes.ts";
 import { DecodeError, EncodingError, InvalidOptionError, named } from "./errors.ts";
 
 /** Which bit of a byte the text writes first. */
@@ -121,6 +121,7 @@ export const binary = {
    * @returns {string} One group of bits per byte.
    */
   encode(bytes: Uint8Array, options: Readonly<BinaryEncodeOptions> = {}): string {
+    requireBytes("binary: encode", bytes);
     const { zero, one, bits, lsb } = layout(options);
     const spelled = Array.from({ length: 2 ** bits }, (_, value) => {
       const digits = Array.from(value.toString(2).padStart(bits, "0"));
@@ -147,6 +148,7 @@ export const binary = {
    * @returns {Uint8Array} The bytes.
    */
   decode(text: string, options: Readonly<BinaryOptions> = {}): Uint8Array {
+    requireText("binary: decode", text);
     const checked = layout(options);
     const { bits, lsb } = checked;
     const read = bitsOf(text, checked);

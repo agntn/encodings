@@ -1,6 +1,13 @@
 import { sha256 } from "@agntn/hashes/sha2";
 import { byAlphabet } from "./alphabets.ts";
-import { TextWriter, alphabetIndex, concat, equalBytes } from "./bytes.ts";
+import {
+  TextWriter,
+  alphabetIndex,
+  concat,
+  equalBytes,
+  requireBytes,
+  requireText,
+} from "./bytes.ts";
 import { ChecksumError, DecodeError, InvalidOptionError, named } from "./errors.ts";
 
 /** A codec over one base58 alphabet, with no options. */
@@ -48,6 +55,7 @@ function base58Codec(name: string, alphabet: string): Base58CheckCodec {
 
   return {
     encode(bytes) {
+      requireBytes(`${name}: encode`, bytes);
       let zeros = 0;
       while (zeros < bytes.length && bytes[zeros] === 0) zeros++;
       /** Base-58 digits, least significant first. */
@@ -73,6 +81,7 @@ function base58Codec(name: string, alphabet: string): Base58CheckCodec {
     },
 
     decode(text) {
+      requireText(`${name}: decode`, text);
       let zeros = 0;
       while (zeros < text.length && text[zeros] === zero) zeros++;
       /** Bytes, least significant first. */
@@ -147,10 +156,12 @@ function withChecksum(
 
   return {
     encode(payload) {
+      requireBytes(`${name}: encode`, payload);
       return codec.encode(concat(payload, checksum(payload)));
     },
 
     decode(text) {
+      requireText(`${name}: decode`, text);
       const bytes = codec.decode(text);
       if (bytes.length < 4) {
         throw new DecodeError(name, `${bytes.length} bytes leave no room for a checksum`);
@@ -255,6 +266,7 @@ function blockCodec(name: string, alphabet: string): Base58CheckCodec {
 
   return {
     encode(bytes) {
+      requireBytes(`${name}: encode`, bytes);
       const full = Math.floor(bytes.length / BLOCK_BYTES);
       const out = new TextWriter(full * BLOCK_CHARS + BLOCK_WIDTHS[bytes.length % BLOCK_BYTES]!);
       for (let start = 0; start < bytes.length; start += BLOCK_BYTES) {
@@ -267,6 +279,7 @@ function blockCodec(name: string, alphabet: string): Base58CheckCodec {
     },
 
     decode(text) {
+      requireText(`${name}: decode`, text);
       checkCharacters(text);
       const full = Math.floor(text.length / BLOCK_CHARS);
       const last = BLOCK_WIDTHS.indexOf(text.length % BLOCK_CHARS);

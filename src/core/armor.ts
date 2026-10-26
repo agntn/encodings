@@ -1,6 +1,6 @@
 import { base64 } from "./base64.ts";
-import { equalBytes, isBytes } from "./bytes.ts";
-import { DecodeError, EncodingError, InvalidOptionError, shown } from "./errors.ts";
+import { equalBytes, requireBytes, requireText } from "./bytes.ts";
+import { DecodeError, InvalidOptionError, shown } from "./errors.ts";
 
 /** Base64 characters a line, as GnuPG writes them and as the samples in RFC 9580 appendix A do. */
 const LINE_LENGTH = 64;
@@ -349,7 +349,7 @@ export const armor = {
    * @throws {EncodingError} When `bytes` are not bytes or an option is invalid.
    */
   encode(bytes: Uint8Array, options: Readonly<ArmorEncodeOptions>): string {
-    if (!isBytes(bytes)) throw new EncodingError(`armor: encode takes bytes, got ${typeof bytes}`);
+    requireBytes("armor: encode", bytes);
     const { label, headers, checksum } = encodeOptions(options);
     const lines = [`-----BEGIN PGP ${label}-----`, ...headers, "", ...wrap(base64.encode(bytes))];
     if (checksum) lines.push(`=${base64.encode(crc24(bytes))}`);
@@ -366,8 +366,7 @@ export const armor = {
    * @throws {EncodingError} When there is no block, it is cut short or its data is not base64.
    */
   decode(text: string, options: Readonly<ArmorDecodeOptions> = {}): ArmorBlock {
-    if (typeof text !== "string")
-      throw new EncodingError(`armor: decode takes text, got ${typeof text}`);
+    requireText("armor: decode", text);
     const wanted = options.label === undefined ? undefined : checkLabel(options.label);
     const lines = text.split(/\r?\n/u).map((line) => unpad(line));
     const { index, label } = findBegin(lines, wanted);

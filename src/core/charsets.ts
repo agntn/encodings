@@ -1,4 +1,4 @@
-import { TextWriter } from "./bytes.ts";
+import { TextWriter, requireBytes, requireText } from "./bytes.ts";
 import { DecodeError, InvalidOptionError, named } from "./errors.ts";
 
 /** IBM EBCDIC 037, 273, 500, 1140 and 1141 (037 and 273 with €), ISO 8859-1 and Windows-1252. */
@@ -96,6 +96,7 @@ export const charsets = {
    * @returns {string} One character per byte.
    */
   toText(bytes: Uint8Array, options: CharsetOptions): string {
+    requireBytes("charsets: toText", bytes);
     const { table } = lookup(options);
     const out = new TextWriter(bytes.length);
     for (const byte of bytes) out.point(table.codePointAt(byte)!);
@@ -110,6 +111,7 @@ export const charsets = {
    * @returns {Uint8Array} One byte per character.
    */
   fromText(text: string, options: CharsetOptions): Uint8Array {
+    requireText("charsets: fromText", text);
     const { name, table } = lookup(options);
     const bytes = new Map(table.split("").map((character, byte) => [character, byte] as const));
     const out: number[] = [];

@@ -217,6 +217,11 @@ describe("peel", () => {
   const layers = (text: string) =>
     peel(text).map((layer) => [layer.encoding, layer.confirmed, layer.text ?? ""]);
 
+  it("refuses anything but text, as identify does, instead of finding nothing", () => {
+    expect(() => identify(null as never)).toThrow("identify takes text, got null");
+    expect(() => peel(Uint8Array.of(1) as never)).toThrow("peel takes text, got object");
+  });
+
   it("takes off every layer down to the text, outermost first", () => {
     const base64 = encode("base64", "The quick brown fox");
     const stacked = encode("base85", encode("binary", encode("hex", base64)));

@@ -1,3 +1,5 @@
+import { EncodingError } from "./errors.ts";
+
 /** Text or bytes to encode. A string is read as UTF-8. */
 export type BytesInput = string | Uint8Array;
 
@@ -24,6 +26,44 @@ export function isBytes(value: unknown): value is Uint8Array {
   return (
     ArrayBuffer.isView(value) && Object.prototype.toString.call(value) === "[object Uint8Array]"
   );
+}
+
+/**
+ * Names the type of a caller's value for an error, `null` and arrays included.
+ *
+ * @param value - Any value.
+ * @returns {string} Such as `string`, `null` or `array`.
+ */
+export function typeName(value: unknown): string {
+  if (value === null) return "null";
+  return Array.isArray(value) ? "array" : typeof value;
+}
+
+/**
+ * Refuses anything but bytes, where an untyped string would otherwise encode as zeros.
+ *
+ * @param where - The codec and operation, such as `hex: encode`.
+ * @param value - What the caller passed.
+ * @throws {EncodingError} When `value` is not a `Uint8Array`.
+ */
+export function requireBytes(where: string, value: unknown): asserts value is Uint8Array {
+  if (isBytes(value)) return;
+  const hint =
+    typeof value === "string" ? "; turn the string into bytes first, such as with TextEncoder" : "";
+  throw new EncodingError(`${where} takes bytes, got ${typeName(value)}${hint}`);
+}
+
+/**
+ * Refuses anything but a string from a caller without types.
+ *
+ * @param where - The codec and operation, such as `hex: decode`.
+ * @param value - What the caller passed.
+ * @throws {EncodingError} When `value` is not a string.
+ */
+export function requireText(where: string, value: unknown): asserts value is string {
+  if (typeof value !== "string") {
+    throw new EncodingError(`${where} takes text, got ${typeName(value)}`);
+  }
 }
 
 /**

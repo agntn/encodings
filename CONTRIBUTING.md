@@ -14,6 +14,7 @@ Serving `encodings mcp` from your checkout? The built bin loads that command fro
 - A new codec gets a spec vector in `test/codecs.test.ts`. If another implementation exists, freeze its output in `test/fixtures/references.ts` too, with its name and version.
 - Strict where the spec is strict, lenient where real text gets wrapped. Every leniency has its own test.
 - Bad input throws an `EncodingError` subclass, never a plain `RangeError`. The CLI and the MCP server turn only those into one clean line. Values from the input reach a message through `named()`, `shown()` or `quote()`.
+- Input of the wrong type gets the same treatment. Every `encode` and `decode` opens with `requireBytes` or `requireText`. Skip it and an untyped string slips into an encoder and comes out as zeros.
 - A variant is an option of its family, not an encoding. A new alphabet goes into its `choices` and into `ALPHABETS` in `src/tool-contract.ts`, and `test/mcp.test.ts` checks the two agree.
 - A code page names the character each byte already is, so `charsets` stays out of the registry and `identify` never guesses one. Ori's call, settled in #12.
 

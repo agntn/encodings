@@ -1,4 +1,4 @@
-import { TextWriter, alphabetIndex } from "./bytes.ts";
+import { TextWriter, alphabetIndex, requireBytes, requireText } from "./bytes.ts";
 import { byAlphabet } from "./alphabets.ts";
 import { DecodeError, EncodingError, InvalidOptionError, named } from "./errors.ts";
 
@@ -238,6 +238,7 @@ const VARIANTS: Readonly<Record<Base85Alphabet, Variant>> = {
  */
 export const base85: Base85Codec = {
   encode(bytes, options = {}) {
+    requireBytes("base85: encode", bytes);
     const alphabet = options.alphabet ?? "rfc1924";
     const text = byAlphabet(VARIANTS, alphabet, "rfc1924").encode(bytes);
     if (options.delimiters !== true) return text;
@@ -246,5 +247,8 @@ export const base85: Base85Codec = {
     }
     return `<~${text}~>`;
   },
-  decode: (text, options = {}) => byAlphabet(VARIANTS, options.alphabet, "rfc1924").decode(text),
+  decode(text, options = {}) {
+    requireText("base85: decode", text);
+    return byAlphabet(VARIANTS, options.alphabet, "rfc1924").decode(text);
+  },
 };
