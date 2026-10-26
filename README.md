@@ -46,9 +46,12 @@ npx @agntn/encodings identify 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa -n 3
 ```
 
 ```
-0.574  base58 --check              0062e907b15cbf27d5425399ebf6f0fb50ebb88f18  (checksum matches)
-0.043  base32 --alphabet=crockford 0a83fb05d62de0e7844da5b4fd04b90d3676876faa
-0.024  base58                      0062e907b15cbf27d5425399ebf6f0fb50ebb88f18c29b7d93
+1. base58 (check) 0.574; checksum matches
+   21 bytes, hex 0062e907b15cbf27d5425399ebf6f0fb50ebb88f18
+2. base32 (alphabet=crockford) 0.043
+   21 bytes, hex 0a83fb05d62de0e7844da5b4fd04b90d3676876faa
+3. base58 0.024
+   25 bytes, hex 0062e907b15cbf27d5425399ebf6f0fb50ebb88f18c29b7d93
 ```
 
 The genesis address. Version byte `00`, then Satoshi's HASH160. The bare `encodings` below is `pnpm exec encodings` after a local install, or once `pnpm add -g @agntn/encodings`.

@@ -34,18 +34,12 @@ catalogs:
     better-sqlite3:
       specifier: 12.11.1
       version: 12.11.1
-    citty:
-      specifier: 0.2.2
-      version: 0.2.2
     docus:
       specifier: 5.15.0
       version: 5.15.0
     nuxt:
       specifier: 4.6.2
       version: 4.6.2
-    scule:
-      specifier: 1.3.0
-      version: 1.3.0
     ufo:
       specifier: 1.6.4
       version: 1.6.4
@@ -121,12 +115,6 @@ importers:
       '@modelcontextprotocol/server':
         specifier: catalog:deps
         version: 2.2.0
-      citty:
-        specifier: catalog:deps
-        version: 0.2.2
-      scule:
-        specifier: catalog:deps
-        version: 1.3.0
     devDependencies:
       '@agntn/ox':
         specifier: catalog:dev

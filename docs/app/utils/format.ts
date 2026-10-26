@@ -27,12 +27,9 @@ export function commandLine(
     : [command, ...words, ...set].join(" ");
 }
 
-/** Texts the CLI never takes as an argument: `-` is stdin, and help wins even after `--`. */
-const PIPED = new Set(["-", "-h", "--help"]);
-
-/** A line with one typed text, piped in when the argument would mean something else. */
+/** A line with one typed text, piped in when it is `-`, which the CLI reads as stdin. */
 export function textLine(command: string, text: string, flags: readonly string[] = []): string {
-  return PIPED.has(text)
+  return text === "-"
     ? `printf %s ${text} | ${commandLine(command, ["-"], flags)}`
     : commandLine(command, [text], flags);
 }

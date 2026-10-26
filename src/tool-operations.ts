@@ -499,8 +499,22 @@ export function encodingsIdentify(
   if (typeof peeling !== "boolean") {
     throw new InvalidOptionError("peel", peeling, "must be a boolean");
   }
-  const limit = identifyLimit(params["limit"], peeling);
-  if (peeling) return peeled(text, limit);
+  return identifyAnswer(text, { peel: peeling, limit: identifyLimit(params["limit"], peeling) });
+}
+
+/**
+ * The answer of `encodings_identify` for checked arguments; the CLI calls it without the tool's caps.
+ *
+ * @param text - The text.
+ * @param options - Whether to peel, and the most candidates or layers.
+ * @returns {ToolResult<IdentifyDetails>} Candidates best first, or layers outermost first.
+ */
+export function identifyAnswer(
+  text: string,
+  options: Readonly<{ peel: boolean; limit: number }>,
+): ToolResult<IdentifyDetails> {
+  const { limit } = options;
+  if (options.peel) return peeled(text, limit);
   const candidates = identify(text, { limit }).map((candidate) => shownCandidate(candidate));
   const body =
     candidates.length === 0

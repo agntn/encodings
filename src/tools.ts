@@ -306,6 +306,12 @@ export const infoTool = defineTool({
   guidelines: [`Filter by family: ${encodingFamilies.join(", ")}.`],
   effect: "read",
   input: infoSchema,
+  cli: {
+    command: "list",
+    description: "List the encodings, or show one with its alphabet and options",
+    positional: ["encoding"],
+    plain: ["encoding"],
+  },
   execute: async (params) => (await loadOperations()).encodingsInfo(params),
 });
 
@@ -323,6 +329,7 @@ export const charsetConvertTool = defineTool({
   ],
   effect: "read",
   input: charsetConvertSchema,
+  cli: { command: "convert" },
   execute: async (params) => (await loadOperations()).encodingsCharsetConvert(params),
 });
 

@@ -41,14 +41,18 @@ function runWith(input: string | Uint8Array | undefined, ...args: readonly strin
 
 /** Every test here starts a handful of CLI processes, which ran 4.7 s of 5 on a CI runner. */
 describe("encodings CLI", { timeout: 20_000 }, () => {
-  it("prints the usage and citty's errors without colors into a pipe", () => {
+  it("prints the usage and its errors without colors into a pipe", () => {
     const help = run("--help");
     const usage = run("encode", "--help");
     const unknown = run("nope");
 
-    expect(help.stdout).toContain("USAGE encodings encode|decode|identify|convert|list|mcp");
-    expect(usage.stdout).toContain("ENCODING");
-    expect(unknown).toMatchObject({ code: 1, stderr: "Unknown command nope\n" });
+    expect(help.stdout).toMatch(/^ {2}encode {4}Write text or bytes in an encoding$/mu);
+    expect(help.stdout).toMatch(/^ {2}mcp {7}Run the encodings MCP server over stdio$/mu);
+    expect(usage.stdout).toContain("USAGE encodings encode [OPTIONS] <ENCODING> <INPUT>");
+    expect(unknown).toMatchObject({
+      code: 1,
+      stderr: 'Unknown command "nope"\nRun encodings --help for the commands\n',
+    });
     for (const output of [help, usage, unknown]) {
       expect(output.stdout + output.stderr).not.toContain("\u001B");
     }
@@ -69,6 +73,7 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
     expect(runWith("Hi", "encode", "binary", "-", "--no-separate").stdout).toBe(
       "0100100001101001\n",
     );
+    expect(runWith(Uint8Array.of(0xff, 0x00), "encode", "hex", "-").stdout).toBe("ff00\n");
     expect(run("encode", "hex", "A", "--upper").stdout).toBe("41\n");
     expect(run("encode", "base32", "f", "--no-padding").stdout).toBe("MY\n");
     expect(run("encode", "base32", "f", "--alphabet", "hex").stdout).toBe("CO======\n");
@@ -94,14 +99,20 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
     expect(run("encode", "binary", "Hi", "--bits", "7", "--symbols", "ab").stdout).toBe(
       "baabaaa bbabaab\n",
     );
-    expect(run("decode", "binary", "0", "--bits", "seven")).toMatchObject({
-      code: 1,
-      stderr: "Invalid option bits=seven: must be an integer\n",
-    });
     expect(run("decode", "base64", "__s", "--alphabet", "url", "-o", "hex").stdout).toBe("fffb\n");
     expect(run("decode", "base85", "<~z~>", "--alphabet", "ascii85", "-o", "hex").stdout).toBe(
       "00000000\n",
     );
+    const taproot = run("encode", "bech32", "hi", "--prefix", "test", "--m").stdout.trim();
+    expect(run("decode", "bech32", taproot, "--m").stdout).toBe("hi");
+    expect(run("encode", "bech32", "hi", "--prefix", "test").stdout).toMatch(/^test1/u);
+  });
+
+  it("refuses an option the encoding does not take, or a value it cannot use", () => {
+    expect(run("decode", "binary", "0", "--bits", "seven")).toMatchObject({
+      code: 1,
+      stderr: "Invalid arguments at --bits: must be integer\n",
+    });
     expect(run("decode", "base58", "2g", "--alphabet", "z")).toMatchObject({
       code: 1,
       stdout: "",
@@ -111,14 +122,17 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
       code: 1,
       stderr: "Invalid option check=true: base32 does not take it\n",
     });
-    const taproot = run("encode", "bech32", "hi", "--prefix", "test", "--m").stdout.trim();
-    expect(run("decode", "bech32", taproot, "--m").stdout).toBe("hi");
-    expect(run("encode", "bech32", "hi", "--prefix", "test").stdout).toMatch(/^test1/u);
+    expect(run("encode", "base64", "x", "--prefix", "bc")).toMatchObject({
+      code: 1,
+      stderr: "Invalid option prefix=bc: base64 does not take it\n",
+    });
+    expect(run("decode", "base64", "SGk=", "--padding")).toMatchObject({ code: 1, stdout: "" });
   });
 
   it("writes decoded bytes raw, or as hex with the details on stderr", () => {
     expect(run("decode", "base64", "SGVsbG8=")).toMatchObject({ code: 0, stdout: "Hello" });
     expect(runWith("SGVsbG8=\n", "decode", "base64", "-").stdout).toBe("Hello");
+    expect(runWith("AP8=\n", "decode", "base64", "-").stdout).toBe("\u0000\uFFFD");
     expect(
       run("decode", "bech32", "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4", "-o", "hex"),
     ).toMatchObject({
@@ -126,27 +140,49 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
       stdout: "751e76e8199196d454941c45d1b3a323f1433bd6\n",
       stderr: "prefix: bc\nwitnessVersion: 0\n",
     });
+    expect(run("decode", "hex", "6869", "-o", "base64").stdout).toBe("aGk=\n");
   });
 
-  it("ranks candidates, one per line", () => {
+  it("ranks candidates, one per entry, and fails when nothing decodes", () => {
     const { code, stdout } = run("identify", "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa", "-n", "2");
     expect(code).toBe(0);
-    expect(stdout.split("\n")[0]).toMatch(/^0\.\d{3} {2}base58 --check {14}/u);
-    expect(stdout.trim().split("\n")).toHaveLength(2);
+    expect(stdout.split("\n")[0]).toMatch(/^1\. base58 \(check\) 0\.\d{3}; checksum matches$/u);
+    expect(stdout.split("\n").filter((line) => /^\d+\. /u.test(line))).toHaveLength(2);
+    expect(runWith("SGk=\n", "identify", "-", "-n", "1").stdout).toContain('2 bytes, text "Hi"\n');
+    expect(run("identify", "€€€")).toMatchObject({
+      code: 1,
+      stdout: "",
+      stderr: "No encoding decodes this text to anything but itself.\n",
+    });
+  });
+
+  it("identifies past the caps the agent tool keeps", () => {
+    const long = runWith("SGk=".padEnd(150_000, " "), "identify", "-", "-n", "1");
+    expect(long).toMatchObject({ code: 0, stderr: "" });
+    expect(long.stdout).toContain('2 bytes, text "Hi"');
+    expect(run("identify", "SGk=", "-n", "25")).toMatchObject({ code: 0, stderr: "" });
+  });
+
+  it("prints the candidates as JSON with --json", () => {
+    const { code, stdout } = run("identify", "SGk=", "-n", "1", "--json");
+    expect(code).toBe(0);
+    expect(JSON.parse(stdout)).toMatchObject({ candidates: [{ encoding: "base64", text: "Hi" }] });
   });
 
   it("peels layers, outermost first, and says when there is none", () => {
     const { code, stdout } = run("identify", "--peel", "553246736447566b58312b786c723668");
     expect(code).toBe(0);
-    expect(stdout.split("\n")[0]).toMatch(/^0\.\d{3} {2}hex {25}"U2FsdGVkX1\+xlr6h"/u);
-    expect(stdout.split("\n")[1]).toMatch(/^0\.\d{3} {2}base64 .*\(unconfirmed guess\)$/u);
-    expect(
-      run("identify", "--peel", "553246736447566b58312b786c723668", "-n", "1")
-        .stdout.trim()
-        .split("\n"),
-    ).toHaveLength(1);
+    const [heading, first, text] = stdout.split("\n");
+    expect(heading).toBe("2 layers, outermost first:");
+    expect(first).toMatch(/^1\. hex 0\.\d{3}; /u);
+    expect(text).toBe('   16 bytes, text "U2FsdGVkX1+xlr6h"');
+    expect(stdout.split("\n")[3]).toMatch(/^2\. base64 \(unconfirmed guess\) 0\.\d{3}/u);
+    expect(run("identify", "--peel", "553246736447566b58312b786c723668", "-n", "1").stdout).toMatch(
+      /^1 layer/u,
+    );
     expect(run("identify", "--peel", "Hello world")).toMatchObject({
       code: 1,
+      stdout: "",
       stderr:
         "No layer to take off: nothing decodes this text to readable text or past a checksum.\n",
     });
@@ -154,16 +190,13 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
 
   it("shows the text a peeled layer hands down, control characters escaped", () => {
     expect(
-      run("identify", "--peel", "5958523059574e720c49474630494752686432343d").stdout.split("\n")[0],
-    ).toMatch(/^0\.\d{3} {2}hex {25}"YXR0YWNr\\fIGF0IGRhd24="/u);
+      run("identify", "--peel", "5958523059574e720c49474630494752686432343d").stdout.split("\n")[2],
+    ).toBe(String.raw`   21 bytes, text "YXR0YWNr\fIGF0IGRhd24="`);
   });
 
-  it("names the flag a candidate needs to decode", () => {
+  it("names the options a candidate needs to decode", () => {
     expect(run("identify", "CPNMUOG=", "-n", "1").stdout).toMatch(
-      /^0\.\d{3} {2}base32 --alphabet=hex {7}"foob"/u,
-    );
-    expect(run("identify", "--peel", "D1IMOR3F41RMUSJCCGM20S35CLM0====").stdout).toMatch(
-      /^0\.\d{3} {2}base32 --alphabet=hex {7}"hello world, peel"/u,
+      /^1\. base32 \(alphabet=hex\) 0\.\d{3}; .*\n {3}4 bytes, text "foob"\n$/u,
     );
   });
 
@@ -175,13 +208,16 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
   it("lists encodings and shows one", () => {
     expect(run("list").stdout.trim().split("\n")).toHaveLength(15);
     expect(run("list", "--family", "base64").stdout.trim().split("\n")).toHaveLength(1);
-    expect(run("list", "bech32").stdout).toContain("--prefix  Human-readable part");
-    expect(run("list", "base64").stdout).toContain(
-      "url (- and _, safe in URLs and file names) (decode too)",
+    expect(run("list", "bech32").stdout).toContain(
+      "prefix (string, required): Human-readable part",
     );
-    expect(run("list", "base32").stdout).toContain(
-      "case, whitespace and padding read as usual (decode only)",
-    );
+    expect(run("list", "base64").stdout).toContain("url (- and _, safe in URLs and file names)");
+    expect(run("list", "--family", "nope")).toMatchObject({ code: 1, stdout: "" });
+    expect(run("list", "--version")).toMatchObject({
+      code: 1,
+      stdout: "",
+      stderr: 'Invalid arguments: unknown option "--version"; takes --family, --json\n',
+    });
   });
 
   it("converts between code pages, from an argument or stdin", () => {
@@ -194,12 +230,13 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
     expect(
       runWith(Uint8Array.of(0xc8, 0x89), "convert", "-", "--from", "raw", "--to", "ibm037").stdout,
     ).toBe("Hi\n");
+    expect(run("convert", "ÿ", "--from", "latin1", "--to", "raw").stdout).toBe("\uFFFD");
     expect(run("convert", "a€", "--from", "ibm037")).toMatchObject({
       code: 1,
       stderr: 'ibm037: "€" (U+20AC) at index 1 has no byte\n',
     });
     expect(run("convert", "x", "--from", "cp037").stderr).toMatch(
-      /^Invalid option from=cp037: use raw, utf8, hex, base64, ibm037/u,
+      /^Invalid arguments at --from: must be one of raw, utf8, hex, base64, ibm037/u,
     );
   });
 
@@ -209,16 +246,11 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
       stdout: "",
       stderr: "base58: checksum does not match\n",
     });
-    expect(run("encode", "base64", "x", "--prefix", "bc")).toMatchObject({
-      code: 1,
-      stderr: "Invalid option prefix=bc: base64 does not take it\n",
-    });
     expect(run("encode", "base85", "hi", "--alphabet", "z85")).toMatchObject({
       code: 1,
       stderr: "base85: 2 bytes are not a multiple of 4, as Z85 needs\n",
     });
     expect(run("encode", "base62", "x").stderr).toMatch(/^Unknown encoding: base62\. Available: /u);
-    expect(run("identify", "€€€")).toMatchObject({ code: 1, stdout: "" });
     expect(run("decode", "base64", "YR==", "--canonical")).toMatchObject({
       code: 1,
       stdout: "",
@@ -227,56 +259,41 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
     expect(run("decode", "base64", "YQ==", "--canonical")).toMatchObject({ code: 0, stdout: "a" });
   });
 
-  it("stops at text that starts with a dash and points at --", () => {
-    const hint = "Text that starts with - goes after --, which ends the options.";
-    expect(run("decode", "base64", "-_8")).toMatchObject({
-      code: 1,
-      stdout: "",
-      stderr: `Unknown option -_8 for decode. ${hint}\n`,
+  it("reads text that starts with a dash as text, and a typo after it as a typo", () => {
+    expect(run("decode", "base64", "-_8", "--alphabet", "url", "-o", "hex")).toMatchObject({
+      code: 0,
+      stdout: "fbff\n",
     });
     expect(run("decode", "base85", "--alphabet", "ascii85", "-Y7,")).toMatchObject({
-      code: 1,
-      stdout: "",
-      stderr: `Unknown option -Y7, for decode. ${hint}\n`,
-    });
-    expect(run("identify", "--8").stderr).toBe(`Unknown option --8 for identify. ${hint}\n`);
-    expect(run("-_8").stderr).toBe(`Unknown option -_8. ${hint}\n`);
-    expect(run("decode", "base64", "-\u001B]0;x\u0007 ").stderr).toBe(
-      `Unknown option "-\\u001b]0;x\\u0007\\u2028" for decode. ${hint}\n`,
-    );
-    expect(run("decode", "base64", "SGk=", "--outptu", "hex")).toMatchObject({ code: 1 });
-    expect(run("decode", "base85", "--alphabet", "ascii85", "--", "-Y7,")).toMatchObject({
       code: 0,
       stdout: "'em",
     });
+    expect(run("encode", "base64", "-x").stdout).toBe("LXg=\n");
+    expect(run("encode", "bech32", "hi", "--prefix", "-x").stdout).toBe("-x1dp5s5yzjlm\n");
+    const typo = run("decode", "base64", "SGk=", "--outptu", "hex");
+    expect(typo).toMatchObject({ code: 1, stdout: "" });
+    expect(typo.stderr).toMatch(
+      /^Invalid arguments: unknown option "--outptu"; takes --output \(-o\), /u,
+    );
+    expect(run("encode", "--x", "base64").stderr).toMatch(
+      /^Invalid arguments: unknown option "--x"; /u,
+    );
     expect(run("decode", "-o", "hex", "--alphabet", "ascii85", "--", "base85", "-Y7,").stdout).toBe(
       "27656d\n",
     );
+    expect(run("encode", "hex", "--", "-h").stdout).toBe("2d68\n");
   });
 
-  it("still reads every way of typing a declared option", () => {
-    expect(run("decode", "base64", "SGk=", "-ohex").stdout).toBe("4869\n");
+  it("takes options in their documented spelling only", () => {
     expect(run("decode", "base64", "SGk=", "--output=hex").stdout).toBe("4869\n");
-    expect(run("encode", "bech32", "hi", "--prefix", "-x").stdout).toBe("-x1dp5s5yzjlm\n");
-    expect(run("encode", "hex", "6869", "--inputFormat", "hex").stdout).toBe("6869\n");
-    expect(run("encode", "binary", "h", "--no-separate").stdout).toBe("01101000\n");
-    expect(run("identify", "SGk=", "-n", "1").stdout.trim().split("\n")).toHaveLength(1);
+    const camel = run("encode", "hex", "6869", "--inputFormat", "hex");
+    expect(camel.code).toBe(1);
+    expect(camel.stderr).toMatch(
+      /^Invalid arguments: unknown option "--inputFormat"; takes --input-format, /u,
+    );
+    expect(run("decode", "base64", "SGk=", "-ohex")).toMatchObject({ code: 1, stdout: "" });
     expect(run("decode", "-h")).toMatchObject({ code: 0 });
     expect(run("-v")).toMatchObject({ code: 0 });
-  });
-
-  it("refuses help and version in a form citty would drop, instead of running the command", () => {
-    const hint = "Text that starts with - goes after --, which ends the options.";
-    expect(run("list", "--version")).toMatchObject({
-      code: 1,
-      stdout: "",
-      stderr: `Unknown option --version for list. ${hint}\n`,
-    });
-    expect(run("decode", "--version", "base64", "SGk=")).toMatchObject({ code: 1, stdout: "" });
-    expect(run("list", "--help=x").stderr).toBe(`Unknown option --help=x for list. ${hint}\n`);
-    expect(run("list", "-hh").stderr).toBe(`Unknown option -hh for list. ${hint}\n`);
-    expect(run("--version", "list").stderr).toBe(`Unknown option --version. ${hint}\n`);
-    expect(run("list", "--version", "-h")).toMatchObject({ code: 0 });
   });
 
   it("writes details from the text escaped, so they cannot drive the terminal", () => {
@@ -286,6 +303,7 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
     expect(code).toBe(0);
     expect(stderr).not.toContain(ESC);
     expect(stderr).toContain(String.raw`name: "a\u001b]0;pwned\u0007"`);
+    expect(run("decode", "base64", `-${ESC}]0;x\u0007`).stderr).not.toContain(ESC);
   });
 });
 
@@ -344,10 +362,10 @@ function serve(base: string, extraEnv: Readonly<Record<string, string>> = {}) {
   const { status, stderr, stdout } = child;
   const urls = Array.isArray(loaded) ? loaded.filter((url) => typeof url === "string") : [];
   const source = urls.includes(pathToFileURL(join(base, "src/mcp.ts")).href);
-  const bundle = urls.includes(pathToFileURL(join(base, "dist/_chunks/mcp.mjs")).href);
+  const bundle = urls.some((url) => url.endsWith("/@agntn/tools/dist/mcp.mjs"));
   let from: "bundle" | "source" | "unknown" = "unknown";
-  if (source && !bundle) from = "source";
-  if (bundle && !source) from = "bundle";
+  if (source) from = "source";
+  else if (bundle) from = "bundle";
   const name = /"serverInfo":\{"name":"([^"]+)"/.exec(stdout)?.[1];
   return { code: status, from, name, stderr };
 }
