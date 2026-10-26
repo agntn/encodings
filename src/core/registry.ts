@@ -60,6 +60,8 @@ const ALIASES: Readonly<Record<string, string>> = {
   uue: "uuencode",
   qp: "quoted-printable",
   quotedprintable: "quoted-printable",
+  entities: "html",
+  htmlentities: "html",
 };
 
 /**

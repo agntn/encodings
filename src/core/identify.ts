@@ -113,7 +113,11 @@ const FRAMING: Readonly<Record<string, Frame>> = {
   },
   uuencode: { test: /^begin [0-7]{3,4} /mu, label: "begin line" },
   "quoted-printable": { test: /=[0-9A-F]{2}/u, label: "=XX escapes" },
+  html: { test: /&(?:#(?:[Xx][\dA-Fa-f]+|\d+)|[\dA-Za-z]+);/u, label: "&...; references" },
 };
+
+/** Encodings that read nearly any text, so a decoding counts only next to their framing. */
+const FRAMED_ONLY = new Set(["quoted-printable", "html"]);
 
 /**
  * Framing in the text that only this encoding, read this way, writes.
@@ -186,8 +190,8 @@ function backed(
 }
 
 /**
- * Scores one decoding of the text. Quoted-Printable counts only with an `=XX` escape: any ASCII
- * text is valid Quoted-Printable, and without an escape it only lost a trailing `=`.
+ * Scores one decoding of the text. `R&D` is valid HTML and ASCII valid Quoted-Printable, so both
+ * count only with their framing.
  *
  * @param info - The encoding's metadata.
  * @param reading - Decode options of the reading.
@@ -202,7 +206,7 @@ function candidate(
   decoded: Decoded,
 ): Scored | undefined {
   const frame = framing(info.name, reading, text);
-  if (info.name === "quoted-printable" && !frame) return undefined;
+  if (FRAMED_ONLY.has(info.name) && !frame) return undefined;
   const checksum = checksummed(info, reading);
   const { reasons, score: marked } = marks(checksum, frame);
   let score = marked;

@@ -22,6 +22,7 @@ import { isBytes, requireText, toBytes, typeName, type BytesInput } from "./byte
 import { decimal } from "./decimal.ts";
 import { EncodingError, InvalidOptionError } from "./errors.ts";
 import { hex } from "./hex.ts";
+import { html } from "./html.ts";
 import { octal } from "./octal.ts";
 import { quotedPrintable } from "./quoted-printable.ts";
 import type {
@@ -670,5 +671,27 @@ export const builtins: readonly Encoding[] = [
     },
     (bytes) => quotedPrintable.encode(bytes),
     (text) => quotedPrintable.decode(text),
+  ),
+  define(
+    "html",
+    {
+      label: "HTML character references",
+      description:
+        "Text with &amp; and friends; decoding reads every named, decimal and hex reference",
+      family: "html",
+      standard: "WHATWG HTML, named and numeric character references",
+      alphabet: PRINTABLE_ASCII,
+      options: [
+        {
+          name: "ascii",
+          type: "boolean",
+          required: false,
+          default: false,
+          description: "Also write every character past ASCII as a hex reference, such as &#xE9;",
+        },
+      ],
+    },
+    (bytes, values) => html.encode(bytes, { ascii: values["ascii"] === true }),
+    (text) => html.decode(text),
   ),
 ];

@@ -16,6 +16,7 @@ export const familyEntries = [
   "bech32",
   "uuencode",
   "quoted-printable",
+  "html",
 ] as const;
 
 /**

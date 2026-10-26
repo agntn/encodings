@@ -24,6 +24,7 @@ import {
   type RlpItem,
   decimal,
   hex,
+  html,
   octal,
   quotedPrintable,
   rlp,
@@ -44,6 +45,7 @@ import {
   javascript,
   monero,
   python,
+  whatwg,
 } from "./fixtures/references.ts";
 import { rlpInvalid, rlpValid, type RlpVector } from "./fixtures/rlp.ts";
 
@@ -925,6 +927,59 @@ describe("quoted-printable (RFC 2045 §6.7)", () => {
   });
 });
 
+describe("html (WHATWG character references)", () => {
+  it("reads named, decimal and hex references, and leaves a bare & alone", () => {
+    expect(read(html.decode("Universit&auml;t &lt;b&gt; &#65;&#x42; R&D"))).toBe(
+      "Universität <b> AB R&D",
+    );
+  });
+
+  it.each(Object.entries(whatwg))("reads %j as entities 8.1.0 does", (input, expected) => {
+    expect(read(html.decode(input))).toBe(expected);
+  });
+
+  it("takes an upper case X and any number of leading zeros", () => {
+    expect(read(html.decode("&#X41;&#x0042;&#0067;"))).toBe("ABC");
+  });
+
+  it("reads 0x80 to 0x9F through Windows-1252, the way the pages meant them", () => {
+    expect(read(html.decode("&#145;quoted&#146; &#150; &#128;5"))).toBe("‘quoted’ – €5");
+    expect(read(html.decode("&#x8D;"))).toBe("\u008D");
+  });
+
+  it("knows every name in the WHATWG table, with and without its semicolon", () => {
+    expect(read(html.decode("&CounterClockwiseContourIntegral; &bne; &frac34 &yuml"))).toBe(
+      "∳ =\u20E5 ¾ ÿ",
+    );
+    expect(read(html.decode("&frac34x"))).toBe("¾x");
+  });
+
+  it("escapes the five markup characters and keeps the rest", () => {
+    expect(html.encode(text(`Tom & "Jerry" <b>'s</b> café`))).toBe(
+      "Tom &amp; &quot;Jerry&quot; &lt;b&gt;&#39;s&lt;/b&gt; café",
+    );
+  });
+
+  it("writes everything past ASCII as hex references with ascii", () => {
+    expect(html.encode(text("café 😀 <"), { ascii: true })).toBe("caf&#xE9; &#x1F600; &lt;");
+  });
+
+  it("round trips text, and bytes that open with a byte order mark", () => {
+    const sample = "a&b <c> \"d\" 'e' &amp; 😀 \u0000";
+    for (const ascii of [false, true]) {
+      expect(read(html.decode(html.encode(text(sample), { ascii })))).toBe(sample);
+    }
+    expect(html.decode(html.encode(Uint8Array.of(0xef, 0xbb, 0xbf)))).toEqual(
+      Uint8Array.of(0xef, 0xbb, 0xbf),
+    );
+  });
+
+  it("refuses bytes that are not UTF-8, since a reference names a character", () => {
+    expect(() => html.encode(Uint8Array.of(0xff))).toThrow(EncodingError);
+    expect(() => html.encode(Uint8Array.of(0xff))).toThrow("html: encode takes UTF-8 text");
+  });
+});
+
 describe("charsets", () => {
   const all = Uint8Array.from({ length: 256 }, (_, index) => index);
 
@@ -1329,6 +1384,7 @@ describe("input of the wrong type", () => {
     ["base256", base256],
     ["uuencode", uuencode],
     ["quoted-printable", quotedPrintable],
+    ["html", html],
   ] as const;
 
   it.each(codecs)("%s refuses a string to encode instead of writing zeros", (name, codec) => {
@@ -1444,6 +1500,10 @@ describe("hostile input", () => {
         expect((error as Error).message).not.toContain(character);
       }
     }
+  });
+
+  it("reads a numeric reference with a million zeros without parsing them", () => {
+    expect(read(html.decode(`&#${"0".repeat(1_000_000)}65;`))).toBe("A");
   });
 
   it("decodes a quoted-printable line too long to spread into one call", () => {

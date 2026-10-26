@@ -18,7 +18,7 @@ Docs and a live playground: [encodings.agntn.dev](https://encodings.agntn.dev).
 
 ## ✨ Features
 
-- 🔤 **All the usual ones.** Binary, octal, decimal, hex, base32 in four alphabets, base45, base58 in three, base64 in two, base85 in three (Ascii85 and Z85 too), basE91, base256emoji, bech32 and bech32m, uuencode, Quoted-Printable.
+- 🔤 **All the usual ones.** Binary, octal, decimal, hex, base32 in four alphabets, base45, base58 in three, base64 in two, base85 in three (Ascii85 and Z85 too), basE91, base256emoji, bech32 and bech32m, uuencode, Quoted-Printable. And HTML references, `&auml;` and `&#146;` read the way a browser reads them.
 - 🧾 **Written from the specs.** RFC 4648, RFC 9285, BIP173, BIP350. No codec library underneath.
 - ✅ **Checksums checked.** Base58Check and bech32 refuse a typo instead of decoding it.
 - 🪙 **Segwit aware.** A `bc1…` address comes back as its witness version and program.
@@ -117,6 +117,7 @@ That's most of it, really. Strings go in as UTF-8, bytes come out as `Uint8Array
 | `base256`                      | `alphabet`: `emoji`; `multibase`, `symbols`, `sample`        |
 | `bech32`                       | `m` for Bech32m                                              |
 | `uuencode`, `quoted-printable` |                                                              |
+| `html`                         | `ascii` for plain ASCII out                                  |
 
 Base58Check is `base58` with `check`. Monero's addresses are `base58` with `blocks`. z-base-32 is `base32` with `alphabet: "z"`. Decoding takes the same options, so a variant reads back the way it was written.
 

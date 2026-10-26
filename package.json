@@ -16,6 +16,7 @@
     "bech32",
     "bech32m",
     "encoding",
+    "html",
     "mcp",
     "openpgp",
     "quoted-printable",
@@ -103,6 +104,10 @@
     "./quoted-printable": {
       "types": "./dist/quoted-printable.d.mts",
       "import": "./dist/quoted-printable.mjs"
+    },
+    "./html": {
+      "types": "./dist/html.d.mts",
+      "import": "./dist/html.mjs"
     },
     "./charsets": {
       "types": "./dist/charsets.d.mts",

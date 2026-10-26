@@ -125,6 +125,11 @@ export const encodeSchema = closed({
         }),
       ),
       upper: Type.Optional(Type.Boolean({ description: "hex: write A-F" })),
+      ascii: Type.Optional(
+        Type.Boolean({
+          description: "html: also write characters past ASCII as &#x...; (default false)",
+        }),
+      ),
       separate: Type.Optional(
         Type.Boolean({
           description: "binary, octal and decimal: space between bytes (default true)",
@@ -247,7 +252,7 @@ export const encodeTool = defineTool({
   name: "encodings_encode",
   title: "Encode",
   description:
-    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, base256 (base256emoji and any table of symbols), bech32 (Bech32m too), uuencode or quoted-printable.",
+    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, base256 (base256emoji and any table of symbols), bech32 (Bech32m too), uuencode, quoted-printable or html (character references such as &amp;).",
   snippet: "Use encodings_encode to write text or bytes in base64, base58, bech32 and the like.",
   guidelines: [
     "Text is encoded as UTF-8. For bytes, pass them in hex or base64 and set inputFormat.",

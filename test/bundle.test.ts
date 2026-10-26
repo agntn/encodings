@@ -26,6 +26,7 @@ const markers: Record<(typeof entries)[number], string> = {
   bech32: "qpzry9x8gf2tvdw0s3jn54khce6mua7l",
   uuencode: "begin-base64",
   "quoted-printable": "must be escaped",
+  html: "a reference names a character",
   charsets: "has no byte",
   rlp: "wraps a single byte",
   armor: "a cleartext signed message is not armor",

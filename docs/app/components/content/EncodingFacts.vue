@@ -10,7 +10,7 @@ import {
   codecExport,
   encodingEntry,
   familyLabel,
-  overhead,
+  overheadLine,
   registryPosition,
 } from "../../utils/encodings";
 import { optionFlags, optionLiteral, shellArg } from "../../utils/format";
@@ -129,7 +129,7 @@ const title = computed(() => `encodings_info("${props.name}")`);
           <div>
             <dt>Overhead</dt>
             <dd class="console-accent">
-              <span class="facts-line">+{{ overhead(entry) }}% on random bytes</span>
+              <span class="facts-line">{{ overheadLine(entry) }}</span>
             </dd>
           </div>
           <div>
