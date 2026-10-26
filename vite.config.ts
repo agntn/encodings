@@ -26,6 +26,7 @@ const transformOverride: object = {
 
 export default defineConfig({
   oxc: { ...transformOverride },
+  /** changelogen puts two spaces after a breaking ⚠️, oxfmt wants one. Nested ones still count. */
   fmt: { ...oxfmt, ignorePatterns: ["/CHANGELOG.md", "docs"] },
   lint: {
     ...oxlint,

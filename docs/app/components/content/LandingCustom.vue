@@ -3,7 +3,7 @@ import { tokens } from "../../utils/tokens";
 
 const { copied, copy } = useCopied();
 
-/** An encoding of your own: the Encoding shape every built-in has, then register. */
+/** An encoding of your own. Its `"150 151"` and `"octal"` came from a real run. Edit it, run it. */
 const FILE = [
   'import { DecodeError, encode, identify, register, type Encoding } from "@agntn/encodings";',
   "",

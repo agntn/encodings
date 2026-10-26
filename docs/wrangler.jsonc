@@ -8,6 +8,7 @@
   },
   "workers_dev": true,
   "preview_urls": true,
+  /** Nuxt Content's database, in the EU jurisdiction, which is set when a database is created. */
   "d1_databases": [
     {
       "binding": "DB",
@@ -26,6 +27,7 @@
     "vars": {
       "NUXT_SITE_URL": "https://encodings.agntn.dev"
     },
+    /** `agntn-encodings-preview`, EU too, so a pull request build never writes to production. */
     "d1_databases": [
       {
         "binding": "DB",

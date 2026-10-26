@@ -169,6 +169,8 @@ pnpm lint        # vp lint and vp fmt --check
 pnpm typecheck   # src, the extensions and the tests
 ```
 
+The house rules, and why the docs site cares about your Node version, live in [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## 💛 Thanks
 
 Built with help from [Claude for Open Source](https://claude.com/contact-sales/claude-for-oss) and [Codex for Open Source](https://developers.openai.com/community/codex-for-oss). Thank you both for backing small tools like this one.

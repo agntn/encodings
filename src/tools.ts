@@ -1,5 +1,6 @@
 /** The encoding tools, declared once for MCP, Pi, OMP and the AI SDK. Executors load on first call. */
 
+/** `Type` comes from here: OMP swaps a bare `typebox` import for a facade that checks nothing. */
 import {
   defineTool,
   Type,
