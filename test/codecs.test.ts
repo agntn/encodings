@@ -1210,6 +1210,14 @@ describe("armor (RFC 9580 §6)", () => {
     expect(armor.decode(tight).headers).toEqual([["Comment", 'Use "gpg --dearmor" for unpacking']]);
   });
 
+  it.each(["one two", "one two", "ends in a line separator ", "nbsp "])(
+    "keeps the Unicode in header value %j",
+    (value) => {
+      const block = armor.encode(signature, { label: "SIGNATURE", headers: [["Comment", value]] });
+      expect(armor.decode(block).headers).toEqual([["Comment", value]]);
+    },
+  );
+
   it("skips blank lines and spaces inside the data and under the checksum", () => {
     const loose = signatureArmor.replace("Wpr2", "Wpr 2").replace("/S\n", "/S\n\n  \n");
     expect(armor.decode(loose).bytes).toEqual(signature);
@@ -1285,6 +1293,7 @@ describe("armor (RFC 9580 §6)", () => {
     ["a header name with a colon", { label: "MESSAGE", headers: [["A:B", "c"]] }, "headers"],
     ["a header name with a space", { label: "MESSAGE", headers: [["A B", "c"]] }, "headers"],
     ["a header value over two lines", { label: "MESSAGE", headers: [["A", "b\nc"]] }, "headers"],
+    ["a header value ending in a space", { label: "MESSAGE", headers: [["A", "b "]] }, "headers"],
     ["headers that are no list", { label: "MESSAGE", headers: { A: "b" } }, "headers"],
     ["a checksum that is no boolean", { label: "MESSAGE", checksum: "yes" }, "checksum"],
   ])("refuses to write %s", (_, options, option) => {

@@ -11,7 +11,10 @@ const LABEL = new RegExp(`^${LABEL_TEXT}$`, "u");
 const BEGIN = new RegExp(`^-----BEGIN PGP (${LABEL_TEXT})-----$`, "u");
 
 /** A header: a name of printable ASCII but no colon, which base64 never holds either. */
-const HEADER = /^([!-9;-~]+): ?(.*)$/u;
+const HEADER = /^([!-9;-~]+): ?(.*)$/su;
+
+/** What mail adds or strips around a line. Unicode spaces stay, they can be header text. */
+const PADDING = new Set([" ", "\t", "\f", "\r"]);
 
 /** Longest stray line an error quotes, about twice an armor line with a long label. */
 const SHOWN_LINE = 80;
@@ -133,15 +136,19 @@ function checkLabel(label: unknown): string {
  *
  * @param header - Name and value.
  * @returns {string} The line, `Name: value`.
- * @throws {InvalidOptionError} When the name has a colon or a space, or the value a line break.
+ * @throws {InvalidOptionError} When the name has a colon or space, or the value breaks or trails.
  */
 function headerLine(header: ArmorHeader): string {
   const [name, value] = header;
   if (typeof name !== "string" || !/^[!-9;-~]+$/u.test(name)) {
     throw new InvalidOptionError("headers", name, "a header name is printable ASCII, no colon");
   }
-  if (typeof value !== "string" || /[\n\r]/u.test(value)) {
-    throw new InvalidOptionError("headers", value, "a header value is one line of text");
+  if (typeof value !== "string" || /[\n\r]|[\t\f ]$/u.test(value)) {
+    throw new InvalidOptionError(
+      "headers",
+      value,
+      "a header value is one line of text, and mail strips a space or tab at its end",
+    );
   }
   return `${name}: ${value}`;
 }
@@ -175,6 +182,20 @@ function encodeOptions(options: Readonly<ArmorEncodeOptions> | undefined): Encod
     throw new InvalidOptionError("checksum", checksum, "expected true or false");
   }
   return { label: checkLabel(options?.label), headers: headerLines(options?.headers), checksum };
+}
+
+/**
+ * Cuts ASCII padding off both ends of a line, with no regex to go quadratic on a long one.
+ *
+ * @param line - One line of input.
+ * @returns {string} The line without its padding.
+ */
+function unpad(line: string): string {
+  let start = 0;
+  let end = line.length;
+  while (start < end && PADDING.has(line[start]!)) start++;
+  while (end > start && PADDING.has(line[end - 1]!)) end--;
+  return line.slice(start, end);
 }
 
 /**
@@ -348,7 +369,7 @@ export const armor = {
     if (typeof text !== "string")
       throw new EncodingError(`armor: decode takes text, got ${typeof text}`);
     const wanted = options.label === undefined ? undefined : checkLabel(options.label);
-    const lines = text.split(/\r?\n/u).map((line) => line.trim());
+    const lines = text.split(/\r?\n/u).map((line) => unpad(line));
     const { index, label } = findBegin(lines, wanted);
     const { headers, next } = readHeaders(lines, index + 1);
     const { data, footer } = readBody(lines, next, `-----END PGP ${label}-----`);
