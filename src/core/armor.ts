@@ -135,9 +135,13 @@ function checkLabel(label: unknown): string {
  *
  * @param header - Name and value.
  * @returns {string} The line, `Name: value`.
- * @throws {InvalidOptionError} When the name has a colon or space, or the value breaks or trails.
+ * @throws {InvalidOptionError} When it is no pair, or its name or value would break the block.
  */
 function headerLine(header: ArmorHeader): string {
+  const pair: unknown = header;
+  if (!Array.isArray(pair) || pair.length !== 2) {
+    throw new InvalidOptionError("headers", pair, "each header is a [name, value] pair");
+  }
   const [name, value] = header;
   if (typeof name !== "string" || !/^[!-9;-~]+$/u.test(name)) {
     throw new InvalidOptionError("headers", name, "a header name is printable ASCII, no colon");
@@ -165,7 +169,7 @@ function headerLines(headers: readonly ArmorHeader[] | undefined): string[] {
   if (!Array.isArray(value)) {
     throw new InvalidOptionError("headers", value, "headers are a list of [name, value] pairs");
   }
-  return headers.map((header) => headerLine(header));
+  return Array.from(headers, (header) => headerLine(header));
 }
 
 /**

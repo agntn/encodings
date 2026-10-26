@@ -1360,6 +1360,17 @@ describe("armor (RFC 9580 §6)", () => {
     ["a header value over two lines", { label: "MESSAGE", headers: [["A", "b\nc"]] }, "headers"],
     ["a header value ending in a space", { label: "MESSAGE", headers: [["A", "b "]] }, "headers"],
     ["headers that are no list", { label: "MESSAGE", headers: { A: "b" } }, "headers"],
+    ["a header that is a string", { label: "MESSAGE", headers: ["AB"] }, "headers"],
+    ["a header that is a number", { label: "MESSAGE", headers: [5] }, "headers"],
+    ["a header that is undefined", { label: "MESSAGE", headers: [undefined] }, "headers"],
+    [
+      "a header with a hole for it",
+      { label: "MESSAGE", headers: Object.assign([], { length: 1 }) },
+      "headers",
+    ],
+    ["a header of one part", { label: "MESSAGE", headers: [["A"]] }, "headers"],
+    ["a header of three parts", { label: "MESSAGE", headers: [["A", "b", "c"]] }, "headers"],
+    ["a header as a set", { label: "MESSAGE", headers: [new Set(["A", "b"])] }, "headers"],
     ["a checksum that is no boolean", { label: "MESSAGE", checksum: "yes" }, "checksum"],
   ])("refuses to write %s", (_, options, option) => {
     const write = () => armor.encode(signature, options as never);
@@ -1380,6 +1391,18 @@ describe("armor (RFC 9580 §6)", () => {
     ]) {
       const write = () => armor.encode(signature, { label: "MESSAGE", headers: [header] } as never);
       expect(write).toThrow("Invalid option headers=undefined");
+    }
+  });
+
+  it("still names the option when the value can't even become text", () => {
+    for (const options of [
+      { label: Object.create(null) as unknown },
+      { label: "MESSAGE", headers: Object.create(null) as unknown },
+      { label: "MESSAGE", headers: [Object.create(null) as unknown] },
+    ]) {
+      const write = () => armor.encode(signature, options as never);
+      expect(write).toThrow(InvalidOptionError);
+      expect(write).toThrow("=a value with no text form: ");
     }
   });
 
