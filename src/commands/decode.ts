@@ -9,6 +9,7 @@ import { flaggedOptions, integerFlag, readText } from "./shared.ts";
 const OPTION_FLAGS = [
   "alphabet",
   "check",
+  "blocks",
   "m",
   "symbols",
   "bits",
@@ -45,6 +46,7 @@ export default defineCommand({
       description: "base32, base58, base64, base85, base256: alphabet (encodings list <encoding>)",
     },
     check: { type: "boolean", description: "base58: Base58Check, verify and strip the checksum" },
+    blocks: { type: "boolean", description: "base58: Monero's blocks of 11 characters" },
     m: { type: "boolean", description: "bech32: Bech32m checksum (segwit v1+)" },
     symbols: {
       type: "string",

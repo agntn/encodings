@@ -11,6 +11,8 @@
  *   `blake256` (Decred), and `base58xrp` over the payload and its double SHA-256 (XRP Ledger).
  * - `codePages`: glibc 2.44 `iconv` over every byte, for the EBCDIC code pages. CPython has no
  *   cp1141 and reads 0xBC in cp273 as U+203E where IBM and glibc have U+00AF.
+ * - `monero`: monero-python 1.1.1 `monero.base58.encode`, Monero's block base58. It reads
+ *   `jpXCZedGfVR` as eight zero bytes, where Monero's own C++ refuses the overflow.
  */
 
 /** Rows keyed by encoding name; `hex` is the input. */
@@ -870,3 +872,25 @@ export const gsmg = {
   letters:
     "vtkvplmepphluwahtzmjpfipuxohaptukzztgikfwpuyatowynlebtqwffvgaaaxjflrxvokligooxeiexjywwukuucdlfwpwekogsngbvtzmnteulhpuchmrabiiejptvcaqbspqauhpmdjqhaqhuyddiwgxvxgpofaqizsentyesqmgchuazmyhmnrbzioyhucvqzcfmwxotomoblfeblcngppselsnlwaehcnwxznaynaceazhfzeunpeewjvhjysqjpposalabzuaplpppteafvvnzpryhsnkjuxsmkubnnimopukojensnlfxfabgeujmyqbqwtnmzitbtqwukuwfnxmfpepxuiwuxqqvgwgpzpptnguyaloavsnkppuhohkcazrghmrpbhicegsjdntttepqdmzrkdbstiabnasjmytghqhimcadgjvlhuvqaaababytxqhetvnpsknbinpxxwzrkfczjmhphezjmydkqtqrixlyhdolhuocpoecwakafomluodaoxmhxkiehekgkituelmynbpuhovoblpiyjakbduxbulpfnntcfmpqdsfdkcavazhakiepelyvabbkoitycfvushkbcjwzuadivfmgjdmbawzhmnekelhuocpykuhmnxiniregjqzlenbyexemnpucaleeiajvrjmyhdmodleopqkqnnzqbootnqmcybmdiajxmrdmmnqybgtllqkcizuihmjqpviehxwatlipitudotsfqgzmakmhnpqzinyxtzogygigvtmwbtghlpxttpgifohsgempkpiyatudomayqtzwtutlymtwppubmtwwuhmnwjphdhkrlflmzinushphruituniiedvfdirevdpplmibxrtehlqwylwtzmaqeeawhywbazsismrntewafxgvdbmjpzpmdiagaaihrjsmrntgwqkcqpkciwqjvrwcotjmrzazhtyaeototuhrowynfmpqdceegcgtitmcnpdqnzkvnppqsjrngjewaydjflwzutyelsmbyxwqzmuwhjvxoselapaaakmqnkjntejkpzwtoytarzqwklwqcowzuakeiqsgunubzcuaoyegltkwhwfniepiqegdkyqxqqoquwingecjemazpqlqwgykeajoummeaavibjledwfubscjptsfeqxuxehwqydrenanrelsfulftpmqmcoqetvkllbmdekhzrxiqsxyvqjdgzmanpqhhsnwgsqktwodrvznmmgomodijpbopqwptominnihfpulspucgbmoxeieauvdiacgjiqaugiyakhysfosijmasrzkfowgwxubauepijvrjmyhsmiwpyepamqzylwaaewajelybeawobvqcvwzaajuktvukudxztbhfgacdafvsmiwkbhlfiedpuhkczwlenaketkhklmbltryvaketuhkhkhppmyvvdogpwhtwqicyymqgovxnodkdaaabwbzagdahnqnfsaomzaeeawelkslhqlwigij",
 } as const;
+
+export const monero: readonly VectorRow[] = [
+  { hex: "", "base58-blocks": "" },
+  { hex: "00", "base58-blocks": "11" },
+  { hex: "39", "base58-blocks": "1z" },
+  { hex: "ff", "base58-blocks": "5Q" },
+  { hex: "0000", "base58-blocks": "111" },
+  { hex: "0039", "base58-blocks": "11z" },
+  { hex: "0100", "base58-blocks": "15R" },
+  { hex: "ffff", "base58-blocks": "LUv" },
+  { hex: "000000", "base58-blocks": "11111" },
+  { hex: "ffffff", "base58-blocks": "2UzHL" },
+  { hex: "ffffffff", "base58-blocks": "7YXq9G" },
+  { hex: "ffffffffff", "base58-blocks": "VtB5VXc" },
+  { hex: "ffffffffffff", "base58-blocks": "3CUsUpv9t" },
+  { hex: "ffffffffffffff", "base58-blocks": "Ahg1opVcGW" },
+  { hex: "ffffffffffffffff", "base58-blocks": "jpXCZedGfVQ" },
+  { hex: "0000000000000000", "base58-blocks": "11111111111" },
+  { hex: "000000000000000000", "base58-blocks": "1111111111111" },
+  { hex: "06156013762879f7ffffffffff", "base58-blocks": "22222222222VtB5VXc" },
+  { hex: "48656c6c6f2c204d6f6e65726f21", "base58-blocks": "D7LMXYjYZ7S1xVPgU67i" },
+];

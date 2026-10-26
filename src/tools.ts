@@ -63,6 +63,9 @@ const alphabet = Type.Optional(
 const check = Type.Optional(
   Type.Boolean({ description: "base58: Base58Check, with a double SHA-256 checksum" }),
 );
+const blocks = Type.Optional(
+  Type.Boolean({ description: "base58: Monero's blocks, every 8 bytes as 11 characters" }),
+);
 const m = Type.Optional(Type.Boolean({ description: "bech32: Bech32m checksum (segwit v1+)" }));
 const symbols = Type.Optional(
   Type.String({
@@ -129,6 +132,7 @@ export const encodeSchema = closed({
       m,
       alphabet,
       check,
+      blocks,
       symbols,
       bits,
       order,
@@ -170,6 +174,7 @@ export const decodeSchema = closed({
     closed({
       alphabet,
       check,
+      blocks,
       m,
       symbols,
       bits,

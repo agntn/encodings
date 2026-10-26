@@ -165,6 +165,7 @@ function base58Options(values: Values): Base58Options {
   return {
     alphabet: String(values["alphabet"]) as Base58Alphabet,
     check: values["check"] === true,
+    blocks: values["blocks"] === true,
   };
 }
 
@@ -397,9 +398,11 @@ export const builtins: readonly Encoding[] = [
     "base58",
     {
       label: "Base58",
-      description: "Bytes as one base-58 number; Bitcoin addresses and WIF with check, Solana keys",
+      description:
+        "Bytes as one base-58 number; Bitcoin addresses and WIF with check, Solana keys, Monero blocks",
       family: "base58",
-      standard: "Bitcoin Core base58.cpp, Flickr short URLs, XRP Ledger address encoding",
+      standard:
+        "Bitcoin Core base58.cpp, Monero common/base58.cpp, Flickr short URLs, XRP Ledger addresses",
       alphabet: BASE58_ALPHABET,
       options: [
         {
@@ -421,6 +424,15 @@ export const builtins: readonly Encoding[] = [
             "Base58Check: add a 4-byte double SHA-256 checksum, and check and strip it when reading",
           decode: true,
           checksum: true,
+        },
+        {
+          name: "blocks",
+          type: "boolean",
+          required: false,
+          default: false,
+          description:
+            "Monero's block form: every 8 bytes as 11 characters, so a 69-byte address is 95 long",
+          decode: true,
         },
       ],
     },
