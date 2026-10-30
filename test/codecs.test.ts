@@ -329,6 +329,15 @@ describe("base32 and base64 decoding rules", () => {
     expect(() => base64.decode("Zm9v!")).toThrow('"!" (U+0021) at index 4 is not in the alphabet');
   });
 
+  it("names a stray character before the padding it throws off", () => {
+    expect(() => base64.decode("!AAA==")).toThrow('"!" (U+0021) at index 0 is not in the alphabet');
+    expect(() => base32.decode("!AAAAAAA======")).toThrow(
+      '"!" (U+0021) at index 0 is not in the alphabet',
+    );
+    expect(() => base64.decode("Zm\n9!==")).toThrow(expect.objectContaining({ index: 4 }));
+    expect(() => base64.decode("Zg==!")).toThrow("character after padding at index 4");
+  });
+
   it("reads non-zero leftover bits unless asked for the canonical form", () => {
     expect(base32.decode("MZ======")).toEqual(base32.decode("MY======"));
     expect(base64.decode("YR==")).toEqual(base64.decode("YQ=="));

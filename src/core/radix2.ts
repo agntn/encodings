@@ -74,38 +74,44 @@ function valueMap(
 }
 
 /**
- * Splits trailing `=` padding off and checks it: nothing after it, and exactly as much as the
- * last block needs.
+ * Splits trailing `=` padding off and refuses anything after it. The padding length waits for
+ * {@link refusePaddingLength}, so a stray character in the data is named first.
  *
  * @param name - Registry name, for errors.
  * @param body - The text without ignored characters.
- * @param blockChars - Characters in one padded block.
  * @param at - Index in the caller's text of an index in `body`.
- * @returns {string} The text without its padding.
+ * @returns {{ data: string; pad: number }} The text without its padding, and how much it had.
  */
-function withoutPadding(
+function splitPadding(
   name: string,
   body: string,
-  blockChars: number,
   at: (index: number) => number,
-): string {
+): { data: string; pad: number } {
   const padStart = body.indexOf("=");
-  if (padStart === -1) return body;
-  const data = body.slice(0, padStart);
+  if (padStart === -1) return { data: body, pad: 0 };
   const pad = body.slice(padStart);
   const stray = pad.search(/[^=]/u);
   if (stray !== -1) {
     const index = at(padStart + stray);
     throw new DecodeError(name, `character after padding at index ${index}`, index);
   }
+  return { data: body.slice(0, padStart), pad: pad.length };
+}
+
+/**
+ * Refuses padding that is not exactly what the last block needs.
+ *
+ * @param name - Registry name, for errors.
+ * @param data - The text without padding and ignored characters.
+ * @param pad - Padding characters the text had.
+ * @param blockChars - Characters in one padded block.
+ */
+function refusePaddingLength(name: string, data: string, pad: number, blockChars: number): void {
+  if (pad === 0) return;
   const expected = (blockChars - (data.length % blockChars)) % blockChars;
-  if (pad.length !== expected) {
-    throw new DecodeError(
-      name,
-      `${pad.length} padding characters where the length needs ${expected}`,
-    );
+  if (pad !== expected) {
+    throw new DecodeError(name, `${pad} padding characters where the length needs ${expected}`);
   }
-  return data;
 }
 
 /**
@@ -177,7 +183,7 @@ export function radix2(spec: Radix2Spec): PaddedCodec {
       const body = ignore ? text.replaceAll(new RegExp(ignore.source, "gu"), "") : text;
       const at = (index: number): number =>
         ignore ? inputIndex(text, ignore.source, index) : index;
-      const data = withoutPadding(name, body, blockChars, at);
+      const { data, pad } = splitPadding(name, body, at);
       const totalBits = data.length * bits;
       const out = new Uint8Array(Math.floor(totalBits / 8));
       let buffer = 0;
@@ -203,6 +209,7 @@ export function radix2(spec: Radix2Spec): PaddedCodec {
         index += character.length;
       }
       // Checked after the characters, so a stray character is named before the length it breaks.
+      refusePaddingLength(name, data, pad, blockChars);
       if (totalBits % 8 >= bits) {
         throw new DecodeError(
           name,
