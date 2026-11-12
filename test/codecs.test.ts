@@ -1038,6 +1038,17 @@ describe("charsets", () => {
     expect(charsets.fromText("€", { codepage: "ibm1141" })).toEqual(Uint8Array.of(0x9f));
   });
 
+  it("reads a DOS ZIP name in 437 and keeps its low bytes ASCII", () => {
+    const name = hex.decode("434146902e545854");
+    expect(charsets.toText(name, { codepage: "ibm437" })).toBe("CAFÉ.TXT");
+    expect(charsets.fromText("╔═╗ ½", { codepage: "ibm437" })).toEqual(
+      Uint8Array.of(0xc9, 0xcd, 0xbb, 0x20, 0xab),
+    );
+    expect(() => charsets.fromText("☺", { codepage: "ibm437" })).toThrow(
+      'ibm437: "☺" (U+263A) at index 0 has no byte',
+    );
+  });
+
   it("names a character the code page lacks, and a code page that is not one", () => {
     expect(() => charsets.fromText("a€b", { codepage: "ibm037" })).toThrow(DecodeError);
     expect(() => charsets.fromText("a€b", { codepage: "ibm037" })).toThrow(

@@ -59,6 +59,7 @@ export const CHARSET_FORMATS = [
   "ibm500",
   "ibm1140",
   "ibm1141",
+  "ibm437",
   "latin1",
   "windows1252",
 ] as const;

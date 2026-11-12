@@ -23,7 +23,7 @@ Docs and a live playground: [encodings.agntn.dev](https://encodings.agntn.dev).
 - ✅ **Checksums checked.** Base58Check and bech32 refuse a typo instead of decoding it.
 - 🪙 **Segwit aware.** A `bc1…` address comes back as its witness version and program.
 - 🔍 **`identify`.** Tries every encoding, ranks the ones that work, and tells you why. Three layers deep? `peel` takes them off one by one.
-- 🖥️ **Code pages too.** EBCDIC, Latin-1 and Windows-1252. Mojibake goes back to what it was.
+- 🖥️ **Code pages too.** EBCDIC, DOS 437, Latin-1 and Windows-1252. Mojibake goes back to what it was.
 - ⛓️ **RLP as well.** Ethereum transactions apart and back, as strict as geth.
 - 🛡️ **OpenPGP armor.** Keys and signatures in and out of their `-----BEGIN PGP` blocks. A bad CRC24 gets reported, not thrown.
 - 🤖 **Agent tools.** The same ones over MCP, Pi, OMP and the AI SDK. The MCP ones also answer at [encodings.agntn.dev/mcp](https://encodings.agntn.dev/guide/agents#remote-mcp), nothing to install.
