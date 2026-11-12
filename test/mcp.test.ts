@@ -265,6 +265,28 @@ describe("encodings MCP server", () => {
     ).toBe("ita2 (2 bytes):\n3 27 23");
   });
 
+  it("reads decimal code points, and points a number over a byte at them", async () => {
+    expect(
+      await call("encodings_decode", {
+        encoding: "decimal",
+        text: "90 97 380 243 322 263",
+        options: { codepoints: true },
+      }),
+    ).toBe('decimal (codepoints) → 10 bytes as utf8:\n"Zażółć"');
+    expect(
+      await call("encodings_encode", {
+        encoding: "decimal",
+        input: "ż!",
+        options: { codepoints: true },
+      }),
+    ).toBe("decimal (3 bytes):\n380 33");
+    await expect(
+      call("encodings_decode", { encoding: "decimal", text: "90 97 380" }),
+    ).rejects.toThrow(
+      '"380" at index 6 is over 255; for Unicode code points, such as 380 for ż, set codepoints',
+    );
+  });
+
   it("reads a prefix code and says what is left over", async () => {
     expect(
       await call("encodings_decode", {

@@ -101,6 +101,11 @@ const order = Type.Optional(
 const numbers = Type.Optional(
   Type.Boolean({ description: "ita2: codes as decimal numbers 0 to 31 in place of bits" }),
 );
+const codepoints = Type.Optional(
+  Type.Boolean({
+    description: "decimal: each number is a Unicode code point of UTF-8 text, so 380 is ż",
+  }),
+);
 const radix = Type.Optional(
   Type.Integer({
     minimum: 2,
@@ -178,7 +183,7 @@ export const encodeSchema = closed({
       separate: Type.Optional(
         Type.Boolean({
           description:
-            "binary, octal and decimal: space between bytes; ita2: between codes (default true); prefix: between codewords (default false)",
+            "binary, octal and decimal: space between bytes (never with codepoints); ita2: between codes (default true); prefix: between codewords (default false)",
         }),
       ),
       m,
@@ -194,6 +199,7 @@ export const encodeSchema = closed({
       digits,
       bijective,
       numbers,
+      codepoints,
       codebook,
       code,
       n,
@@ -244,6 +250,7 @@ export const decodeSchema = closed({
       digits,
       bijective,
       numbers,
+      codepoints,
       codebook,
       code,
       n,

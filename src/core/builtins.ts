@@ -369,22 +369,36 @@ export const builtins: readonly Encoding[] = [
     "decimal",
     {
       label: "Decimal",
-      description: "One decimal number from 0 to 255 per byte, spaced; decoding also takes commas",
+      description:
+        "One decimal number from 0 to 255 per byte, spaced, or one per code point; decoding also takes commas",
       family: "decimal",
-      standard: "Byte values in base 10",
+      standard: "Byte values in base 10; Unicode code points",
       alphabet: "0123456789",
       options: [
+        {
+          name: "codepoints",
+          type: "boolean",
+          required: false,
+          default: false,
+          description: "Each number is a Unicode code point of UTF-8 text, such as 380 for ż",
+          decode: true,
+        },
         {
           name: "separate",
           type: "boolean",
           required: false,
           default: true,
-          description: "Put a space between bytes; without it each byte takes three digits",
+          description:
+            "Put a space between bytes; without it each byte takes three digits. Code points are always spaced",
         },
       ],
     },
-    (bytes, values) => decimal.encode(bytes, { separate: values["separate"] === true }),
-    (text) => decimal.decode(text),
+    (bytes, values) =>
+      decimal.encode(bytes, {
+        codepoints: values["codepoints"] === true,
+        separate: values["separate"] === true,
+      }),
+    (text, values) => decimal.decode(text, { codepoints: values["codepoints"] === true }),
   ),
   define(
     "integer",

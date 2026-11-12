@@ -27,14 +27,19 @@ export interface NumbersCodec {
 }
 
 /** What tells one radix from another: its name, base and the error for a stray character. */
-interface Numbers {
+export interface Numbers {
   name: string;
   radix: number;
   notDigit: string;
+  /** What else a number over 255 could be, added to its error. */
+  overByte?: string;
 }
 
 /** Digits of a byte value with no separator between bytes. */
 const WIDTH = 3;
+
+/** One number: the characters between whitespace and commas. */
+export const NUMBER = /[^\t\n\f\r ,]+/gu;
 
 /**
  * Checks that every character between two separators is a digit of the radix.
@@ -43,7 +48,7 @@ const WIDTH = 3;
  * @param token - Characters between separators.
  * @param start - Index of the token in the text, for errors.
  */
-function checkDigits(numbers: Readonly<Numbers>, token: string, start: number): void {
+export function checkDigits(numbers: Readonly<Numbers>, token: string, start: number): void {
   let index = start;
   for (const character of token) {
     if (!(Number.parseInt(character, numbers.radix) >= 0)) {
@@ -64,7 +69,8 @@ function checkDigits(numbers: Readonly<Numbers>, token: string, start: number): 
 function byteOf(numbers: Readonly<Numbers>, run: string, start: number): number {
   const value = Number.parseInt(run, numbers.radix);
   if (value > 255) {
-    throw new DecodeError(numbers.name, `"${run}" at index ${start} is over 255`, start);
+    const hint = numbers.overByte === undefined ? "" : `; ${numbers.overByte}`;
+    throw new DecodeError(numbers.name, `"${run}" at index ${start} is over 255${hint}`, start);
   }
   return value;
 }
@@ -115,7 +121,7 @@ export function createNumbers(numbers: Readonly<Numbers>): NumbersCodec {
     decode(text) {
       requireText(`${numbers.name}: decode`, text);
       const out: number[] = [];
-      for (const match of text.matchAll(/[^\t\n\f\r ,]+/gu)) {
+      for (const match of text.matchAll(NUMBER)) {
         out.push(...bytesOf(numbers, match[0], match.index));
       }
       return Uint8Array.from(out);

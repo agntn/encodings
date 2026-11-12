@@ -44,6 +44,7 @@ import {
   base58checkVariants,
   baudot,
   codePages,
+  codePoints,
   gnupg,
   gsmg,
   integers,
@@ -212,6 +213,76 @@ describe("octal and decimal", () => {
     expect(() => decimal.decode("72 1x5")).toThrow(
       expect.objectContaining({ name: "DecodeError", encoding: "decimal", index: 4 }),
     );
+  });
+
+  it("points a number over a byte at code points, and only in decimal", () => {
+    expect(() => decimal.decode("90 97 380")).toThrow(
+      '"380" at index 6 is over 255; for Unicode code points, such as 380 for ż, set codepoints',
+    );
+    expect(() => octal.decode("400")).toThrow(/over 255$/u);
+  });
+});
+
+describe("decimal code points", () => {
+  const codepoints = true;
+
+  it("reads and writes the code points CPython gives", () => {
+    expect(read(decimal.decode(codePoints.numbers, { codepoints }))).toBe(codePoints.text);
+    expect(decimal.encode(text(codePoints.text), { codepoints })).toBe(codePoints.numbers);
+  });
+
+  it("reads a number under 256 as a character, not a byte", () => {
+    expect(decimal.decode("233", { codepoints })).toEqual(Uint8Array.of(0xc3, 0xa9));
+    expect(decimal.decode("233")).toEqual(Uint8Array.of(0xe9));
+  });
+
+  it("takes commas and leading zeros, and spaces code points whatever separate says", () => {
+    expect(read(decimal.decode("90,97, 0380\n", { codepoints }))).toBe("Zaż");
+    expect(decimal.encode(text("ab"), { codepoints, separate: false })).toBe("97 98");
+    expect(decimal.decode(" , ", { codepoints })).toEqual(new Uint8Array());
+  });
+
+  it.each([
+    [
+      "the edges of each UTF-8 length",
+      [0, 0x7f, 0x80, 0x7_ff, 0x8_00, 0xff_ff, 0x1_00_00, 0x10_ff_ff],
+    ],
+    ["the code points around the surrogates", [0xd7_ff, 0xe0_00]],
+    ["a leading BOM", [0xfe_ff, 0x41]],
+    [
+      "line and paragraph separators and NBSP, last too",
+      [0x61, 0x20_28, 0x62, 0x20_29, 0x63, 0xa0],
+    ],
+  ])("reads back %s", (_, points) => {
+    const bytes = text(String.fromCodePoint(...points));
+    expect(decimal.decode(decimal.encode(bytes, { codepoints }), { codepoints })).toEqual(bytes);
+  });
+
+  it("refuses what no text holds, with the index of the number", () => {
+    expect(() => decimal.decode("65 1114112", { codepoints })).toThrow(
+      expect.objectContaining({
+        message: 'decimal: "1114112" at index 3 is over 1114111',
+        index: 3,
+      }),
+    );
+    expect(() => decimal.decode("99999999999999999999999", { codepoints })).toThrow(
+      "is over 1114111",
+    );
+    expect(() => decimal.decode("65 55296", { codepoints })).toThrow(
+      'decimal: "55296" at index 3 is a surrogate, not a character',
+    );
+    expect(() => decimal.decode("57343", { codepoints })).toThrow("is a surrogate");
+    expect(() => decimal.decode("65 3x2", { codepoints })).toThrow(
+      expect.objectContaining({ name: "DecodeError", index: 4 }),
+    );
+  });
+
+  it("refuses bytes that are not UTF-8 and a codepoints that is not a boolean", () => {
+    expect(() => decimal.encode(Uint8Array.of(0xff), { codepoints })).toThrow(
+      "decimal: encode with codepoints takes UTF-8 text, and these bytes are not",
+    );
+    expect(() => decimal.decode("65", { codepoints: "yes" as never })).toThrow(InvalidOptionError);
+    expect(() => decimal.encode(text("A"), { codepoints: 1 as never })).toThrow(InvalidOptionError);
   });
 });
 
