@@ -20,6 +20,7 @@ export const encodingFamilies = [
   "html",
   "ita2",
   "prefix",
+  "chess",
 ] as const;
 
 /** Family of an encoding. Registered encodings may name others. */

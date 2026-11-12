@@ -100,6 +100,13 @@ export {
   type PrefixEncodeOptions,
   type PrefixOptions,
 } from "./prefix.ts";
+export {
+  CHESS_LAYOUTS,
+  square,
+  type ChessLayout,
+  type SquareCodec,
+  type SquareOptions,
+} from "./chess.ts";
 export { CODE_PAGES, charsets, type CharsetOptions, type CodePage } from "./charsets.ts";
 export { rlp, type RlpInput, type RlpItem } from "./rlp.ts";
 export {

@@ -7,11 +7,12 @@ export const SAMPLE_OPTIONS: Readonly<Record<string, Record<string, string | num
   prefix: { codebook: "A=0 B=10 R=110 C=1110 D=1111" },
 };
 
-/** What a page encodes instead of `hello world!`: a teleprinter can't type it, and a codebook
- * of five letters reads better than one of nine. */
+/** What a page encodes instead of `hello world!`: a teleprinter can't type it, a codebook of
+ * five letters reads better than one of nine, and only bytes under 64 are squares. */
 const SAMPLE_INPUTS: Readonly<Record<string, string>> = {
   ita2: "HELLO WORLD?",
   prefix: "ABRACADABRA",
+  square: "1-0",
 };
 
 /**

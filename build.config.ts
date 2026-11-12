@@ -20,6 +20,7 @@ export const familyEntries = [
   "html",
   "ita2",
   "prefix",
+  "chess",
 ] as const;
 
 /**

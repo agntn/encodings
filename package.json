@@ -15,6 +15,7 @@
     "base91",
     "bech32",
     "bech32m",
+    "chess",
     "encoding",
     "html",
     "ita2",
@@ -122,6 +123,10 @@
     "./prefix": {
       "types": "./dist/prefix.d.mts",
       "import": "./dist/prefix.mjs"
+    },
+    "./chess": {
+      "types": "./dist/chess.d.mts",
+      "import": "./dist/chess.mjs"
     },
     "./charsets": {
       "types": "./dist/charsets.d.mts",

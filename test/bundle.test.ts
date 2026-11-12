@@ -30,6 +30,7 @@ const markers: Record<(typeof entries)[number], string> = {
   html: "a reference names a character",
   ita2: "teleprinters print capitals only",
   prefix: "is not prefix-free",
+  chess: "the last square",
   charsets: "has no byte",
   rlp: "wraps a single byte",
   armor: "a cleartext signed message is not armor",

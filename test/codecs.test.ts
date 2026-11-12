@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { runInNewContext } from "node:vm";
 import { describe, expect, it } from "vite-plus/test";
 import {
+  CHESS_LAYOUTS,
   ChecksumError,
   DecodeError,
   EncodingError,
@@ -32,6 +33,7 @@ import {
   quotedPrintable,
   rlp,
   segwit,
+  square,
   uuencode,
 } from "../src/index.ts";
 import { blake256 } from "@agntn/hashes/blake256";
@@ -43,6 +45,7 @@ import { fromWords, fromWordsUnsafe, toWords } from "../src/bech32.ts";
 import {
   base58checkVariants,
   baudot,
+  chessSquares,
   codePages,
   codePoints,
   gnupg,
@@ -2337,5 +2340,90 @@ describe("prefix", () => {
     for (const options of [null, 5, [], { codebook: 5 }, { codebook: ["A"] }, { code: "zeta" }]) {
       expect(() => prefix.decode("0", options as never)).toThrow(EncodingError);
     }
+  });
+});
+
+describe("square", () => {
+  const every = Uint8Array.from({ length: 64 }, (_, index) => index);
+  const indices = (squares: string, options?: Parameters<typeof square.decode>[1]) => [
+    ...square.decode(squares, options),
+  ];
+
+  it.each(CHESS_LAYOUTS)("agrees with python-chess on every square with layout %s", (layout) => {
+    expect(square.encode(every, { layout })).toBe(chessSquares[layout]);
+    expect(square.decode(chessSquares[layout], { layout })).toEqual(every);
+  });
+
+  it("agrees with python-chess on every square as a pair", () => {
+    expect(square.encode(every, { pairs: true })).toBe(chessSquares.pairs);
+    expect(square.decode(chessSquares.pairs, { pairs: true })).toEqual(every);
+  });
+
+  it("numbers the same squares three ways", () => {
+    expect(indices("e4 d5")).toEqual([28, 35]);
+    expect(indices("e4 a1", { layout: "a8" })).toEqual([36, 56]);
+    expect(indices("a2 b1", { layout: "file" })).toEqual([1, 8]);
+    expect(indices("(4, 3) (3, 4)", { pairs: true, layout: "a8" })).toEqual([36, 27]);
+  });
+
+  it("round trips every square in every layout and form", () => {
+    for (const layout of CHESS_LAYOUTS) {
+      for (const pairs of [false, true]) {
+        expect(square.decode(square.encode(every, { layout, pairs }), { layout, pairs })).toEqual(
+          every,
+        );
+      }
+    }
+  });
+
+  it("takes capitals, commas and line breaks between squares", () => {
+    expect(indices("E4,D5")).toEqual([28, 35]);
+    expect(indices(" e4,\n d5 ")).toEqual([28, 35]);
+    expect(indices("")).toEqual([]);
+  });
+
+  it("takes pairs with or without spaces, and side by side", () => {
+    expect(indices("(4,3),( 3 , 4 )", { pairs: true })).toEqual([28, 35]);
+    expect(indices("(4, 3)(3, 4)", { pairs: true })).toEqual([28, 35]);
+  });
+
+  it.each([
+    ["e9", 1, '"9" (U+0039) is not a rank, 1 to 8'],
+    ["e4 i4", 3, '"i" (U+0069) is not a file, a to h'],
+    ["a1 e", 3, '"e" at index 3 has no rank'],
+    ["e4 e44", 5, '"4" (U+0034) follows the square e4'],
+    ["(4, 3)", 0, "for (file, rank) pairs, set pairs"],
+  ] as const)("points at the bad character in %s", (input, index, message) => {
+    const decode = () => square.decode(input);
+    expect(decode).toThrow(expect.objectContaining({ name: "DecodeError", index }));
+    expect(decode).toThrow(message);
+  });
+
+  it.each([
+    ["(8, 1)", 1, '"8" (U+0038) is not a file, 0 to 7'],
+    ["(4, 3) (4 3)", 10, '"3" (U+0033) where , goes'],
+    ["(4, 31)", 5, '"1" (U+0031) where ) goes'],
+    ["e4", 0, "for names such as e4, leave pairs off"],
+  ] as const)("points at the bad character in the pairs %s", (input, index, message) => {
+    const decode = () => square.decode(input, { pairs: true });
+    expect(decode).toThrow(expect.objectContaining({ name: "DecodeError", index }));
+    expect(decode).toThrow(message);
+  });
+
+  it("names a pair cut short without an index", () => {
+    expect(() => square.decode("(4, 3", { pairs: true })).toThrow(
+      expect.objectContaining({ index: undefined }),
+    );
+    expect(() => square.decode("(4,", { pairs: true })).toThrow(
+      "the pair at index 0 ends before its rank",
+    );
+  });
+
+  it("refuses a byte past the last square and options of the wrong kind", () => {
+    expect(() => square.encode(Uint8Array.of(63, 64))).toThrow(
+      "square: byte 64 at index 1 is over 63, the last square",
+    );
+    expect(() => square.decode("e4", { layout: "h8" as never })).toThrow(InvalidOptionError);
+    expect(() => square.decode("e4", { pairs: "yes" as never })).toThrow(InvalidOptionError);
   });
 });
