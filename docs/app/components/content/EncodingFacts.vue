@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { create } from "@agntn/encodings";
-import { SAMPLE_INPUT } from "../../composables/useLandingSample";
 import {
   ENCODINGS,
-  SAMPLE_INPUTS,
   SAMPLE_OPTIONS,
   alphabetCells,
   alphabetSize,
@@ -13,6 +11,7 @@ import {
   familyLabel,
   overheadLine,
   registryPosition,
+  sampleInput as sampleFor,
 } from "../../utils/encodings";
 import { optionFlags, optionLiteral, shellArg } from "../../utils/format";
 import { toolText } from "../../utils/tools";
@@ -22,7 +21,7 @@ const props = defineProps<{ name: string }>();
 const entry = computed(() => encodingEntry(props.name));
 const position = computed(() => registryPosition(props.name));
 const sampleOptions = computed(() => (entry.value ? (SAMPLE_OPTIONS[entry.value.slug] ?? {}) : {}));
-const sampleInput = computed(() => (entry.value ? (SAMPLE_INPUTS[entry.value.slug] ?? SAMPLE_INPUT) : SAMPLE_INPUT));
+const sampleInput = computed(() => sampleFor(props.name));
 
 /** The options in the order `info()` declares them. */
 const options = computed(() =>

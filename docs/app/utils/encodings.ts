@@ -6,6 +6,7 @@ import {
   type EncodingFamily,
   type EncodingInfo,
 } from "@agntn/encodings";
+import { SAMPLE_OPTIONS } from "./samples";
 
 /** The built-in names, typed from the registry as the page loads it. */
 type BuiltinEncoding = (typeof BUILTINS)[number];
@@ -258,15 +259,7 @@ export function alphabetSize(info: EncodingInfo): number {
   return codePoints(info.alphabet);
 }
 
-/** Options a page encodes the sample with, where the encoding needs any. */
-export const SAMPLE_OPTIONS: Partial<Record<BuiltinEncoding, Record<string, string | number | boolean>>> = {
-  bech32: { prefix: "hi" },
-};
-
-/** What a page encodes instead of `hello world!`, which a teleprinter can't type. */
-export const SAMPLE_INPUTS: Partial<Record<BuiltinEncoding, string>> = {
-  ita2: "HELLO WORLD?",
-};
+export { SAMPLE_INPUT, SAMPLE_OPTIONS, sampleInput } from "./samples";
 
 /** Pseudo-random bytes the overhead is measured on: enough that padding and leading zeros wash out. */
 const OVERHEAD_BYTES = Uint8Array.from({ length: 600 }, (_, index) => (index * 151 + 7) % 251);
