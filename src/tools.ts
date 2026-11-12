@@ -14,6 +14,7 @@ import {
   CHARSET_FORMATS,
   CODES,
   INPUT_FORMATS,
+  LAYOUTS,
   MAX_CANDIDATES,
   MAX_NAME_LENGTH,
   MAX_PREFIX_LENGTH,
@@ -145,6 +146,15 @@ const n = Type.Optional(
     description: "prefix with code truncated: how many symbols",
   }),
 );
+const layout = Type.Optional(
+  Type.Enum(LAYOUTS, {
+    description:
+      "square: a1 = 0 rank by rank (default), a8 = 0 as FEN reads the board, or file by file",
+  }),
+);
+const pairs = Type.Optional(
+  Type.Boolean({ description: "square: (file, rank) pairs counted from 0, so (4, 3) is e4" }),
+);
 const text = (description: string) =>
   Type.String({ minLength: 1, maxLength: MAX_TEXT_LENGTH, description });
 
@@ -204,6 +214,8 @@ export const encodeSchema = closed({
       codebook,
       code,
       n,
+      layout,
+      pairs,
       delimiters: Type.Optional(
         Type.Boolean({ description: "base85 with the ascii85 alphabet: wrap in <~ and ~>" }),
       ),
@@ -255,6 +267,8 @@ export const decodeSchema = closed({
       codebook,
       code,
       n,
+      layout,
+      pairs,
       width: Type.Optional(
         Type.Integer({
           minimum: 1,
@@ -327,7 +341,7 @@ export const encodeTool = defineTool({
   name: "encodings_encode",
   title: "Encode",
   description:
-    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, integer (the bytes as one number in any base), base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, base256 (base256emoji and any table of symbols), bech32 (Bech32m too), uuencode, quoted-printable, html (character references such as &amp;), ita2 (Baudot teleprinter code: capitals and figures in five bits, ITA1 and US-TTY too) or prefix (variable-length codewords from a codebook, truncated binary, unary or Elias gamma).",
+    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, integer (the bytes as one number in any base), base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, base256 (base256emoji and any table of symbols), bech32 (Bech32m too), uuencode, quoted-printable, html (character references such as &amp;), ita2 (Baudot teleprinter code: capitals and figures in five bits, ITA1 and US-TTY too), prefix (variable-length codewords from a codebook, truncated binary, unary or Elias gamma) or square (chess squares such as e4, one byte each from 0 to 63).",
   snippet: "Use encodings_encode to write text or bytes in base64, base58, bech32 and the like.",
   guidelines: [
     "Text is encoded as UTF-8. For bytes, pass them in hex or base64 and set inputFormat.",

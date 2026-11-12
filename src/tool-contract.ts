@@ -52,6 +52,9 @@ export const ALPHABETS = [
 /** The built-in codes of `prefix`, as `test/mcp.test.ts` holds them to `PREFIX_CODES`. */
 export const CODES = ["truncated", "unary", "gamma"] as const;
 
+/** How `square` numbers the board, as `test/mcp.test.ts` holds them to `CHESS_LAYOUTS`. */
+export const LAYOUTS = ["a1", "a8", "file"] as const;
+
 /** Most symbols of truncated binary, as the codec caps it. */
 export const MAX_TRUNCATED_SYMBOLS = 2 ** 32;
 

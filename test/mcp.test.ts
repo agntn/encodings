@@ -1,10 +1,10 @@
 import { existsSync } from "node:fs";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { afterEach, describe, expect, it } from "vite-plus/test";
-import { CODE_PAGES, PREFIX_CODES, encodingInfos } from "../src/index.ts";
+import { CHESS_LAYOUTS, CODE_PAGES, PREFIX_CODES, encodingInfos } from "../src/index.ts";
 import { callTool, createMcpServer, toolListings } from "../src/mcp.ts";
 import { serverInfo } from "../src/server-info.ts";
-import { ALPHABETS, CHARSET_FORMATS, CODES } from "../src/tool-contract.ts";
+import { ALPHABETS, CHARSET_FORMATS, CODES, LAYOUTS } from "../src/tool-contract.ts";
 import {
   encodingsCharsetConvert,
   encodingsDecode,
@@ -248,6 +248,25 @@ describe("encodings MCP server", () => {
     ).toBe("integer (5 bytes):\n48656c6c6f");
   });
 
+  it("reads squares from a8 and writes them as pairs", async () => {
+    expect(
+      await call("encodings_decode", {
+        encoding: "square",
+        text: "e4 a1",
+        options: { layout: "a8" },
+        outputFormat: "hex",
+      }),
+    ).toBe("square (layout=a8) → 2 bytes as hex:\n2438");
+    expect(
+      await call("encodings_encode", {
+        encoding: "squares",
+        input: "1c23",
+        inputFormat: "hex",
+        options: { pairs: true },
+      }),
+    ).toBe("square (2 bytes):\n(4, 3) (3, 4)");
+  });
+
   it("reads teleprinter codes in a table and writes them as numbers", async () => {
     expect(
       await call("encodings_decode", {
@@ -330,6 +349,10 @@ describe("encodings MCP server", () => {
     expect(CODES).toEqual(PREFIX_CODES);
   });
 
+  it("offers in the schema the layouts square has", () => {
+    expect(LAYOUTS).toEqual(CHESS_LAYOUTS);
+  });
+
   it("offers in the schema every option an encoding writes or reads with", () => {
     const writes = Object.keys(encodeSchema.properties.options.properties);
     const reads = Object.keys(decodeSchema.properties.options.properties);
@@ -369,7 +392,7 @@ describe("encodings MCP server", () => {
   });
 
   it("lists encodings and shows one", async () => {
-    expect((await call("encodings_info", {})).split("\n")).toHaveLength(18);
+    expect((await call("encodings_info", {})).split("\n")).toHaveLength(19);
     expect(await call("encodings_info", { encoding: "base32" })).toContain(
       'alphabet (string, default "standard", decode too)',
     );

@@ -64,6 +64,8 @@ const bijective = flag("integer: no zero digit, the first symbol is 1");
 const codebook = text("prefix: codewords by symbol, such as A=0 B=10 C=11");
 const code = text("prefix: truncated, unary or gamma in place of --codebook");
 const n = Type.Optional(Type.Integer({ description: "prefix --code truncated: how many symbols" }));
+const layout = text("square: a1 (default), a8 or file, which square is 0");
+const pairs = flag("square: (file, rank) pairs counted from 0, such as (4, 3) for e4");
 
 /** The flags `encode` turns into encoding options, which each encoding checks against its own. */
 export const encodeFlags = {
@@ -88,6 +90,8 @@ export const encodeFlags = {
   codebook,
   code,
   n,
+  layout,
+  pairs,
   alphabet,
   check: flag("base58: Base58Check, with a double SHA-256 checksum"),
   blocks: flag("base58: Monero's blocks, 8 bytes to 11 characters"),
@@ -116,6 +120,8 @@ export const decodeFlags = {
   codebook,
   code,
   n,
+  layout,
+  pairs,
   width: Type.Optional(Type.Integer({ description: "integer: bytes to fill with leading zeros" })),
   canonical: flag("base32, base64: refuse non-zero spare bits in the last character"),
 };

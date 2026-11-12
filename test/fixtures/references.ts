@@ -28,6 +28,8 @@
  *   `prefix` hands them back.
  * - `codePoints`: CPython 3.14.9 `ord` over each character, a BOM and U+10FFFF included, in
  *   decimal and as `f"U+{ord(c):04X}"`.
+ * - `chessSquares`: python-chess 1.11.2 `SQUARE_NAMES` for every index, through `square_mirror`
+ *   for a8 = 0 and `flip_diagonal` for file by file, and `square_file` with `square_rank`.
  */
 
 /** Rows keyed by encoding name; `hex` is the input. */
@@ -1028,4 +1030,13 @@ export const codePoints = {
   numbers:
     "90 97 380 243 322 263 32 103 281 347 108 261 32 106 97 378 324 46 32 917 955 955 940 948 945 44 32 1055 1088 1080 1074 1077 1090 44 32 26085 26412 35486 32 127881 65279 1114111",
   hex: "U+005A U+0061 U+017C U+00F3 U+0142 U+0107 U+0020 U+0067 U+0119 U+015B U+006C U+0105 U+0020 U+006A U+0061 U+017A U+0144 U+002E U+0020 U+0395 U+03BB U+03BB U+03AC U+03B4 U+03B1 U+002C U+0020 U+041F U+0440 U+0438 U+0432 U+0435 U+0442 U+002C U+0020 U+65E5 U+672C U+8A9E U+0020 U+1F389 U+FEFF U+10FFFF",
+} as const;
+
+/** All 64 squares by index from 0 in each layout, and as pairs with a1 = 0. */
+export const chessSquares = {
+  a1: "a1 b1 c1 d1 e1 f1 g1 h1 a2 b2 c2 d2 e2 f2 g2 h2 a3 b3 c3 d3 e3 f3 g3 h3 a4 b4 c4 d4 e4 f4 g4 h4 a5 b5 c5 d5 e5 f5 g5 h5 a6 b6 c6 d6 e6 f6 g6 h6 a7 b7 c7 d7 e7 f7 g7 h7 a8 b8 c8 d8 e8 f8 g8 h8",
+  a8: "a8 b8 c8 d8 e8 f8 g8 h8 a7 b7 c7 d7 e7 f7 g7 h7 a6 b6 c6 d6 e6 f6 g6 h6 a5 b5 c5 d5 e5 f5 g5 h5 a4 b4 c4 d4 e4 f4 g4 h4 a3 b3 c3 d3 e3 f3 g3 h3 a2 b2 c2 d2 e2 f2 g2 h2 a1 b1 c1 d1 e1 f1 g1 h1",
+  file: "a1 a2 a3 a4 a5 a6 a7 a8 b1 b2 b3 b4 b5 b6 b7 b8 c1 c2 c3 c4 c5 c6 c7 c8 d1 d2 d3 d4 d5 d6 d7 d8 e1 e2 e3 e4 e5 e6 e7 e8 f1 f2 f3 f4 f5 f6 f7 f8 g1 g2 g3 g4 g5 g6 g7 g8 h1 h2 h3 h4 h5 h6 h7 h8",
+  pairs:
+    "(0, 0) (1, 0) (2, 0) (3, 0) (4, 0) (5, 0) (6, 0) (7, 0) (0, 1) (1, 1) (2, 1) (3, 1) (4, 1) (5, 1) (6, 1) (7, 1) (0, 2) (1, 2) (2, 2) (3, 2) (4, 2) (5, 2) (6, 2) (7, 2) (0, 3) (1, 3) (2, 3) (3, 3) (4, 3) (5, 3) (6, 3) (7, 3) (0, 4) (1, 4) (2, 4) (3, 4) (4, 4) (5, 4) (6, 4) (7, 4) (0, 5) (1, 5) (2, 5) (3, 5) (4, 5) (5, 5) (6, 5) (7, 5) (0, 6) (1, 6) (2, 6) (3, 6) (4, 6) (5, 6) (6, 6) (7, 6) (0, 7) (1, 7) (2, 7) (3, 7) (4, 7) (5, 7) (6, 7) (7, 7)",
 } as const;

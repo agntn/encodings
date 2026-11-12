@@ -128,6 +128,7 @@ const UNGUESSED: Readonly<Record<string, readonly string[]>> = {
   hex: ["codepoints"],
   ita2: ["numbers"],
   prefix: ["code"],
+  square: ["layout"],
 };
 
 /**

@@ -31,6 +31,7 @@ const BUILTINS = [
   "html",
   "ita2",
   "prefix",
+  "square",
 ] as const;
 
 /** An icon, a one-liner and who writes it, per encoding. Everything else comes from `info()`. */
@@ -85,6 +86,11 @@ const PRESENTATION: Record<BuiltinEncoding, { icon: string; blurb: string; usedB
     blurb: "Short codewords for common symbols, no separators, and no codeword starts another",
     usedBy: "Huffman tables, Golomb and Elias codes, bit puzzles",
   },
+  square: {
+    icon: "i-lucide-chess-knight",
+    blurb: "One byte per square. e4 is 28 or 36, depending on who's counting",
+    usedBy: "Chess engines, PGN and FEN tools, chess puzzles",
+  },
 };
 
 /** Labels a page shows per family. The keys come from the library. */
@@ -107,6 +113,7 @@ const FAMILY_LABELS: Record<(typeof encodingFamilies)[number], string> = {
   html: "HTML",
   ita2: "ITA2",
   prefix: "Prefix codes",
+  chess: "Chess",
 };
 
 /** How the landing groups the registry: by how an encoding turns bytes into text. */
@@ -141,6 +148,7 @@ const GROUP_OF: Record<BuiltinEncoding, GroupKey> = {
   html: "markup",
   ita2: "bits",
   prefix: "bits",
+  square: "values",
 };
 
 export interface EncodingEntry {

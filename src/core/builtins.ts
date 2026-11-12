@@ -19,6 +19,7 @@ import {
 import { BECH32_LIMIT, bech32, bech32m, segwit, type SegwitAddress } from "./bech32.ts";
 import { binary, type BinaryOptions, type BitOrder } from "./binary.ts";
 import { isBytes, requireText, toBytes, typeName, type BytesInput } from "./bytes.ts";
+import { CHESS_LAYOUTS, square, type ChessLayout, type SquareOptions } from "./chess.ts";
 import { decimal } from "./decimal.ts";
 import { EncodingError, InvalidOptionError, MissingOptionError } from "./errors.ts";
 import { hex } from "./hex.ts";
@@ -204,6 +205,16 @@ function readPrefix(text: string, values: Values): Decoded {
   const details: Record<string, string | number> = { kraft };
   if (leftover !== "") Object.assign(details, { leftover, leftoverBits: leftover.length });
   return { bytes, details };
+}
+
+/**
+ * Reads square options from checked values.
+ *
+ * @param values - Checked option values.
+ * @returns {SquareOptions} The codec options.
+ */
+function squareOptions(values: Values): SquareOptions {
+  return { layout: String(values["layout"]) as ChessLayout, pairs: values["pairs"] === true };
 }
 
 /**
@@ -927,5 +938,36 @@ export const builtins: readonly Encoding[] = [
     (bytes, values) =>
       prefix.encode(bytes, { ...prefixOptions(values), separate: values["separate"] === true }),
     readPrefix,
+  ),
+  define(
+    "square",
+    {
+      label: "Chess squares",
+      description: "Squares such as e4, one byte each from 0 to 63, a1 = 0 rank by rank by default",
+      family: "chess",
+      standard: "FIDE Laws of Chess, Appendix C (algebraic notation)",
+      alphabet: "abcdefgh12345678",
+      options: [
+        {
+          name: "layout",
+          type: "string",
+          required: false,
+          default: "a1",
+          choices: [...CHESS_LAYOUTS],
+          description: "a1 = 0 rank by rank, a8 = 0 as FEN reads the board, or file by file",
+          decode: true,
+        },
+        {
+          name: "pairs",
+          type: "boolean",
+          required: false,
+          default: false,
+          description: "Squares as (file, rank) pairs counted from 0, such as (4, 3) for e4",
+          decode: true,
+        },
+      ],
+    },
+    (bytes, values) => square.encode(bytes, squareOptions(values)),
+    (text, values) => square.decode(text, squareOptions(values)),
   ),
 ];

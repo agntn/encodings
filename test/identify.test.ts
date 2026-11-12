@@ -84,6 +84,16 @@ describe("identify", () => {
     expect(names("8 5 12 12 15")).not.toContain("ita2");
   });
 
+  /* From a8, a1 is 56, which prints as "8". */
+  it("reads chess squares, but never guesses which square is 0", () => {
+    expect(top("e4 d5")).toMatchObject({ encoding: "square" });
+    expect(top("(4, 3) (3, 4)")).toMatchObject({ encoding: "square", options: { pairs: true } });
+    const layouts = identify("a1", { limit: 50 })
+      .filter((candidate) => candidate.encoding === "square")
+      .map((candidate) => candidate.options?.["layout"]);
+    expect(layouts).toEqual([undefined]);
+  });
+
   it("never reads bits as a prefix code it would have to guess", () => {
     for (const text of ["010110111", "0", "1111 0000", encode("binary", "Hi")]) {
       expect(identify(text, { limit: 20 }).map((candidate) => candidate.encoding)).not.toContain(

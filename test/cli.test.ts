@@ -239,6 +239,15 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
     expect(run("encode", "hex", "ż!", "--codepoints").stdout).toBe("U+017C U+0021\n");
   });
 
+  it("writes chess squares and reads them back from a8", () => {
+    expect(run("encode", "square", "1-0").stdout).toBe("b7 f6 a7\n");
+    expect(run("encode", "square", "1-0", "--pairs", "--layout", "file").stdout).toBe(
+      "(6, 1) (5, 5) (6, 0)\n",
+    );
+    expect(run("decode", "square", "b2 f3 a2", "--layout", "a8").stdout).toBe("1-0");
+    expect(run("decode", "square", "e9").stderr).toContain('"9" (U+0039) is not a rank, 1 to 8');
+  });
+
   it("writes teleprinter codes and reads them back in another table and form", () => {
     expect(run("encode", "ita2", "A1").stdout).toBe("00011 11011 10111\n");
     expect(run("encode", "baudot", "A1", "--order", "lsb").stdout).toBe("11000 11011 11101\n");
@@ -264,7 +273,7 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
   });
 
   it("lists encodings and shows one", () => {
-    expect(run("list").stdout.trim().split("\n")).toHaveLength(18);
+    expect(run("list").stdout.trim().split("\n")).toHaveLength(19);
     expect(run("list", "--family", "base64").stdout.trim().split("\n")).toHaveLength(1);
     expect(run("list", "bech32").stdout).toContain(
       "prefix (string, required): Human-readable part",
