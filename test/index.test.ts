@@ -34,6 +34,7 @@ describe("@agntn/encodings", () => {
       "binary",
       "octal",
       "decimal",
+      "integer",
       "hex",
       "base32",
       "base45",
@@ -63,6 +64,7 @@ describe("family subpaths", () => {
     binary: ["binary"],
     octal: ["octal"],
     decimal: ["decimal"],
+    integer: ["integer"],
     hex: ["hex"],
     base32: ["BASE32_ALPHABETS", "base32"],
     base45: ["base45"],
@@ -125,7 +127,9 @@ describe("resolveEncoding", () => {
 
   it("names the available encodings when nothing matches", () => {
     expect(() => resolveEncoding("base62")).toThrow(UnknownEncodingError);
-    expect(() => resolveEncoding("base62")).toThrow(/Available: binary, octal, decimal, hex/u);
+    expect(() => resolveEncoding("base62")).toThrow(
+      /Available: binary, octal, decimal, integer, hex/u,
+    );
     expect(() => resolveEncoding("toString")).toThrow(UnknownEncodingError);
     expect(() => resolveEncoding("base58check")).toThrow(UnknownEncodingError);
   });

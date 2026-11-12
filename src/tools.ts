@@ -94,6 +94,23 @@ const bits = Type.Optional(
 const order = Type.Optional(
   Type.Enum(["msb", "lsb"], { description: "binary: which bit comes first (default msb)" }),
 );
+const radix = Type.Optional(
+  Type.Integer({
+    minimum: 2,
+    maximum: 36,
+    description: "integer: base, digits 0-9 then a-z (default 10; up to 35 with bijective)",
+  }),
+);
+const digits = Type.Optional(
+  Type.String({
+    minLength: 2,
+    maxLength: MAX_SYMBOLS_LENGTH,
+    description: "integer: one symbol per digit, lowest first, in place of radix",
+  }),
+);
+const bijective = Type.Optional(
+  Type.Boolean({ description: "integer: no zero digit, the first symbol is 1 (as in A, Z, AA)" }),
+);
 const text = (description: string) =>
   Type.String({ minLength: 1, maxLength: MAX_TEXT_LENGTH, description });
 
@@ -144,6 +161,9 @@ export const encodeSchema = closed({
       order,
       sample,
       multibase,
+      radix,
+      digits,
+      bijective,
       delimiters: Type.Optional(
         Type.Boolean({ description: "base85 with the ascii85 alphabet: wrap in <~ and ~>" }),
       ),
@@ -187,6 +207,16 @@ export const decodeSchema = closed({
       order,
       sample,
       multibase,
+      radix,
+      digits,
+      bijective,
+      width: Type.Optional(
+        Type.Integer({
+          minimum: 1,
+          maximum: MAX_TEXT_LENGTH,
+          description: "integer: bytes to fill with leading zeros; a larger number is refused",
+        }),
+      ),
       canonical: Type.Optional(
         Type.Boolean({
           description:
@@ -252,7 +282,7 @@ export const encodeTool = defineTool({
   name: "encodings_encode",
   title: "Encode",
   description:
-    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, base256 (base256emoji and any table of symbols), bech32 (Bech32m too), uuencode, quoted-printable or html (character references such as &amp;).",
+    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, integer (the bytes as one number in any base), base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, base256 (base256emoji and any table of symbols), bech32 (Bech32m too), uuencode, quoted-printable or html (character references such as &amp;).",
   snippet: "Use encodings_encode to write text or bytes in base64, base58, bech32 and the like.",
   guidelines: [
     "Text is encoded as UTF-8. For bytes, pass them in hex or base64 and set inputFormat.",

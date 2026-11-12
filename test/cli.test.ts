@@ -210,8 +210,27 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
     expect(run("encode", "html", "café <3", "--ascii").stdout).toBe("caf&#xE9; &lt;3\n");
   });
 
+  it("writes bytes as one number and reads it back in another base and width", () => {
+    expect(run("encode", "integer", "Hello").stdout).toBe("310939249775\n");
+    expect(run("encode", "integer", "Hello", "--radix", "36").stdout).toBe("3yud78mn\n");
+    expect(run("decode", "integer", "3YUD78MN", "--radix", "36").stdout).toBe("Hello");
+    expect(run("decode", "integer", "255", "--width", "4", "-o", "hex").stdout).toBe("000000ff\n");
+    expect(
+      run(
+        "decode",
+        "integer",
+        "AA",
+        "--digits",
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "--bijective",
+        "-o",
+        "hex",
+      ).stdout,
+    ).toBe("1b\n");
+  });
+
   it("lists encodings and shows one", () => {
-    expect(run("list").stdout.trim().split("\n")).toHaveLength(15);
+    expect(run("list").stdout.trim().split("\n")).toHaveLength(16);
     expect(run("list", "--family", "base64").stdout.trim().split("\n")).toHaveLength(1);
     expect(run("list", "bech32").stdout).toContain(
       "prefix (string, required): Human-readable part",

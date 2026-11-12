@@ -61,6 +61,10 @@
       "types": "./dist/decimal.d.mts",
       "import": "./dist/decimal.mjs"
     },
+    "./integer": {
+      "types": "./dist/integer.d.mts",
+      "import": "./dist/integer.mjs"
+    },
     "./hex": {
       "types": "./dist/hex.d.mts",
       "import": "./dist/hex.mjs"

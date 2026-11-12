@@ -21,6 +21,7 @@ export { binary, type BinaryEncodeOptions, type BinaryOptions, type BitOrder } f
 export { octal } from "./octal.ts";
 export { decimal } from "./decimal.ts";
 export type { NumbersCodec, NumbersEncodeOptions } from "./numbers.ts";
+export { integer, type IntegerDecodeOptions, type IntegerOptions } from "./integer.ts";
 export { hex, type HexEncodeOptions } from "./hex.ts";
 export {
   BASE32_ALPHABETS,

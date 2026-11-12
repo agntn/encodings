@@ -25,6 +25,7 @@ import {
   decimal,
   hex,
   html,
+  integer,
   octal,
   quotedPrintable,
   rlp,
@@ -42,6 +43,7 @@ import {
   codePages,
   gnupg,
   gsmg,
+  integers,
   javascript,
   monero,
   python,
@@ -206,6 +208,121 @@ describe("octal and decimal", () => {
     expect(() => decimal.decode("72 1x5")).toThrow(
       expect.objectContaining({ name: "DecodeError", encoding: "decimal", index: 4 }),
     );
+  });
+});
+
+describe("integer", () => {
+  const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+  it("reads one number in each numeral as the same bytes CPython gives", () => {
+    const cases = [
+      [integers.decimal, {}],
+      [integers.octal, { radix: 8 }],
+      [integers.base9, { radix: 9 }],
+      [integers.bijective9, { radix: 9, bijective: true }],
+      [integers.base62, { digits: BASE62 }],
+      [integers.bijectiveLetters, { digits: LETTERS, bijective: true }],
+    ] as const;
+    for (const [number, options] of cases) {
+      expect(hex.encode(integer.decode(number, options)), number).toBe(integers.hex);
+      expect(integer.encode(hex.decode(integers.hex), options), number).toBe(number);
+    }
+    const big = BigInt(integers.decimal).toString(16);
+    expect(big.padStart(big.length + (big.length % 2), "0")).toBe(integers.hex);
+    expect(read(integer.decode(integers.hello))).toBe("Hello");
+    expect(integer.encode(text("Hello"))).toBe(integers.hello);
+  });
+
+  it("counts spreadsheet columns in bijective letters", () => {
+    const column = (name: string) =>
+      hex.encode(integer.decode(name, { digits: LETTERS, bijective: true }));
+    expect([column("A"), column("Z"), column("AA"), column("XFD")]).toEqual([
+      "01",
+      "1a",
+      "1b",
+      "4000",
+    ]);
+  });
+
+  it("gives leading zero bytes back only through width", () => {
+    const key = hex.decode(`0000${"ab".repeat(30)}`);
+    const number = integer.encode(key);
+    expect(integer.decode(number)).toHaveLength(30);
+    expect(integer.decode(number, { width: 32 })).toEqual(key);
+    expect(() => integer.decode("256", { width: 1 })).toThrow(
+      "integer: the number takes 2 bytes, over width 1",
+    );
+    expect(() => integer.decode("1", { width: 0 })).toThrow("must be a positive integer");
+  });
+
+  it("writes zero as 0, or as nothing without a zero digit, and reads both as no bytes", () => {
+    expect(integer.encode(new Uint8Array())).toBe("0");
+    expect(integer.encode(new Uint8Array([0, 0]))).toBe("0");
+    expect(integer.encode(new Uint8Array(), { bijective: true })).toBe("");
+    expect(integer.decode("000")).toEqual(new Uint8Array());
+    expect(integer.decode("", { bijective: true })).toEqual(new Uint8Array());
+  });
+
+  it("reads a number wrapped over lines, and the default digits in either case", () => {
+    expect(read(integer.decode(" 310939\n249775 "))).toBe("Hello");
+    expect(integer.decode("FF", { radix: 16 })).toEqual(integer.decode("ff", { radix: 16 }));
+    expect(() => integer.decode("ab", { digits: "AB" })).toThrow(
+      'integer: "a" (U+0061) is not a digit in base 2',
+    );
+  });
+
+  it("refuses digits outside the numeral with their index", () => {
+    expect(() => integer.decode("12 3x", { radix: 8 })).toThrow(
+      expect.objectContaining({ name: "DecodeError", encoding: "integer", index: 4 }),
+    );
+    expect(() => integer.decode("190", { radix: 9 })).toThrow(
+      '"9" (U+0039) is not a digit in base 9',
+    );
+    expect(() => integer.decode("10", { bijective: true })).toThrow(
+      '"0" (U+0030) is not a digit in bijective base 10',
+    );
+  });
+
+  it("refuses a base or digits it cannot read", () => {
+    expect(() => integer.encode(text("a"), { radix: 1 })).toThrow(
+      "must be an integer from 2 to 36",
+    );
+    expect(() => integer.encode(text("a"), { radix: 37 })).toThrow("from 2 to 36");
+    expect(() => integer.encode(text("a"), { radix: 36, bijective: true })).toThrow("from 2 to 35");
+    expect(() => integer.encode(text("a"), { radix: 2.5 })).toThrow(InvalidOptionError);
+    expect(() => integer.encode(text("a"), { digits: "aa" })).toThrow(
+      "two or more different symbols",
+    );
+    expect(() => integer.encode(text("a"), { digits: "a" })).toThrow(
+      "two or more different symbols",
+    );
+    expect(() => integer.encode(text("a"), { digits: "a b" })).toThrow(
+      '" " (U+0020) is whitespace',
+    );
+    expect(() => integer.encode(text("a"), { digits: "01", radix: 3 })).toThrow(
+      "digits has 2 symbols, so the base is 2",
+    );
+    expect(() => integer.encode(text("a"), { digits: 5 as never })).toThrow("must be a string");
+  });
+
+  it("round trips bytes in every base and in symbols past base 36", () => {
+    const options = [
+      ...Array.from({ length: 35 }, (_, step) => ({ radix: step + 2 })),
+      ...Array.from({ length: 34 }, (_, step) => ({ radix: step + 2, bijective: true })),
+      { digits: BASE62 },
+      { digits: BASE62, bijective: true },
+      { digits: "🌑🌒🌓🌔" },
+    ];
+    for (const [round, length] of [1, 2, 7, 33, 300].entries()) {
+      const bytes = Uint8Array.from({ length }, (_, index) => (index * 131 + round * 17 + 1) & 255);
+      bytes[0] = 1 + round;
+      for (const each of options) {
+        expect(integer.decode(integer.encode(bytes, each), each), JSON.stringify(each)).toEqual(
+          bytes,
+        );
+      }
+    }
   });
 });
 
@@ -1441,6 +1558,7 @@ describe("input of the wrong type", () => {
     ["binary", binary],
     ["octal", octal],
     ["decimal", decimal],
+    ["integer", integer],
     ["hex", hex],
     ["base32", base32],
     ["base45", base45],

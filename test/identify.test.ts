@@ -63,6 +63,16 @@ describe("identify", () => {
     );
   });
 
+  it("reads a run of digits as one number only when it spells eight bytes of text", () => {
+    const sentence = encode("integer", "attack at dawn");
+    expect(top(sentence)).toMatchObject({ encoding: "integer", text: "attack at dawn" });
+    expect(identify("310939249775").map((candidate) => candidate.encoding)).not.toContain(
+      "integer",
+    );
+    expect(top("3432")).toMatchObject({ encoding: "hex", text: "42" });
+    expect(identify("a").map((candidate) => candidate.encoding)).not.toContain("integer");
+  });
+
   it("wants a reference with its semicolon before it calls a text HTML", () => {
     for (const text of ["R&D and AT&T", "?a=1&copy=2", "&nosuchname;"]) {
       expect(identify(text).map((candidate) => candidate.encoding)).not.toContain("html");
@@ -242,6 +252,14 @@ describe("peel", () => {
     expect(layers(encode("decimal", encode("base32", "attack at dawn")))).toEqual([
       ["decimal", true, "MF2HIYLDNMQGC5BAMRQXO3Q="],
       ["base32", true, "attack at dawn"],
+    ]);
+  });
+
+  it("takes off a sentence written as one number", () => {
+    const sentence = "The quick brown fox jumps over the lazy dog";
+    expect(layers(encode("base64", encode("integer", sentence)))).toEqual([
+      ["base64", true, encode("integer", sentence)],
+      ["integer", true, sentence],
     ]);
   });
 

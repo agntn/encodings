@@ -119,6 +119,9 @@ const FRAMING: Readonly<Record<string, Frame>> = {
 /** Encodings that read nearly any text, so a decoding counts only next to their framing. */
 const FRAMED_ONLY = new Set(["quoted-printable", "html"]);
 
+/** Encodings that read any run of digits, so a decoding counts only as enough readable text. */
+const TEXT_ONLY = new Set(["integer"]);
+
 /**
  * Framing in the text that only this encoding, read this way, writes.
  *
@@ -190,6 +193,18 @@ function backed(
 }
 
 /**
+ * Whether a decoding counts at all: one that reads any run of digits needs eight bytes of text.
+ *
+ * @param encoding - Registry name.
+ * @param readable - Whether the bytes read as text.
+ * @param length - How many bytes it decoded to.
+ * @returns {boolean} Whether to score it.
+ */
+function speaks(encoding: string, readable: boolean, length: number): boolean {
+  return !TEXT_ONLY.has(encoding) || (readable && length >= MIN_TEXT_BYTES);
+}
+
+/**
  * Scores one decoding of the text. `R&D` is valid HTML and ASCII valid Quoted-Printable, so both
  * count only with their framing.
  *
@@ -207,13 +222,14 @@ function candidate(
 ): Scored | undefined {
   const frame = framing(info.name, reading, text);
   if (FRAMED_ONLY.has(info.name) && !frame) return undefined;
+  const asText = utf8(decoded.bytes);
+  const share = asText === undefined ? 0 : printable(asText);
+  const readable = share >= 0.95;
+  if (!speaks(info.name, readable, decoded.bytes.length)) return undefined;
   const checksum = checksummed(info, reading);
   const { reasons, score: marked } = marks(checksum, frame);
   let score = marked;
-  const asText = utf8(decoded.bytes);
-  const share = asText === undefined ? 0 : printable(asText);
   score += WEIGHTS.text * share;
-  const readable = share >= 0.95;
   if (readable) reasons.push("decodes to readable text");
   const size = Math.max(2, Array.from(info.alphabet).length);
   score += WEIGHTS.alphabet * Math.max(0, 1 - Math.log2(size) / 7);
