@@ -291,8 +291,9 @@ function readNumbers(text: string): Code[] {
   for (const match of text.matchAll(/[^\t\n\f\r ,]+/gu)) {
     const [token] = match;
     if (!/^\d+$/u.test(token)) {
-      const stray = Array.from(token).find((character) => !/\d/u.test(character))!;
-      throw new DecodeError("ita2", `${named(stray)} is not a digit`, match.index);
+      const at = token.search(/\D/u);
+      const stray = String.fromCodePoint(token.codePointAt(at)!);
+      throw new DecodeError("ita2", `${named(stray)} is not a digit`, match.index + at);
     }
     const value = Number(token);
     if (value > 31) {

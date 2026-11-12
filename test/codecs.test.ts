@@ -1332,6 +1332,9 @@ describe("ita2", () => {
       /^ita2: the number at index 0 is over 31$/u,
     );
     expect(() => ita2.decode("3 -1", { numbers: true })).toThrow('"-" (U+002D) is not a digit');
+    expect(() => ita2.decode("3 12x", { numbers: true })).toThrow(
+      expect.objectContaining({ name: "DecodeError", index: 4 }),
+    );
     expect(() => ita2.encode(text("Hi"))).toThrow(
       'ita2: "i" (U+0069) at index 1 has no code in ita2; teleprinters print capitals only',
     );
