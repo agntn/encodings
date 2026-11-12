@@ -192,7 +192,9 @@ function checkEntry(symbol: string, codeword: unknown): [string, string] {
  * @param entries - Checked pairs.
  */
 function checkPrefixFree(entries: readonly (readonly [string, string])[]): void {
-  const sorted = entries.toSorted(([, left], [, right]) => (left < right ? -1 : 1));
+  const sorted = entries.toSorted(([, left], [, right]) =>
+    left < right ? -1 : Number(left > right),
+  );
   for (let index = 1; index < sorted.length; index++) {
     const [first, shorter] = sorted[index - 1]!;
     const [second, longer] = sorted[index]!;
