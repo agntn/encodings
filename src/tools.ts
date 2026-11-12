@@ -12,12 +12,14 @@ import { encodingFamilies } from "./core/types.ts";
 import {
   ALPHABETS,
   CHARSET_FORMATS,
+  CODES,
   INPUT_FORMATS,
   MAX_CANDIDATES,
   MAX_NAME_LENGTH,
   MAX_PREFIX_LENGTH,
   MAX_SYMBOLS_LENGTH,
   MAX_TEXT_LENGTH,
+  MAX_TRUNCATED_SYMBOLS,
   OUTPUT_FORMATS,
 } from "./tool-contract.ts";
 
@@ -116,6 +118,27 @@ const digits = Type.Optional(
 const bijective = Type.Optional(
   Type.Boolean({ description: "integer: no zero digit, the first symbol is 1 (as in A, Z, AA)" }),
 );
+const codebook = Type.Optional(
+  Type.String({
+    minLength: 1,
+    maxLength: MAX_SYMBOLS_LENGTH,
+    description:
+      'prefix: codewords by symbol, such as A=0 B=10 C=11, or JSON such as {" ":"0","e":"10"}',
+  }),
+);
+const code = Type.Optional(
+  Type.Enum(CODES, {
+    description:
+      "prefix, in place of codebook: truncated binary for n symbols from 0, unary from 0 or Elias gamma from 1; symbols are numbers",
+  }),
+);
+const n = Type.Optional(
+  Type.Integer({
+    minimum: 2,
+    maximum: MAX_TRUNCATED_SYMBOLS,
+    description: "prefix with code truncated: how many symbols",
+  }),
+);
 const text = (description: string) =>
   Type.String({ minLength: 1, maxLength: MAX_TEXT_LENGTH, description });
 
@@ -155,7 +178,7 @@ export const encodeSchema = closed({
       separate: Type.Optional(
         Type.Boolean({
           description:
-            "binary, octal and decimal: space between bytes; ita2: between codes (default true)",
+            "binary, octal and decimal: space between bytes; ita2: between codes (default true); prefix: between codewords (default false)",
         }),
       ),
       m,
@@ -171,6 +194,9 @@ export const encodeSchema = closed({
       digits,
       bijective,
       numbers,
+      codebook,
+      code,
+      n,
       delimiters: Type.Optional(
         Type.Boolean({ description: "base85 with the ascii85 alphabet: wrap in <~ and ~>" }),
       ),
@@ -218,6 +244,9 @@ export const decodeSchema = closed({
       digits,
       bijective,
       numbers,
+      codebook,
+      code,
+      n,
       width: Type.Optional(
         Type.Integer({
           minimum: 1,
@@ -290,7 +319,7 @@ export const encodeTool = defineTool({
   name: "encodings_encode",
   title: "Encode",
   description:
-    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, integer (the bytes as one number in any base), base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, base256 (base256emoji and any table of symbols), bech32 (Bech32m too), uuencode, quoted-printable, html (character references such as &amp;) or ita2 (Baudot teleprinter code: capitals and figures in five bits, ITA1 and US-TTY too).",
+    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, integer (the bytes as one number in any base), base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, base256 (base256emoji and any table of symbols), bech32 (Bech32m too), uuencode, quoted-printable, html (character references such as &amp;), ita2 (Baudot teleprinter code: capitals and figures in five bits, ITA1 and US-TTY too) or prefix (variable-length codewords from a codebook, truncated binary, unary or Elias gamma).",
   snippet: "Use encodings_encode to write text or bytes in base64, base58, bech32 and the like.",
   guidelines: [
     "Text is encoded as UTF-8. For bytes, pass them in hex or base64 and set inputFormat.",
@@ -313,6 +342,7 @@ export const decodeTool = defineTool({
     "Unsure which encoding it is? Call encodings_identify first.",
     `${VARIANTS} identify names the options a candidate needs.`,
     "The answer names the byte count and any prefix, version or file name the text carried.",
+    "prefix reports the Kraft sum, and bits at the end that only start a codeword as leftover.",
   ],
   effect: "read",
   input: decodeSchema,

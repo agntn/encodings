@@ -122,8 +122,11 @@ const FRAMED_ONLY = new Set(["quoted-printable", "html"]);
 /** Encodings that read nearly anything, so only readable text counts, this many bytes of it. */
 const TEXT_ONLY: Readonly<Record<string, number>> = { integer: MIN_TEXT_BYTES, ita2: 1 };
 
-/** Options the guess never flips: ita2 numbers are digits, not its alphabet. */
-const UNGUESSED: Readonly<Record<string, string>> = { ita2: "numbers" };
+/** Options the guess never flips: ita2 numbers are digits, and unary reads any bits at all. */
+const UNGUESSED: Readonly<Record<string, readonly string[]>> = {
+  ita2: ["numbers"],
+  prefix: ["code"],
+};
 
 /**
  * Framing in the text that only this encoding, read this way, writes.
@@ -271,7 +274,7 @@ function alternatives(option: EncodingOption): (string | boolean)[] {
  */
 function guessed(name: string, option: EncodingOption): boolean {
   if (option.decode !== true || option.narrows === true) return false;
-  return !Object.hasOwn(UNGUESSED, name) || UNGUESSED[name] !== option.name;
+  return !Object.hasOwn(UNGUESSED, name) || !UNGUESSED[name]!.includes(option.name);
 }
 
 /**

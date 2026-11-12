@@ -23,6 +23,9 @@
  * - `baudot`: python-baudot 0.1.1.post2 `encode_str` with `ITA2_STANDARD` and `ITA2_US`, over
  *   `random.seed(7)` capitals, figures and spaces. It fills the figures of F, G and H, which
  *   ITU-T S.1 leaves unassigned, so the ITA2 rows go without them.
+ * - `prefixCodes`: bitarray 3.11.0 `encode` and `decode`, the second codebook from
+ *   `bitarray.util.huffman_code` over its text. It throws on bits left at the end, where
+ *   `prefix` hands them back.
  */
 
 /** Rows keyed by encoding name; `hex` is the input. */
@@ -987,3 +990,32 @@ export const baudot = {
     },
   ],
 } as const;
+
+/** Codebooks with a text and the bits bitarray writes for it. */
+export const prefixCodes = [
+  {
+    codebook: { A: "0", B: "10", R: "110", C: "1110", D: "1111" },
+    text: "ABRACADABRA",
+    bits: "01011001110011110101100",
+  },
+  {
+    codebook: {
+      " ": "110",
+      ",": "01000",
+      a: "111",
+      c: "01110",
+      d: "0110",
+      e: "1011",
+      h: "01001",
+      k: "1001",
+      n: "0101",
+      r: "1000",
+      s: "10100",
+      t: "00",
+      u: "10101",
+      w: "01111",
+    },
+    text: "attack at dawn, then retreat at dusk",
+    bits: "1110000111011101001110111001100110111011110101010001100001001101101011101000101100100010111110011011100110011010101101001001",
+  },
+] as const;

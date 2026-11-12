@@ -84,6 +84,14 @@ describe("identify", () => {
     expect(names("8 5 12 12 15")).not.toContain("ita2");
   });
 
+  it("never reads bits as a prefix code it would have to guess", () => {
+    for (const text of ["010110111", "0", "1111 0000", encode("binary", "Hi")]) {
+      expect(identify(text, { limit: 20 }).map((candidate) => candidate.encoding)).not.toContain(
+        "prefix",
+      );
+    }
+  });
+
   it("wants a reference with its semicolon before it calls a text HTML", () => {
     for (const text of ["R&D and AT&T", "?a=1&copy=2", "&nosuchname;"]) {
       expect(identify(text).map((candidate) => candidate.encoding)).not.toContain("html");

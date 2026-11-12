@@ -26,6 +26,7 @@ import { html } from "./html.ts";
 import { integer, type IntegerOptions } from "./integer.ts";
 import { ITA2_ALPHABETS, ita2, type Ita2Alphabet, type Ita2Options } from "./ita2.ts";
 import { octal } from "./octal.ts";
+import { PREFIX_CODES, prefix, type PrefixCodeName, type PrefixOptions } from "./prefix.ts";
 import { quotedPrintable } from "./quoted-printable.ts";
 import type {
   DecodeOptions,
@@ -174,6 +175,35 @@ function ita2Options(values: Values): Ita2Options {
     order: String(values["order"]) as BitOrder,
     numbers: values["numbers"] === true,
   };
+}
+
+/**
+ * Reads prefix code options from checked values.
+ *
+ * @param values - Checked option values.
+ * @returns {PrefixOptions} The codec options.
+ */
+function prefixOptions(values: Values): PrefixOptions {
+  const { codebook, code, n } = values;
+  return {
+    ...(codebook === undefined ? {} : { codebook: String(codebook) }),
+    ...(code === undefined ? {} : { code: String(code) as PrefixCodeName }),
+    ...(n === undefined ? {} : { n: Number(n) }),
+  };
+}
+
+/**
+ * Reads bits with a prefix code, the Kraft sum and any leftover bits as details.
+ *
+ * @param text - The bits.
+ * @param values - Checked option values.
+ * @returns {Decoded} The text and the details.
+ */
+function readPrefix(text: string, values: Values): Decoded {
+  const { bytes, kraft, leftover } = prefix.decode(text, prefixOptions(values));
+  const details: Record<string, string | number> = { kraft };
+  if (leftover !== "") Object.assign(details, { leftover, leftoverBits: leftover.length });
+  return { bytes, details };
 }
 
 /**
@@ -822,5 +852,52 @@ export const builtins: readonly Encoding[] = [
     (bytes, values) =>
       ita2.encode(bytes, { ...ita2Options(values), separate: values["separate"] === true }),
     (text, values) => ita2.decode(text, ita2Options(values)),
+  ),
+  define(
+    "prefix",
+    {
+      label: "Prefix code",
+      description:
+        "Variable-length codewords from a codebook, or truncated binary, unary and Elias gamma",
+      family: "prefix",
+      standard: "Kraft-McMillan inequality; Elias, IEEE Trans. Inf. Theory 21 (1975)",
+      alphabet: "01",
+      options: [
+        {
+          name: "codebook",
+          type: "string",
+          required: false,
+          description:
+            'Codewords by symbol, such as A=0 B=10 C=11, or a JSON object such as {" ":"0"}',
+          decode: true,
+        },
+        {
+          name: "code",
+          type: "string",
+          required: false,
+          choices: [...PREFIX_CODES],
+          description:
+            "In place of a codebook: truncated binary for n symbols from 0, unary from 0 or Elias gamma from 1",
+          decode: true,
+        },
+        {
+          name: "n",
+          type: "number",
+          required: false,
+          description: "Truncated binary: how many symbols, from 2",
+          decode: true,
+        },
+        {
+          name: "separate",
+          type: "boolean",
+          required: false,
+          default: false,
+          description: "Put a space between codewords",
+        },
+      ],
+    },
+    (bytes, values) =>
+      prefix.encode(bytes, { ...prefixOptions(values), separate: values["separate"] === true }),
+    readPrefix,
   ),
 ];

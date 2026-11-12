@@ -20,6 +20,7 @@
     "ita2",
     "mcp",
     "openpgp",
+    "prefix-code",
     "quoted-printable",
     "rlp",
     "uuencode",
@@ -117,6 +118,10 @@
     "./ita2": {
       "types": "./dist/ita2.d.mts",
       "import": "./dist/ita2.mjs"
+    },
+    "./prefix": {
+      "types": "./dist/prefix.d.mts",
+      "import": "./dist/prefix.mjs"
     },
     "./charsets": {
       "types": "./dist/charsets.d.mts",

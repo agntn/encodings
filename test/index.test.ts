@@ -48,6 +48,7 @@ describe("@agntn/encodings", () => {
       "quoted-printable",
       "html",
       "ita2",
+      "prefix",
     ]);
   });
 
@@ -87,6 +88,7 @@ describe("family subpaths", () => {
     "quoted-printable": ["quotedPrintable"],
     html: ["html"],
     ita2: ["ITA2_ALPHABETS", "ita2"],
+    prefix: ["PREFIX_CODES", "prefix"],
     charsets: ["CODE_PAGES", "charsets"],
     rlp: ["rlp"],
     armor: ["armor"],

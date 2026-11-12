@@ -240,6 +240,7 @@ function optionsArgument(value: unknown): object {
 const OPTION_LENGTHS: Readonly<Record<string, number>> = {
   symbols: MAX_SYMBOLS_LENGTH,
   digits: MAX_SYMBOLS_LENGTH,
+  codebook: MAX_SYMBOLS_LENGTH,
   sample: MAX_TEXT_LENGTH,
 };
 

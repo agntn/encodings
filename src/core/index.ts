@@ -86,6 +86,15 @@ export {
   type Ita2EncodeOptions,
   type Ita2Options,
 } from "./ita2.ts";
+export {
+  PREFIX_CODES,
+  prefix,
+  type Codebook,
+  type PrefixCodeName,
+  type PrefixDecoded,
+  type PrefixEncodeOptions,
+  type PrefixOptions,
+} from "./prefix.ts";
 export { CODE_PAGES, charsets, type CharsetOptions, type CodePage } from "./charsets.ts";
 export { rlp, type RlpInput, type RlpItem } from "./rlp.ts";
 export {

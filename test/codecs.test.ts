@@ -28,6 +28,7 @@ import {
   integer,
   ita2,
   octal,
+  prefix,
   quotedPrintable,
   rlp,
   segwit,
@@ -48,6 +49,7 @@ import {
   integers,
   javascript,
   monero,
+  prefixCodes,
   python,
   whatwg,
 } from "./fixtures/references.ts";
@@ -1806,6 +1808,7 @@ describe("input of the wrong type", () => {
     ["quoted-printable", quotedPrintable],
     ["html", html],
     ["ita2", ita2],
+    ["prefix", prefix],
   ] as const;
 
   it.each(codecs)("%s refuses a string to encode instead of writing zeros", (name, codec) => {
@@ -1983,4 +1986,187 @@ describe("large input", () => {
       latin1: 1_000_000,
     });
   }, 30_000);
+});
+
+describe("prefix", () => {
+  const book = { A: "0", B: "10", C: "110", D: "111" };
+  const decoded = (bits: string, options: Parameters<typeof prefix.decode>[1]) => {
+    const result = prefix.decode(bits, options);
+    return { text: read(result.bytes), kraft: result.kraft, leftover: result.leftover };
+  };
+
+  it.each(prefixCodes)("agrees with bitarray on $text", ({ codebook, text: plain, bits }) => {
+    expect(prefix.encode(text(plain), { codebook })).toBe(bits);
+    expect(decoded(bits, { codebook })).toEqual({ text: plain, kraft: "1", leftover: "" });
+  });
+
+  it("reads and writes bits with a codebook, as an object or as text", () => {
+    expect(decoded("010110111", { codebook: book })).toEqual({
+      text: "ABCD",
+      kraft: "1",
+      leftover: "",
+    });
+    expect(prefix.encode(text("ABCD"), { codebook: "A=0 B:10, C=110 D=111" })).toBe("010110111");
+    expect(prefix.encode(text("DAB"), { codebook: book, separate: true })).toBe("111 0 10");
+    expect(
+      read(prefix.decode("0 11\n10", { codebook: '{" ":"0","=":"10","😀":"11"}' }).bytes),
+    ).toBe(" 😀=");
+  });
+
+  /* Wikipedia, Truncated binary encoding: n = 10 keeps six codewords at 3 bits, four at 4. */
+  it("builds truncated binary for n symbols", () => {
+    expect(Object.values(prefix.codebook({ code: "truncated", n: 5 }))).toEqual([
+      "00",
+      "01",
+      "10",
+      "110",
+      "111",
+    ]);
+    expect(prefix.codebook({ code: "truncated", n: 10 })).toMatchObject({
+      "5": "101",
+      "6": "1100",
+      "9": "1111",
+    });
+    expect(Object.values(prefix.codebook({ code: "truncated", n: 8 }))).toEqual(
+      Array.from({ length: 8 }, (_, value) => value.toString(2).padStart(3, "0")),
+    );
+  });
+
+  /* Elias (1975), the gamma code: 1, 010, 011, 00100 and on; unary as n ones and a zero. */
+  it("writes unary and Elias gamma", () => {
+    expect(prefix.encode(text("1 2 3 4 17"), { code: "gamma", separate: true })).toBe(
+      "1 010 011 00100 000010001",
+    );
+    expect(decoded("101001100100000010001", { code: "gamma" })).toEqual({
+      text: "1 2 3 4 17",
+      kraft: "1",
+      leftover: "",
+    });
+    expect(prefix.encode(text("0, 1 2 5"), { code: "unary" })).toBe("010110111110");
+    expect(read(prefix.decode("010110111110", { code: "unary" }).bytes)).toBe("0 1 2 5");
+    expect(
+      read(
+        prefix.decode(prefix.encode(text("4 0 3"), { code: "truncated", n: 5 }), {
+          code: "truncated",
+          n: 5,
+        }).bytes,
+      ),
+    ).toBe("4 0 3");
+  });
+
+  it("survives a round trip of random symbols in every code", () => {
+    let seed = 7;
+    const next = (below: number) => {
+      seed = (seed * 1_103_515_245 + 12_345) % 2_147_483_648;
+      return seed % below;
+    };
+    for (let round = 0; round < 300; round++) {
+      const n = 2 + next(254);
+      const values = Array.from({ length: 1 + next(30) }, () => next(n));
+      for (const options of [{ code: "truncated", n }, { code: "unary" }] as const) {
+        const input = values.join(" ");
+        expect(read(prefix.decode(prefix.encode(text(input), options), options).bytes)).toBe(input);
+      }
+      const gamma = values.map((value) => value + 1).join(" ");
+      const bits = prefix.encode(text(gamma), { code: "gamma" });
+      expect(read(prefix.decode(bits, { code: "gamma" }).bytes)).toBe(gamma);
+      const letters = values.map((value) => "ABCD"[value % 4]).join("");
+      expect(
+        read(
+          prefix.decode(prefix.encode(text(letters), { codebook: book }), { codebook: book }).bytes,
+        ),
+      ).toBe(letters);
+    }
+  });
+
+  it("refuses a codebook that is not prefix-free and names the pair", () => {
+    expect(() => prefix.kraft({ codebook: { A: "0", B: "01" } })).toThrow(
+      '"A" (U+0041) = 0 is a prefix of "B" (U+0042) = 01',
+    );
+    expect(() => prefix.kraft({ codebook: "X=110 A=1 B=0" })).toThrow(
+      '"A" (U+0041) = 1 is a prefix of "X"',
+    );
+    expect(() => prefix.kraft({ codebook: "A=10 B=10" })).toThrow("the same codeword 10");
+    expect(() => prefix.kraft({ codebook: "A=0 A=1" })).toThrow('gives "A" (U+0041) two codewords');
+  });
+
+  it("reports the Kraft sum, so a code with free leaves shows", () => {
+    expect(prefix.kraft({ codebook: book })).toBe("1");
+    expect(prefix.kraft({ codebook: "A=0 B=10" })).toBe("3/4");
+    expect(prefix.kraft({ codebook: "A=00 B=01 C=10 D=110" })).toBe("7/8");
+    expect(prefix.kraft({ code: "gamma" })).toBe("1");
+    const wide = Object.fromEntries(
+      Array.from({ length: 2 ** 17 }, (_, index) => [
+        String.fromCodePoint(0x10000 + index),
+        index.toString(2).padStart(17, "0"),
+      ]),
+    );
+    expect(prefix.kraft({ codebook: wide })).toBe("1");
+  });
+
+  it("hands back bits at the end that start a codeword, and refuses bits that start none", () => {
+    expect(decoded("1", { codebook: book })).toEqual({ text: "", kraft: "1", leftover: "1" });
+    expect(decoded("0 11", { codebook: book })).toEqual({ text: "A", kraft: "1", leftover: "11" });
+    expect(decoded("0000", { code: "gamma" })).toEqual({ text: "", kraft: "1", leftover: "0000" });
+    expect(decoded("00", { code: "truncated", n: 5 })).toEqual({
+      text: "0",
+      kraft: "1",
+      leftover: "",
+    });
+    expect(decoded("011", { code: "truncated", n: 5 })).toEqual({
+      text: "1",
+      kraft: "1",
+      leftover: "1",
+    });
+    expect(() => prefix.decode("0 11", { codebook: "A=0 B=10" })).toThrow(
+      "bits 11 at index 2 start no codeword",
+    );
+    expect(() => prefix.decode("01x", { code: "unary" })).toThrow(DecodeError);
+  });
+
+  it("names what a code can't write", () => {
+    expect(() => prefix.encode(text("AZ"), { codebook: book })).toThrow(
+      '"Z" (U+005A) at index 1 has no codeword; add it to the codebook',
+    );
+    expect(() => prefix.encode(text("5"), { code: "truncated", n: 5 })).toThrow("takes 0 to 4");
+    expect(() => prefix.encode(text("0"), { code: "gamma" })).toThrow("starts at 1");
+    expect(prefix.encode(text("255"), { code: "unary" })).toHaveLength(256);
+    expect(() => prefix.encode(text("256"), { code: "unary" })).toThrow("unary takes 0 to 255");
+    expect(() => prefix.decode(`${"1".repeat(256)}0`, { code: "unary" })).toThrow(
+      "the unary run at index 0 is over 255",
+    );
+    expect(() => prefix.encode(text("3 12x"), { code: "gamma" })).toThrow(
+      '"x" (U+0078) at index 4',
+    );
+  });
+
+  it("refuses options that don't add up", () => {
+    expect(() => prefix.decode("0", {})).toThrow("give a codebook or a code");
+    expect(() => prefix.decode("0", { codebook: book, code: "unary" })).toThrow("not both");
+    expect(() => prefix.decode("0", { code: "unary", n: 3 })).toThrow("only the truncated code");
+    expect(() => prefix.decode("0", { code: "truncated" })).toThrow("needs the number of symbols");
+    for (const n of [1, 2.5, Number.NaN, 2 ** 32 + 1]) {
+      expect(() => prefix.decode("0", { code: "truncated", n })).toThrow(InvalidOptionError);
+    }
+    for (const codebook of ["AB=0", "A0", "A=", "A=012", "{", "[]", ""]) {
+      expect(() => prefix.kraft({ codebook }), codebook).toThrow(InvalidOptionError);
+    }
+    expect(() => prefix.codebook({ code: "unary" })).toThrow("no end");
+    expect(prefix.kraft({ codebook: { A: "0".repeat(256), B: "1" } })).toBe(
+      `${(1n << 255n) + 1n}/${1n << 256n}`,
+    );
+    expect(() => prefix.kraft({ codebook: { A: "0".repeat(257), B: "1" } })).toThrow(
+      'Invalid option codebook=257 characters: the codeword of "A" (U+0041) is over 256 bits',
+    );
+    expect(() => prefix.kraft({ codebook: `{"A": "${"x".repeat(50)}"` })).toThrow(
+      "Invalid option codebook=58 characters: is not valid JSON",
+    );
+    expect(() => prefix.codebook({ code: "truncated", n: 2 ** 20 })).toThrow("lists up to 65536");
+  });
+
+  it("refuses options of the wrong type", () => {
+    for (const options of [null, 5, [], { codebook: 5 }, { codebook: ["A"] }, { code: "zeta" }]) {
+      expect(() => prefix.decode("0", options as never)).toThrow(EncodingError);
+    }
+  });
 });

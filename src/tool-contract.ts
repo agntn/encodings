@@ -49,6 +49,12 @@ export const ALPHABETS = [
   "us-tty",
 ] as const;
 
+/** The built-in codes of `prefix`, as `test/mcp.test.ts` holds them to `PREFIX_CODES`. */
+export const CODES = ["truncated", "unary", "gamma"] as const;
+
+/** Most symbols of truncated binary, as the codec caps it. */
+export const MAX_TRUNCATED_SYMBOLS = 2 ** 32;
+
 /**
  * What `encodings_charset_convert` reads and writes: UTF-8, hex, base64 or a code page. A literal
  * list, so the schemas load without the tables; `test/mcp.test.ts` holds it to `CODE_PAGES`.

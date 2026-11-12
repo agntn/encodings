@@ -19,6 +19,7 @@ export const familyEntries = [
   "quoted-printable",
   "html",
   "ita2",
+  "prefix",
 ] as const;
 
 /**

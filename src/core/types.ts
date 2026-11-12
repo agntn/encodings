@@ -19,6 +19,7 @@ export const encodingFamilies = [
   "quoted-printable",
   "html",
   "ita2",
+  "prefix",
 ] as const;
 
 /** Family of an encoding. Registered encodings may name others. */

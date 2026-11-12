@@ -30,6 +30,7 @@ const BUILTINS = [
   "quoted-printable",
   "html",
   "ita2",
+  "prefix",
 ] as const;
 
 /** An icon, a one-liner and who writes it, per encoding. Everything else comes from `info()`. */
@@ -79,6 +80,11 @@ const PRESENTATION: Record<BuiltinEncoding, { icon: string; blurb: string; usedB
     blurb: "Five bits a character and two shift keys. Capitals only, like it's 1930",
     usedBy: "Telex, RTTY, teleprinters",
   },
+  prefix: {
+    icon: "i-lucide-git-fork",
+    blurb: "Short codewords for common symbols, no separators, and no codeword starts another",
+    usedBy: "Huffman tables, Golomb and Elias codes, bit puzzles",
+  },
 };
 
 /** Labels a page shows per family. The keys come from the library. */
@@ -100,6 +106,7 @@ const FAMILY_LABELS: Record<(typeof encodingFamilies)[number], string> = {
   "quoted-printable": "Quoted-Printable",
   html: "HTML",
   ita2: "ITA2",
+  prefix: "Prefix codes",
 };
 
 /** How the landing groups the registry: by how an encoding turns bytes into text. */
@@ -133,6 +140,7 @@ const GROUP_OF: Record<BuiltinEncoding, GroupKey> = {
   "quoted-printable": "mail",
   html: "markup",
   ita2: "bits",
+  prefix: "bits",
 };
 
 export interface EncodingEntry {
@@ -259,7 +267,7 @@ export function alphabetSize(info: EncodingInfo): number {
   return codePoints(info.alphabet);
 }
 
-export { SAMPLE_INPUT, SAMPLE_OPTIONS, sampleInput } from "./samples";
+export { SAMPLE_INPUT, SAMPLE_OPTIONS, sampleDecodeOptions, sampleInput } from "./samples";
 
 /** Pseudo-random bytes the overhead is measured on: enough that padding and leading zeros wash out. */
 const OVERHEAD_BYTES = Uint8Array.from({ length: 600 }, (_, index) => (index * 151 + 7) % 251);
