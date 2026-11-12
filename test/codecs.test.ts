@@ -272,6 +272,15 @@ describe("decimal code points", () => {
       'decimal: "55296" at index 3 is a surrogate, not a character',
     );
     expect(() => decimal.decode("57343", { codepoints })).toThrow("is a surrogate");
+    const party = String.fromCodePoint(0x1_f3_89);
+    const halves = party
+      .split("")
+      .map((unit) => unit.codePointAt(0))
+      .join(" ");
+    expect(() => decimal.decode(halves, { codepoints })).toThrow(
+      '"55356" at index 0 is a surrogate',
+    );
+    expect(read(decimal.decode("127881", { codepoints }))).toBe(party);
     expect(() => decimal.decode("65 3x2", { codepoints })).toThrow(
       expect.objectContaining({ name: "DecodeError", index: 4 }),
     );
