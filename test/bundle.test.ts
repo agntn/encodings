@@ -29,6 +29,7 @@ const markers: Record<(typeof entries)[number], string> = {
   "quoted-printable": "must be escaped",
   html: "a reference names a character",
   ita2: "teleprinters print capitals only",
+  prefix: "is not prefix-free",
   charsets: "has no byte",
   rlp: "wraps a single byte",
   armor: "a cleartext signed message is not armor",

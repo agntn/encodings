@@ -238,8 +238,23 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
     );
   });
 
+  it("reads bits with a codebook and names the bits left at the end", () => {
+    expect(run("decode", "prefix", "0101101", "--codebook", "A=0 B=10 C=110 D=111").stdout).toBe(
+      "ABC",
+    );
+    expect(run("decode", "prefix", "0101101", "--codebook", "A=0 B=10 C=110 D=111").stderr).toBe(
+      "kraft: 1\nleftover: 1\nleftoverBits: 1\n",
+    );
+    expect(run("encode", "prefix", "4 0", "--code", "truncated", "--n", "5").stdout).toBe(
+      "11100\n",
+    );
+    expect(run("decode", "prefix", "01", "--codebook", "A=0 B=01").stderr).toContain(
+      '"A" (U+0041) = 0 is a prefix of "B" (U+0042) = 01',
+    );
+  });
+
   it("lists encodings and shows one", () => {
-    expect(run("list").stdout.trim().split("\n")).toHaveLength(17);
+    expect(run("list").stdout.trim().split("\n")).toHaveLength(18);
     expect(run("list", "--family", "base64").stdout.trim().split("\n")).toHaveLength(1);
     expect(run("list", "bech32").stdout).toContain(
       "prefix (string, required): Human-readable part",

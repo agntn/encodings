@@ -64,6 +64,8 @@ const ALIASES: Readonly<Record<string, string>> = {
   entities: "html",
   htmlentities: "html",
   baudot: "ita2",
+  prefixcode: "prefix",
+  huffman: "prefix",
 };
 
 /**

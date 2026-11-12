@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { EncodingError, create, encodingFamilies, type EncodingInfo } from "@agntn/encodings";
+import { EncodingError, create, encodingFamilies, type EncodingInfo, type EncodingOption } from "@agntn/encodings";
 import {
   CHARSET_FORMATS,
   INPUT_FORMATS,
@@ -170,6 +170,17 @@ const familyItems = [
   { label: "every family", value: EVERY },
   ...encodingFamilies.map((key) => ({ label: familyLabel(key), value: key })),
 ];
+
+/**
+ * The menu of a choice option, with "none" first when it has no default to fall back on.
+ *
+ * @param {EncodingOption} option - The option.
+ * @returns {{ label: string; value: string }[]} The menu items.
+ */
+function choiceItems(option: EncodingOption): { label: string; value: string }[] {
+  const items = (option.choices ?? []).map((choice) => ({ label: choice, value: choice }));
+  return option.default === undefined ? [{ label: "none", value: EVERY }, ...items] : items;
+}
 
 /**
  * The option values the call sends: only the encoding's own, typed as it declares them, and only
@@ -881,13 +892,13 @@ const identifyLimit = MAX_CANDIDATES;
                   <USelectMenu
                     v-else-if="option.choices"
                     :id="`playground-option-${option.name}`"
-                    :model-value="(values[option.name] as string | undefined) || String(option.default)"
-                    :items="option.choices.map((choice) => ({ label: choice, value: choice }))"
+                    :model-value="(values[option.name] as string | undefined) || String(option.default ?? EVERY)"
+                    :items="choiceItems(option)"
                     value-key="value"
                     variant="none"
                     :search-input="false"
                     class="w-full"
-                    @update:model-value="values[option.name] = $event === option.default ? '' : String($event)"
+                    @update:model-value="values[option.name] = $event === option.default || $event === EVERY ? '' : String($event)"
                   />
                   <UInput
                     v-else

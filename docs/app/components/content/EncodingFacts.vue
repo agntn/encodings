@@ -11,6 +11,7 @@ import {
   familyLabel,
   overheadLine,
   registryPosition,
+  sampleDecodeOptions,
   sampleInput as sampleFor,
 } from "../../utils/encodings";
 import { optionFlags, optionLiteral, shellArg } from "../../utils/format";
@@ -46,7 +47,7 @@ const sample = computed(() => {
   if (!entry.value) return undefined;
   const encoding = create(entry.value.slug);
   const text = encoding.encode(sampleInput.value, sampleOptions.value);
-  const { bytes, details } = encoding.decode(text);
+  const { bytes, details } = encoding.decode(text, sampleDecodeOptions(entry.value.slug, entry.value.info.options));
   return {
     text,
     line: text.replace(/\n$/u, "").replaceAll("\n", "↵"),

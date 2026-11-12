@@ -1,10 +1,10 @@
 import { existsSync } from "node:fs";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { afterEach, describe, expect, it } from "vite-plus/test";
-import { CODE_PAGES, encodingInfos } from "../src/index.ts";
+import { CODE_PAGES, PREFIX_CODES, encodingInfos } from "../src/index.ts";
 import { callTool, createMcpServer, toolListings } from "../src/mcp.ts";
 import { serverInfo } from "../src/server-info.ts";
-import { ALPHABETS, CHARSET_FORMATS } from "../src/tool-contract.ts";
+import { ALPHABETS, CHARSET_FORMATS, CODES } from "../src/tool-contract.ts";
 import {
   encodingsCharsetConvert,
   encodingsDecode,
@@ -265,6 +265,29 @@ describe("encodings MCP server", () => {
     ).toBe("ita2 (2 bytes):\n3 27 23");
   });
 
+  it("reads a prefix code and says what is left over", async () => {
+    expect(
+      await call("encodings_decode", {
+        encoding: "huffman",
+        text: "0101101",
+        options: { codebook: "A=0 B=10 C=110 D=111" },
+      }),
+    ).toBe(
+      'prefix (codebook="A=0 B=10 C=110 D=111") → 3 bytes as utf8 (kraft "1", leftover "1", leftoverBits 1):\n"ABC"',
+    );
+    expect(
+      await call("encodings_encode", {
+        encoding: "prefix",
+        input: "1 2 3",
+        options: { code: "gamma", separate: true },
+      }),
+    ).toBe("prefix (5 bytes):\n1 010 011");
+  });
+
+  it("offers in the schema the codes prefix has", () => {
+    expect(CODES).toEqual(PREFIX_CODES);
+  });
+
   it("offers in the schema every option an encoding writes or reads with", () => {
     const writes = Object.keys(encodeSchema.properties.options.properties);
     const reads = Object.keys(decodeSchema.properties.options.properties);
@@ -304,7 +327,7 @@ describe("encodings MCP server", () => {
   });
 
   it("lists encodings and shows one", async () => {
-    expect((await call("encodings_info", {})).split("\n")).toHaveLength(17);
+    expect((await call("encodings_info", {})).split("\n")).toHaveLength(18);
     expect(await call("encodings_info", { encoding: "base32" })).toContain(
       'alphabet (string, default "standard", decode too)',
     );

@@ -58,6 +58,9 @@ const multibase = flag("base256: the 🚀 multibase prefix");
 const radix = Type.Optional(Type.Integer({ description: "integer: base, 2 to 36 (default 10)" }));
 const digits = text("integer: one symbol per digit, lowest first, in place of --radix");
 const bijective = flag("integer: no zero digit, the first symbol is 1");
+const codebook = text("prefix: codewords by symbol, such as A=0 B=10 C=11");
+const code = text("prefix: truncated, unary or gamma in place of --codebook");
+const n = Type.Optional(Type.Integer({ description: "prefix --code truncated: how many symbols" }));
 
 /** The flags `encode` turns into encoding options, which each encoding checks against its own. */
 export const encodeFlags = {
@@ -66,7 +69,9 @@ export const encodeFlags = {
   m,
   upper: flag("hex: write A-F"),
   ascii: flag("html: write characters past ASCII as &#x...; too"),
-  separate: flag("binary: space between bytes, ita2: between codes (default true)"),
+  separate: flag(
+    "binary: space between bytes, ita2: between codes (default true), prefix: between codewords",
+  ),
   symbols,
   bits,
   order,
@@ -76,6 +81,9 @@ export const encodeFlags = {
   digits,
   bijective,
   numbers,
+  codebook,
+  code,
+  n,
   alphabet,
   check: flag("base58: Base58Check, with a double SHA-256 checksum"),
   blocks: flag("base58: Monero's blocks, 8 bytes to 11 characters"),
@@ -100,6 +108,9 @@ export const decodeFlags = {
   digits,
   bijective,
   numbers,
+  codebook,
+  code,
+  n,
   width: Type.Optional(Type.Integer({ description: "integer: bytes to fill with leading zeros" })),
   canonical: flag("base32, base64: refuse non-zero spare bits in the last character"),
 };
