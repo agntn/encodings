@@ -26,7 +26,8 @@
  * - `prefixCodes`: bitarray 3.11.0 `encode` and `decode`, the second codebook from
  *   `bitarray.util.huffman_code` over its text. It throws on bits left at the end, where
  *   `prefix` hands them back.
- * - `codePoints`: CPython 3.14.9 `ord` over each character, a BOM and U+10FFFF included.
+ * - `codePoints`: CPython 3.14.9 `ord` over each character, a BOM and U+10FFFF included, in
+ *   decimal and as `f"U+{ord(c):04X}"`.
  */
 
 /** Rows keyed by encoding name; `hex` is the input. */
@@ -1026,4 +1027,5 @@ export const codePoints = {
   text: "Zażółć gęślą jaźń. Ελλάδα, Привет, 日本語 🎉\uFEFF\u{10FFFF}",
   numbers:
     "90 97 380 243 322 263 32 103 281 347 108 261 32 106 97 378 324 46 32 917 955 955 940 948 945 44 32 1055 1088 1080 1074 1077 1090 44 32 26085 26412 35486 32 127881 65279 1114111",
+  hex: "U+005A U+0061 U+017C U+00F3 U+0142 U+0107 U+0020 U+0067 U+0119 U+015B U+006C U+0105 U+0020 U+006A U+0061 U+017A U+0144 U+002E U+0020 U+0395 U+03BB U+03BB U+03AC U+03B4 U+03B1 U+002C U+0020 U+041F U+0440 U+0438 U+0432 U+0435 U+0442 U+002C U+0020 U+65E5 U+672C U+8A9E U+0020 U+1F389 U+FEFF U+10FFFF",
 } as const;

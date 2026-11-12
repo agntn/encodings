@@ -125,6 +125,7 @@ const TEXT_ONLY: Readonly<Record<string, number>> = { integer: MIN_TEXT_BYTES, i
 /** Options the guess never flips, since each reads nearly any digits or bits as text. */
 const UNGUESSED: Readonly<Record<string, readonly string[]>> = {
   decimal: ["codepoints"],
+  hex: ["codepoints"],
   ita2: ["numbers"],
   prefix: ["code"],
 };

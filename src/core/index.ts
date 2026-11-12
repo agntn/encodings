@@ -27,7 +27,7 @@ export {
 } from "./decimal.ts";
 export type { NumbersCodec, NumbersEncodeOptions } from "./numbers.ts";
 export { integer, type IntegerDecodeOptions, type IntegerOptions } from "./integer.ts";
-export { hex, type HexEncodeOptions } from "./hex.ts";
+export { hex, type HexCodec, type HexEncodeOptions, type HexOptions } from "./hex.ts";
 export {
   BASE32_ALPHABETS,
   base32,

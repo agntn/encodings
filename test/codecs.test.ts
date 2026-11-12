@@ -421,6 +421,95 @@ describe("hex", () => {
     expect(() => hex.decode("zz")).toThrow(DecodeError);
     expect(() => hex.decode("0g")).toThrow('"g" (U+0067) at index 1 is not a hex digit');
   });
+
+  it("names a stray digit before an odd length, and points U+ at code points", () => {
+    expect(() => hex.decode("0g1")).toThrow('"g" (U+0067) at index 1 is not a hex digit');
+    expect(() => hex.decode("U+017C U+0061")).toThrow(
+      '"U" (U+0055) at index 0 is not a hex digit; for Unicode code points, such as U+017C for ż, set codepoints',
+    );
+    expect(() => hex.decode("00 u+17c")).toThrow(expect.objectContaining({ index: 3 }));
+    expect(() => hex.decode("00 u+17c")).toThrow(/set codepoints$/u);
+    expect(() => hex.decode("0u")).toThrow(/is not a hex digit$/u);
+    expect(hex.decode("017c")).toEqual(Uint8Array.of(0x01, 0x7c));
+  });
+});
+
+describe("hex code points", () => {
+  const codepoints = true;
+
+  it("reads and writes the code points CPython gives", () => {
+    expect(read(hex.decode(codePoints.hex, { codepoints }))).toBe(codePoints.text);
+    expect(hex.encode(text(codePoints.text), { codepoints })).toBe(codePoints.hex);
+  });
+
+  it("takes U+ or not, any case, any number of digits, spaces and commas", () => {
+    expect(read(hex.decode("u+5a,61  17C\n00000000017c", { codepoints }))).toBe("Zażż");
+    expect(read(hex.decode("1f389 U+E9", { codepoints }))).toBe("🎉é");
+    expect(hex.decode(" , ", { codepoints })).toEqual(new Uint8Array());
+  });
+
+  it("reads a number under 100 as a character, not a byte", () => {
+    expect(hex.decode("e9", { codepoints })).toEqual(Uint8Array.of(0xc3, 0xa9));
+    expect(hex.decode("e9")).toEqual(Uint8Array.of(0xe9));
+  });
+
+  it("always writes U+ and capitals, whatever upper says", () => {
+    expect(hex.encode(text("ża"), { codepoints, upper: false })).toBe("U+017C U+0061");
+    expect(hex.encode(text("ża"), { codepoints, upper: true })).toBe("U+017C U+0061");
+  });
+
+  it.each([
+    [
+      "the edges of each UTF-8 length",
+      [0, 0x7f, 0x80, 0x7_ff, 0x8_00, 0xff_ff, 0x1_00_00, 0x10_ff_ff],
+    ],
+    ["the code points around the surrogates", [0xd7_ff, 0xe0_00]],
+    ["a leading BOM", [0xfe_ff, 0x41]],
+    [
+      "line and paragraph separators and NBSP, last too",
+      [0x61, 0x20_28, 0x62, 0x20_29, 0x63, 0xa0],
+    ],
+  ])("reads back %s", (_, points) => {
+    const bytes = text(String.fromCodePoint(...points));
+    expect(hex.decode(hex.encode(bytes, { codepoints }), { codepoints })).toEqual(bytes);
+  });
+
+  it("refuses what no text holds, with the index of the number", () => {
+    expect(() => hex.decode("41 U+110000", { codepoints })).toThrow(
+      expect.objectContaining({ message: 'hex: "U+110000" at index 3 is over U+10FFFF', index: 3 }),
+    );
+    expect(() => hex.decode("f".repeat(400), { codepoints })).toThrow("is over U+10FFFF");
+    expect(() => hex.decode("41 d800", { codepoints })).toThrow(
+      'hex: "d800" at index 3 is a surrogate, not a character',
+    );
+    expect(() => hex.decode("U+DFFF", { codepoints })).toThrow("is a surrogate");
+  });
+
+  it("points at the stray character inside a number, and at a bare U+", () => {
+    expect(() => hex.decode("41 U+12x4", { codepoints })).toThrow(
+      expect.objectContaining({
+        message: 'hex: "x" (U+0078) at index 7 is not a hex digit',
+        index: 7,
+      }),
+    );
+    expect(() => hex.decode("U+41 0x41", { codepoints })).toThrow(
+      expect.objectContaining({ index: 6 }),
+    );
+    expect(() => hex.decode("41 U+", { codepoints })).toThrow(
+      expect.objectContaining({ message: 'hex: "U+" at index 3 has no digits', index: 3 }),
+    );
+    expect(() => hex.decode("U++41", { codepoints })).toThrow(
+      expect.objectContaining({ index: 2 }),
+    );
+  });
+
+  it("refuses bytes that are not UTF-8 and a codepoints that is not a boolean", () => {
+    expect(() => hex.encode(Uint8Array.of(0xff), { codepoints })).toThrow(
+      "hex: encode with codepoints takes UTF-8 text, and these bytes are not",
+    );
+    expect(() => hex.decode("41", { codepoints: "yes" as never })).toThrow(InvalidOptionError);
+    expect(() => hex.encode(text("A"), { codepoints: 1 as never })).toThrow(InvalidOptionError);
+  });
 });
 
 describe("binary", () => {

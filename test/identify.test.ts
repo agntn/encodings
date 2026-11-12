@@ -101,6 +101,14 @@ describe("identify", () => {
     expect(top("3432")).toMatchObject({ encoding: "hex", text: "42" });
   });
 
+  it("never reads hex as code points either, U+ or not", () => {
+    for (const text of ["U+005A U+0061 U+017C", "31a5", "292af", "017c 0061"]) {
+      for (const candidate of identify(text, { limit: 20 })) {
+        expect(candidate.options?.["codepoints"]).toBeUndefined();
+      }
+    }
+  });
+
   it("wants a reference with its semicolon before it calls a text HTML", () => {
     for (const text of ["R&D and AT&T", "?a=1&copy=2", "&nosuchname;"]) {
       expect(identify(text).map((candidate) => candidate.encoding)).not.toContain("html");

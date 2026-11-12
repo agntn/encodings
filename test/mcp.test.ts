@@ -287,6 +287,26 @@ describe("encodings MCP server", () => {
     );
   });
 
+  it("reads hex code points, and points U+ in byte mode at them", async () => {
+    expect(
+      await call("encodings_decode", {
+        encoding: "hex",
+        text: "U+005A U+0061 U+017C",
+        options: { codepoints: true },
+      }),
+    ).toBe('hex (codepoints) → 4 bytes as utf8:\n"Zaż"');
+    expect(
+      await call("encodings_encode", {
+        encoding: "hex",
+        input: "ż!",
+        options: { codepoints: true },
+      }),
+    ).toBe("hex (3 bytes):\nU+017C U+0021");
+    await expect(call("encodings_decode", { encoding: "hex", text: "U+017C" })).rejects.toThrow(
+      '"U" (U+0055) at index 0 is not a hex digit; for Unicode code points, such as U+017C for ż, set codepoints',
+    );
+  });
+
   it("reads a prefix code and says what is left over", async () => {
     expect(
       await call("encodings_decode", {
