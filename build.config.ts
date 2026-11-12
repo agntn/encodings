@@ -18,6 +18,7 @@ export const familyEntries = [
   "uuencode",
   "quoted-printable",
   "html",
+  "ita2",
 ] as const;
 
 /**

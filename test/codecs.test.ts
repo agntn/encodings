@@ -26,6 +26,7 @@ import {
   hex,
   html,
   integer,
+  ita2,
   octal,
   quotedPrintable,
   rlp,
@@ -40,6 +41,7 @@ import { createBase58, createBase58check, type Base58Options } from "../src/base
 import { fromWords, fromWordsUnsafe, toWords } from "../src/bech32.ts";
 import {
   base58checkVariants,
+  baudot,
   codePages,
   gnupg,
   gsmg,
@@ -1114,6 +1116,237 @@ describe("html (WHATWG character references)", () => {
   });
 });
 
+describe("ita2", () => {
+  const LTRS = "11111";
+  const FIGS = "11011";
+  /* ITU-T S.1 (03/93) Table 1: letters, figures, elements 1 to 5, Z as 1, quotes in ASCII. */
+  const S1 = [
+    ["A", "-", "ZZAAA"],
+    ["B", "?", "ZAAZZ"],
+    ["C", ":", "AZZZA"],
+    ["D", "\u0005", "ZAAZA"],
+    ["E", "3", "ZAAAA"],
+    ["F", undefined, "ZAZZA"],
+    ["G", undefined, "AZAZZ"],
+    ["H", undefined, "AAZAZ"],
+    ["I", "8", "AZZAA"],
+    ["J", "\u0007", "ZZAZA"],
+    ["K", "(", "ZZZZA"],
+    ["L", ")", "AZAAZ"],
+    ["M", ".", "AAZZZ"],
+    ["N", ",", "AAZZA"],
+    ["O", "9", "AAAZZ"],
+    ["P", "0", "AZZAZ"],
+    ["Q", "1", "ZZZAZ"],
+    ["R", "4", "AZAZA"],
+    ["S", "'", "ZAZAA"],
+    ["T", "5", "AAAAZ"],
+    ["U", "7", "ZZZAA"],
+    ["V", "=", "AZZZZ"],
+    ["W", "2", "ZZAAZ"],
+    ["X", "/", "ZAZZZ"],
+    ["Y", "6", "ZAZAZ"],
+    ["Z", "+", "ZAAAZ"],
+    ["\r", "\r", "AAAZA"],
+    ["\n", "\n", "AZAAA"],
+    [" ", " ", "AAZAA"],
+    ["\0", "\0", "AAAAA"],
+  ] as const;
+  /* Figures where US-TTY differs from ITA2, from Gil Smith's Teletypewriter Communication Codes. */
+  const US_TTY: Readonly<Record<string, string>> = {
+    D: "$",
+    F: "!",
+    G: "&",
+    H: "#",
+    J: "'",
+    S: "\u0007",
+    V: ";",
+    Z: '"',
+  };
+  /* CCITT-1 as telexforum.de tabulates ITA1: letters, figures, elements 1 to 5. */
+  const ITA1 = [
+    ["A", "1", "10000"],
+    ["E", "2", "01000"],
+    ["\r", "\r", "11000"],
+    ["Y", "3", "00100"],
+    ["U", "4", "10100"],
+    ["I", undefined, "01100"],
+    ["O", "5", "11100"],
+    ["J", "6", "10010"],
+    ["G", "7", "01010"],
+    ["H", "+", "11010"],
+    ["B", "8", "00110"],
+    ["C", "9", "10110"],
+    ["F", undefined, "01110"],
+    ["D", "0", "11110"],
+    ["\n", "\n", "10001"],
+    ["X", ",", "01001"],
+    ["Z", ":", "11001"],
+    ["S", ".", "00101"],
+    ["T", undefined, "10101"],
+    ["W", "?", "01101"],
+    ["V", "'", "11101"],
+    ["\u007F", "\u007F", "00011"],
+    ["K", "(", "10011"],
+    ["M", ")", "01011"],
+    ["L", "=", "11011"],
+    ["R", "-", "00111"],
+    ["Q", "/", "10111"],
+    ["N", undefined, "01111"],
+    ["P", "%", "11111"],
+  ] as const;
+  const lsb = { order: "lsb" } as const;
+
+  it("reads every combination of ITU-T S.1 Table 1 in both cases", () => {
+    expect(S1).toHaveLength(30);
+    for (const [letter, figure, elements] of S1) {
+      const bits = elements.replaceAll("Z", "1").replaceAll("A", "0");
+      expect(read(ita2.decode(bits, lsb)), elements).toBe(letter);
+      expect(ita2.encode(text(letter), lsb), elements).toBe(bits);
+      const figures = `${FIGS} ${bits}`;
+      if (figure === undefined) {
+        expect(() => ita2.decode(figures, lsb), elements).toThrow("means nothing among figures");
+      } else {
+        expect(read(ita2.decode(figures, lsb)), elements).toBe(figure);
+      }
+    }
+    expect(read(ita2.decode(`${FIGS} 11000 ${LTRS} 11000`, lsb))).toBe("-A");
+  });
+
+  it("swaps the eight figures US-TTY changes and keeps the rest", () => {
+    for (const [letter, figure, elements] of S1.slice(0, 26)) {
+      const figures = `${FIGS} ${elements.replaceAll("Z", "1").replaceAll("A", "0")}`;
+      const expected = US_TTY[letter] ?? figure;
+      expect(read(ita2.decode(figures, { ...lsb, alphabet: "us-tty" })), letter).toBe(expected);
+    }
+  });
+
+  it("reads every code of CCITT-1, with the shifts that double as space", () => {
+    for (const [letter, figure, bits] of ITA1) {
+      const options = { ...lsb, alphabet: "ita1" } as const;
+      expect(read(ita2.decode(bits, options)), bits).toBe(letter);
+      const figures = `00010 ${bits}`;
+      if (figure === undefined) {
+        expect(() => ita2.decode(figures, options), bits).toThrow("means nothing among figures");
+      } else {
+        expect(read(ita2.decode(figures, options)), bits).toBe(figure);
+      }
+    }
+    const options = { ...lsb, alphabet: "ita1" } as const;
+    expect(read(ita2.decode("10000 00001 00010 10000 00010 00001 10000", options))).toBe("A 1 A");
+    expect(ita2.encode(text("A 1 A"), options)).toBe("10000 00001 00010 10000 00010 00001 10000");
+    expect(() => ita2.decode("00000", options)).toThrow("code 0 at index 0 means nothing");
+  });
+
+  it("writes HELLO in each table, element 5 first unless told otherwise", () => {
+    const hello = {
+      ita2: "10100 00001 10010 10010 11000",
+      "us-tty": "10100 00001 10010 10010 11000",
+      ita1: "01011 00010 11011 11011 00111",
+    } as const;
+    for (const [alphabet, bits] of Object.entries(hello)) {
+      const options = { alphabet: alphabet as keyof typeof hello };
+      expect(ita2.encode(text("HELLO"), options), alphabet).toBe(bits);
+      expect(read(ita2.decode(bits, options)), alphabet).toBe("HELLO");
+      const reversed = bits.replaceAll(/\d{5}/gu, (group) => Array.from(group).reverse().join(""));
+      expect(ita2.encode(text("HELLO"), { ...options, order: "lsb" }), alphabet).toBe(reversed);
+      expect(read(ita2.decode(reversed, { ...options, order: "lsb" })), alphabet).toBe("HELLO");
+    }
+  });
+
+  it("puts one figures shift between A and 1, and none before A", () => {
+    expect(ita2.encode(text("A1"))).toBe(`00011 ${FIGS} 10111`);
+    expect(ita2.encode(text("A1"), { numbers: true })).toBe("3 27 23");
+    expect(ita2.encode(text("1 A"))).toBe(`${FIGS} 10111 00100 ${LTRS} 00011`);
+  });
+
+  it("reads the same five bits as + in ITA2 and as a quote in US-TTY", () => {
+    expect(read(ita2.decode(`${FIGS} 10001`))).toBe("+");
+    expect(read(ita2.decode(`${FIGS} 10001`, { alphabet: "us-tty" }))).toBe('"');
+    expect(read(ita2.decode(`${FIGS} 00101`, { alphabet: "us-tty" }))).toBe("\u0007");
+  });
+
+  it("matches python-baudot, which opens with a shift", () => {
+    for (const [alphabet, rows] of Object.entries(baudot)) {
+      const options = { alphabet: alphabet as keyof typeof baudot, numbers: true };
+      for (const { text: plain, codes } of rows) {
+        expect(read(ita2.decode(codes, options)), plain).toBe(plain);
+        expect(ita2.encode(text(plain), options), plain).toBe(codes.replace(/^31 /u, ""));
+      }
+    }
+  });
+
+  it("round-trips random letters and figures in each table", () => {
+    const pools = {
+      ita2: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-?:().,'=/+ \r\n\0\u0005\u0007",
+      "us-tty": "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-?:().,'/$!&#;\" \r\n\0\u0007",
+      ita1: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+,:.?'()=-/% \r\n\u007F",
+    } as const;
+    let seed = 7;
+    const next = () => {
+      seed = (seed * 1_103_515_245 + 12_345) % 2_147_483_648;
+      return seed;
+    };
+    for (const [alphabet, pool] of Object.entries(pools)) {
+      const characters = Array.from(pool);
+      for (let round = 0; round < 50; round++) {
+        const plain = Array.from(
+          { length: 1 + (next() % 40) },
+          () => characters[next() % characters.length]!,
+        ).join("");
+        for (const options of [{}, { order: "lsb" }, { numbers: true }] as const) {
+          const all = { ...options, alphabet: alphabet as keyof typeof pools };
+          expect(read(ita2.decode(ita2.encode(text(plain), all), all)), JSON.stringify(plain)).toBe(
+            plain,
+          );
+        }
+      }
+    }
+  });
+
+  it("reads numbers split by spaces or commas, and bits wrapped by whitespace", () => {
+    expect(read(ita2.decode("20,1, 18 18\n24", { numbers: true }))).toBe("HELLO");
+    expect(read(ita2.decode("1010000001\n10010 1001011000"))).toBe("HELLO");
+    expect(ita2.encode(text("HI"), { separate: false })).toBe("1010000110");
+  });
+
+  it("names the code, the case and the place of a code with no meaning", () => {
+    expect(() => ita2.decode(`00011 ${FIGS} 01101`)).toThrow(
+      "ita2: code 13 at index 12 means nothing among figures in ita2",
+    );
+    expect(() => ita2.decode("3 27 13", { numbers: true })).toThrow(
+      expect.objectContaining({ name: "DecodeError", index: 5 }),
+    );
+    expect(read(ita2.decode(`${FIGS} 01101`, { alphabet: "us-tty" }))).toBe("!");
+  });
+
+  it("refuses broken bits, numbers out of range and text it cannot write", () => {
+    expect(() => ita2.decode("0101")).toThrow("4 bits are not whole groups of 5");
+    expect(() => ita2.decode("01012")).toThrow(
+      expect.objectContaining({ name: "DecodeError", index: 4 }),
+    );
+    expect(() => ita2.decode("3 32", { numbers: true })).toThrow(
+      "ita2: the number at index 2 is over 31",
+    );
+    expect(() => ita2.decode("9".repeat(100_000), { numbers: true })).toThrow(
+      /^ita2: the number at index 0 is over 31$/u,
+    );
+    expect(() => ita2.decode("3 -1", { numbers: true })).toThrow('"-" (U+002D) is not a digit');
+    expect(() => ita2.decode("3 12x", { numbers: true })).toThrow(
+      expect.objectContaining({ name: "DecodeError", index: 4 }),
+    );
+    expect(() => ita2.encode(text("Hi"))).toThrow(
+      'ita2: "i" (U+0069) at index 1 has no code in ita2; teleprinters print capitals only',
+    );
+    expect(() => ita2.encode(text("A%"))).toThrow('"%" (U+0025) at index 1 has no code in ita2');
+    expect(() => ita2.encode(text("﻿A"))).toThrow("U+FEFF at index 0 has no code");
+    expect(() => ita2.encode(Uint8Array.of(0xff))).toThrow("ita2: encode takes UTF-8 text");
+    expect(() => ita2.encode(text("A"), { alphabet: "ita3" as never })).toThrow(InvalidOptionError);
+    expect(() => ita2.decode("00011", { order: "middle" as never })).toThrow(InvalidOptionError);
+    expect(() => ita2.decode("00011", { numbers: "yes" as never })).toThrow(InvalidOptionError);
+  });
+});
+
 describe("charsets", () => {
   const all = Uint8Array.from({ length: 256 }, (_, index) => index);
 
@@ -1572,6 +1805,7 @@ describe("input of the wrong type", () => {
     ["uuencode", uuencode],
     ["quoted-printable", quotedPrintable],
     ["html", html],
+    ["ita2", ita2],
   ] as const;
 
   it.each(codecs)("%s refuses a string to encode instead of writing zeros", (name, codec) => {

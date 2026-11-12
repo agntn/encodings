@@ -248,6 +248,23 @@ describe("encodings MCP server", () => {
     ).toBe("integer (5 bytes):\n48656c6c6f");
   });
 
+  it("reads teleprinter codes in a table and writes them as numbers", async () => {
+    expect(
+      await call("encodings_decode", {
+        encoding: "ita2",
+        text: "10100 00001 10010 10010 11000 11011 11001",
+        options: { alphabet: "us-tty" },
+      }),
+    ).toBe('ita2 (alphabet=us-tty) → 6 bytes as utf8:\n"HELLO?"');
+    expect(
+      await call("encodings_encode", {
+        encoding: "baudot",
+        input: "A1",
+        options: { numbers: true },
+      }),
+    ).toBe("ita2 (2 bytes):\n3 27 23");
+  });
+
   it("offers in the schema every option an encoding writes or reads with", () => {
     const writes = Object.keys(encodeSchema.properties.options.properties);
     const reads = Object.keys(decodeSchema.properties.options.properties);
@@ -287,7 +304,7 @@ describe("encodings MCP server", () => {
   });
 
   it("lists encodings and shows one", async () => {
-    expect((await call("encodings_info", {})).split("\n")).toHaveLength(16);
+    expect((await call("encodings_info", {})).split("\n")).toHaveLength(17);
     expect(await call("encodings_info", { encoding: "base32" })).toContain(
       'alphabet (string, default "standard", decode too)',
     );

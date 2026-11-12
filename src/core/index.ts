@@ -79,6 +79,13 @@ export {
 export { uuencode, type UuencodeOptions } from "./uuencode.ts";
 export { quotedPrintable } from "./quoted-printable.ts";
 export { html, type HtmlOptions } from "./html.ts";
+export {
+  ITA2_ALPHABETS,
+  ita2,
+  type Ita2Alphabet,
+  type Ita2EncodeOptions,
+  type Ita2Options,
+} from "./ita2.ts";
 export { CODE_PAGES, charsets, type CharsetOptions, type CodePage } from "./charsets.ts";
 export { rlp, type RlpInput, type RlpItem } from "./rlp.ts";
 export {

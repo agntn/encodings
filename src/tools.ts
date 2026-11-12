@@ -58,7 +58,7 @@ const encoding = Type.String({
 const alphabet = Type.Optional(
   Type.Enum(ALPHABETS, {
     description:
-      "base32: standard, hex, crockford or z. base58: bitcoin, flickr or ripple. base64: standard or url. base85: rfc1924, ascii85 or z85. base256: emoji",
+      "base32: standard, hex, crockford or z. base58: bitcoin, flickr or ripple. base64: standard or url. base85: rfc1924, ascii85 or z85. base256: emoji. ita2: ita2, ita1 or us-tty",
   }),
 );
 const check = Type.Optional(
@@ -92,7 +92,12 @@ const bits = Type.Optional(
   Type.Integer({ minimum: 1, maximum: 8, description: "binary: bits per byte (default 8)" }),
 );
 const order = Type.Optional(
-  Type.Enum(["msb", "lsb"], { description: "binary: which bit comes first (default msb)" }),
+  Type.Enum(["msb", "lsb"], {
+    description: "binary and ita2: which bit comes first (default msb; ITU-T S.1 writes lsb)",
+  }),
+);
+const numbers = Type.Optional(
+  Type.Boolean({ description: "ita2: codes as decimal numbers 0 to 31 in place of bits" }),
 );
 const radix = Type.Optional(
   Type.Integer({
@@ -149,7 +154,8 @@ export const encodeSchema = closed({
       ),
       separate: Type.Optional(
         Type.Boolean({
-          description: "binary, octal and decimal: space between bytes (default true)",
+          description:
+            "binary, octal and decimal: space between bytes; ita2: between codes (default true)",
         }),
       ),
       m,
@@ -164,6 +170,7 @@ export const encodeSchema = closed({
       radix,
       digits,
       bijective,
+      numbers,
       delimiters: Type.Optional(
         Type.Boolean({ description: "base85 with the ascii85 alphabet: wrap in <~ and ~>" }),
       ),
@@ -210,6 +217,7 @@ export const decodeSchema = closed({
       radix,
       digits,
       bijective,
+      numbers,
       width: Type.Optional(
         Type.Integer({
           minimum: 1,
@@ -282,7 +290,7 @@ export const encodeTool = defineTool({
   name: "encodings_encode",
   title: "Encode",
   description:
-    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, integer (the bytes as one number in any base), base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, base256 (base256emoji and any table of symbols), bech32 (Bech32m too), uuencode, quoted-printable or html (character references such as &amp;).",
+    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, integer (the bytes as one number in any base), base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, base256 (base256emoji and any table of symbols), bech32 (Bech32m too), uuencode, quoted-printable, html (character references such as &amp;) or ita2 (Baudot teleprinter code: capitals and figures in five bits, ITA1 and US-TTY too).",
   snippet: "Use encodings_encode to write text or bytes in base64, base58, bech32 and the like.",
   guidelines: [
     "Text is encoded as UTF-8. For bytes, pass them in hex or base64 and set inputFormat.",

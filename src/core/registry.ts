@@ -63,6 +63,7 @@ const ALIASES: Readonly<Record<string, string>> = {
   quotedprintable: "quoted-printable",
   entities: "html",
   htmlentities: "html",
+  baudot: "ita2",
 };
 
 /**

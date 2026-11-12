@@ -6,6 +6,7 @@ import {
   type EncodingFamily,
   type EncodingInfo,
 } from "@agntn/encodings";
+import { SAMPLE_OPTIONS } from "./samples";
 
 /** The built-in names, typed from the registry as the page loads it. */
 type BuiltinEncoding = (typeof BUILTINS)[number];
@@ -28,6 +29,7 @@ const BUILTINS = [
   "uuencode",
   "quoted-printable",
   "html",
+  "ita2",
 ] as const;
 
 /** An icon, a one-liner and who writes it, per encoding. Everything else comes from `info()`. */
@@ -72,6 +74,11 @@ const PRESENTATION: Record<BuiltinEncoding, { icon: string; blurb: string; usedB
     blurb: "&amp; and friends. How a page spells what it can't type",
     usedBy: "HTML, RSS, every web archive",
   },
+  ita2: {
+    icon: "i-lucide-printer",
+    blurb: "Five bits a character and two shift keys. Capitals only, like it's 1930",
+    usedBy: "Telex, RTTY, teleprinters",
+  },
 };
 
 /** Labels a page shows per family. The keys come from the library. */
@@ -92,6 +99,7 @@ const FAMILY_LABELS: Record<(typeof encodingFamilies)[number], string> = {
   uuencode: "uuencode",
   "quoted-printable": "Quoted-Printable",
   html: "HTML",
+  ita2: "ITA2",
 };
 
 /** How the landing groups the registry: by how an encoding turns bytes into text. */
@@ -124,6 +132,7 @@ const GROUP_OF: Record<BuiltinEncoding, GroupKey> = {
   uuencode: "mail",
   "quoted-printable": "mail",
   html: "markup",
+  ita2: "bits",
 };
 
 export interface EncodingEntry {
@@ -250,10 +259,7 @@ export function alphabetSize(info: EncodingInfo): number {
   return codePoints(info.alphabet);
 }
 
-/** Options a page encodes the sample with, where the encoding needs any. */
-export const SAMPLE_OPTIONS: Partial<Record<BuiltinEncoding, Record<string, string | number | boolean>>> = {
-  bech32: { prefix: "hi" },
-};
+export { SAMPLE_INPUT, SAMPLE_OPTIONS, sampleInput } from "./samples";
 
 /** Pseudo-random bytes the overhead is measured on: enough that padding and leading zeros wash out. */
 const OVERHEAD_BYTES = Uint8Array.from({ length: 600 }, (_, index) => (index * 151 + 7) % 251);

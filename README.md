@@ -25,6 +25,7 @@ Docs and a live playground: [encodings.agntn.dev](https://encodings.agntn.dev).
 - 🔍 **`identify`.** Tries every encoding, ranks the ones that work, and tells you why. Three layers deep? `peel` takes them off one by one.
 - 🖥️ **Code pages too.** EBCDIC, DOS 437, Latin-1 and Windows-1252. Mojibake goes back to what it was.
 - ⛓️ **RLP as well.** Ethereum transactions apart and back, as strict as geth.
+- 📠 **Teleprinter time.** ITA2, US-TTY and Baudot's ITA1, with the shifts handled for you. Shift keys included, small letters not.
 - 🛡️ **OpenPGP armor.** Keys and signatures in and out of their `-----BEGIN PGP` blocks. A bad CRC24 gets reported, not thrown.
 - 🤖 **Agent tools.** The same ones over MCP, Pi, OMP and the AI SDK. The MCP ones also answer at [encodings.agntn.dev/mcp](https://encodings.agntn.dev/guide/agents#remote-mcp), nothing to install.
 - 📦 **One subpath per family.** Need base58 only? Import base58 only.
@@ -122,6 +123,7 @@ That's most of it, really. Strings go in as UTF-8, bytes come out as `Uint8Array
 | `bech32`                       | `m` for Bech32m                                              |
 | `uuencode`, `quoted-printable` |                                                              |
 | `html`                         | `ascii` for plain ASCII out                                  |
+| `ita2`                         | `alphabet`: `ita2`, `ita1`, `us-tty`; `order`, `numbers`     |
 
 Base58Check is `base58` with `check`. Monero's addresses are `base58` with `blocks`. z-base-32 is `base32` with `alphabet: "z"`. Decoding takes the same options, so a variant reads back the way it was written.
 

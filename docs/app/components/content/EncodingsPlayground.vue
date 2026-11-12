@@ -25,6 +25,7 @@ import {
   encodingEntry,
   familyLabel,
   overheadLine,
+  sampleInput,
 } from "../../utils/encodings";
 import { optionFlags, readingName, textLine } from "../../utils/format";
 import { jsonTokens, shellTokens } from "../../utils/tokens";
@@ -420,9 +421,9 @@ function loadSample(slug: string, extra: Record<string, string | boolean> = {}) 
     ...extra,
   };
   for (const [key, value] of Object.entries(sample)) values[key] = typeof value === "boolean" ? value : String(value);
-  input.value = SAMPLE_INPUT;
+  input.value = sampleInput(slug);
   inputFormat.value = "utf8";
-  text.value = create(slug).encode(SAMPLE_INPUT, sample);
+  text.value = create(slug).encode(input.value, sample);
 }
 
 /**
@@ -466,7 +467,7 @@ function chipPressed(chip: (typeof CHIPS)[number]): boolean {
  */
 function selectEncoding(slug: string) {
   const previous = encodingName.value;
-  const previousSample = create(previous).encode(SAMPLE_INPUT, {
+  const previousSample = create(previous).encode(sampleInput(previous), {
     ...SAMPLE_OPTIONS[previous as keyof typeof SAMPLE_OPTIONS],
     ...options.value,
   });

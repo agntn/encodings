@@ -119,8 +119,11 @@ const FRAMING: Readonly<Record<string, Frame>> = {
 /** Encodings that read nearly any text, so a decoding counts only next to their framing. */
 const FRAMED_ONLY = new Set(["quoted-printable", "html"]);
 
-/** Encodings that read any run of digits, so a decoding counts only as enough readable text. */
-const TEXT_ONLY = new Set(["integer"]);
+/** Encodings that read nearly anything, so only readable text counts, this many bytes of it. */
+const TEXT_ONLY: Readonly<Record<string, number>> = { integer: MIN_TEXT_BYTES, ita2: 1 };
+
+/** Options the guess never flips: ita2 numbers are digits, not its alphabet. */
+const UNGUESSED: Readonly<Record<string, string>> = { ita2: "numbers" };
 
 /**
  * Framing in the text that only this encoding, read this way, writes.
@@ -193,7 +196,7 @@ function backed(
 }
 
 /**
- * Whether a decoding counts at all: one that reads any run of digits needs eight bytes of text.
+ * Whether a decoding counts at all: one that reads nearly anything needs enough readable text.
  *
  * @param encoding - Registry name.
  * @param readable - Whether the bytes read as text.
@@ -201,7 +204,8 @@ function backed(
  * @returns {boolean} Whether to score it.
  */
 function speaks(encoding: string, readable: boolean, length: number): boolean {
-  return !TEXT_ONLY.has(encoding) || (readable && length >= MIN_TEXT_BYTES);
+  const least = Object.hasOwn(TEXT_ONLY, encoding) ? TEXT_ONLY[encoding] : undefined;
+  return least === undefined || (readable && length >= least);
 }
 
 /**
@@ -259,16 +263,27 @@ function alternatives(option: EncodingOption): (string | boolean)[] {
 }
 
 /**
+ * Whether the guess flips an option: never one that only narrows or one in `UNGUESSED`.
+ *
+ * @param name - Registry name.
+ * @param option - The option.
+ * @returns {boolean} Whether to try its other values.
+ */
+function guessed(name: string, option: EncodingOption): boolean {
+  if (option.decode !== true || option.narrows === true) return false;
+  return !Object.hasOwn(UNGUESSED, name) || UNGUESSED[name] !== option.name;
+}
+
+/**
  * Every combination of `decode` options changed from their default, such as base32's
- * `alphabet` or base58's `check`, fewest changes first, starting from the default reading. An
- * option that only narrows never reads other bytes, so it stays off.
+ * `alphabet` or base58's `check`, fewest changes first, starting from the default reading.
  *
  * @param info - The encoding's metadata.
  * @returns {Reading[]} Option values per reading.
  */
 function readings(info: EncodingInfo): Reading[] {
   return info.options
-    .filter((option) => option.decode === true && option.narrows !== true)
+    .filter((option) => guessed(info.name, option))
     .reduce<Reading[]>(
       (sets, option) => [
         ...sets,

@@ -47,6 +47,7 @@ describe("@agntn/encodings", () => {
       "uuencode",
       "quoted-printable",
       "html",
+      "ita2",
     ]);
   });
 
@@ -85,6 +86,7 @@ describe("family subpaths", () => {
     uuencode: ["uuencode"],
     "quoted-printable": ["quotedPrintable"],
     html: ["html"],
+    ita2: ["ITA2_ALPHABETS", "ita2"],
     charsets: ["CODE_PAGES", "charsets"],
     rlp: ["rlp"],
     armor: ["armor"],

@@ -73,6 +73,17 @@ describe("identify", () => {
     expect(identify("a").map((candidate) => candidate.encoding)).not.toContain("integer");
   });
 
+  it("reads five-bit groups as teleprinter text only when they print", () => {
+    const names = (text: string) => identify(text).map((candidate) => candidate.encoding);
+    expect(top("10100 00001 10010 10010 11000 00100 10011 11000 01010 10010 01001")).toMatchObject({
+      encoding: "ita2",
+      text: "HELLO WORLD",
+    });
+    expect(top(encode("binary", "Hello"))).toMatchObject({ encoding: "binary", text: "Hello" });
+    expect(names("00000 00000")).not.toContain("ita2");
+    expect(names("8 5 12 12 15")).not.toContain("ita2");
+  });
+
   it("wants a reference with its semicolon before it calls a text HTML", () => {
     for (const text of ["R&D and AT&T", "?a=1&copy=2", "&nosuchname;"]) {
       expect(identify(text).map((candidate) => candidate.encoding)).not.toContain("html");

@@ -44,14 +44,15 @@ const encoding = Type.String({
   description: "Encoding, such as base64, base58 or bech32 (encodings list)",
 });
 const alphabet = text(
-  "base32, base58, base64, base85, base256: alphabet (encodings list <encoding>)",
+  "base32, base58, base64, base85, base256, ita2: alphabet (encodings list <encoding>)",
 );
 const m = flag("bech32: Bech32m checksum (segwit v1+)");
 const symbols = text("binary: the characters for 0 and 1 (default 01). base256: the table");
 const bits = Type.Optional(
   Type.Integer({ description: "binary: bits per byte, 1 to 8 (default 8)" }),
 );
-const order = text("binary: msb or lsb first (default msb)");
+const order = text("binary, ita2: msb or lsb first (default msb)");
+const numbers = flag("ita2: codes as numbers 0 to 31 in place of bits");
 const sample = text("base256: text whose symbols, in order of first appearance, make the table");
 const multibase = flag("base256: the 🚀 multibase prefix");
 const radix = Type.Optional(Type.Integer({ description: "integer: base, 2 to 36 (default 10)" }));
@@ -65,7 +66,7 @@ export const encodeFlags = {
   m,
   upper: flag("hex: write A-F"),
   ascii: flag("html: write characters past ASCII as &#x...; too"),
-  separate: flag("binary: space between bytes (default true)"),
+  separate: flag("binary: space between bytes, ita2: between codes (default true)"),
   symbols,
   bits,
   order,
@@ -74,6 +75,7 @@ export const encodeFlags = {
   radix,
   digits,
   bijective,
+  numbers,
   alphabet,
   check: flag("base58: Base58Check, with a double SHA-256 checksum"),
   blocks: flag("base58: Monero's blocks, 8 bytes to 11 characters"),
@@ -97,6 +99,7 @@ export const decodeFlags = {
   radix,
   digits,
   bijective,
+  numbers,
   width: Type.Optional(Type.Integer({ description: "integer: bytes to fill with leading zeros" })),
   canonical: flag("base32, base64: refuse non-zero spare bits in the last character"),
 };

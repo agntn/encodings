@@ -229,8 +229,17 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
     ).toBe("1b\n");
   });
 
+  it("writes teleprinter codes and reads them back in another table and form", () => {
+    expect(run("encode", "ita2", "A1").stdout).toBe("00011 11011 10111\n");
+    expect(run("encode", "baudot", "A1", "--order", "lsb").stdout).toBe("11000 11011 11101\n");
+    expect(run("decode", "ita2", "27 17", "--numbers", "--alphabet", "us-tty").stdout).toBe('"');
+    expect(run("decode", "ita2", "11011 01101").stderr).toContain(
+      "code 13 at index 6 means nothing among figures in ita2",
+    );
+  });
+
   it("lists encodings and shows one", () => {
-    expect(run("list").stdout.trim().split("\n")).toHaveLength(16);
+    expect(run("list").stdout.trim().split("\n")).toHaveLength(17);
     expect(run("list", "--family", "base64").stdout.trim().split("\n")).toHaveLength(1);
     expect(run("list", "bech32").stdout).toContain(
       "prefix (string, required): Human-readable part",

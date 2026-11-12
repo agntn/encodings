@@ -1,14 +1,14 @@
 import { create, hex } from "@agntn/encodings";
 import {
   ENCODINGS,
+  SAMPLE_INPUT,
   SAMPLE_OPTIONS,
   alphabetCells,
   characterCount,
   type EncodingEntry,
 } from "../utils/encodings";
 
-/** The text every panel encodes: twelve bytes, so Z85 takes it and base32 still pads. */
-export const SAMPLE_INPUT = "hello world!";
+export { SAMPLE_INPUT };
 
 /** The order the landing walks the encodings in. Neighbours are kept different on purpose. */
 const ORDER: readonly EncodingEntry["slug"][] = [
@@ -25,8 +25,8 @@ const ORDER: readonly EncodingEntry["slug"][] = [
   "uuencode",
 ];
 
-/** Sits the walk out: `hello world!` is already HTML, so the panels would show it unchanged. */
-const QUIET: readonly EncodingEntry["slug"][] = ["html"];
+/** Sits the walk out: `hello world!` is already HTML, and a teleprinter has no small letters. */
+const QUIET: readonly EncodingEntry["slug"][] = ["html", "ita2"];
 
 /** Every built-in, in `ORDER` first; a newcomer missing from it joins at the end. */
 const WALK: readonly EncodingEntry[] = [
