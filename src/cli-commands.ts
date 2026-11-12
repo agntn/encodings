@@ -53,6 +53,7 @@ const bits = Type.Optional(
 );
 const order = text("binary, ita2: msb or lsb first (default msb)");
 const numbers = flag("ita2: codes as numbers 0 to 31 in place of bits");
+const codepoints = flag("decimal: each number is a Unicode code point, so 380 is ż");
 const sample = text("base256: text whose symbols, in order of first appearance, make the table");
 const multibase = flag("base256: the 🚀 multibase prefix");
 const radix = Type.Optional(Type.Integer({ description: "integer: base, 2 to 36 (default 10)" }));
@@ -81,6 +82,7 @@ export const encodeFlags = {
   digits,
   bijective,
   numbers,
+  codepoints,
   codebook,
   code,
   n,
@@ -108,6 +110,7 @@ export const decodeFlags = {
   digits,
   bijective,
   numbers,
+  codepoints,
   codebook,
   code,
   n,

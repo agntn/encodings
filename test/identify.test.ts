@@ -92,6 +92,15 @@ describe("identify", () => {
     }
   });
 
+  it("never reads numbers as code points, since nearly every code point prints", () => {
+    for (const text of ["90 97 380 243 322 263", "233", "3432", "72 101 108 108 111"]) {
+      for (const candidate of identify(text, { limit: 20 })) {
+        expect(candidate.options?.["codepoints"]).toBeUndefined();
+      }
+    }
+    expect(top("3432")).toMatchObject({ encoding: "hex", text: "42" });
+  });
+
   it("wants a reference with its semicolon before it calls a text HTML", () => {
     for (const text of ["R&D and AT&T", "?a=1&copy=2", "&nosuchname;"]) {
       expect(identify(text).map((candidate) => candidate.encoding)).not.toContain("html");

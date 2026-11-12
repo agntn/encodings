@@ -122,8 +122,9 @@ const FRAMED_ONLY = new Set(["quoted-printable", "html"]);
 /** Encodings that read nearly anything, so only readable text counts, this many bytes of it. */
 const TEXT_ONLY: Readonly<Record<string, number>> = { integer: MIN_TEXT_BYTES, ita2: 1 };
 
-/** Options the guess never flips: ita2 numbers are digits, and unary reads any bits at all. */
+/** Options the guess never flips, since each reads nearly any digits or bits as text. */
 const UNGUESSED: Readonly<Record<string, readonly string[]>> = {
+  decimal: ["codepoints"],
   ita2: ["numbers"],
   prefix: ["code"],
 };

@@ -229,6 +229,11 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
     ).toBe("1b\n");
   });
 
+  it("reads and writes decimal code points", () => {
+    expect(run("decode", "decimal", "90 97 380 243 322 263", "--codepoints").stdout).toBe("Zażółć");
+    expect(run("encode", "decimal", "ż!", "--codepoints").stdout).toBe("380 33\n");
+  });
+
   it("writes teleprinter codes and reads them back in another table and form", () => {
     expect(run("encode", "ita2", "A1").stdout).toBe("00011 11011 10111\n");
     expect(run("encode", "baudot", "A1", "--order", "lsb").stdout).toBe("11000 11011 11101\n");
