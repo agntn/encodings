@@ -45,6 +45,7 @@ import { fromWords, fromWordsUnsafe, toWords } from "../src/bech32.ts";
 import {
   base58checkVariants,
   baudot,
+  chessBitboards,
   chessSquares,
   codePages,
   codePoints,
@@ -2425,5 +2426,70 @@ describe("square", () => {
     );
     expect(() => square.decode("e4", { layout: "h8" as never })).toThrow(InvalidOptionError);
     expect(() => square.decode("e4", { pairs: "yes" as never })).toThrow(InvalidOptionError);
+  });
+
+  describe("as a bitboard", () => {
+    const board = (squares: string, options?: Parameters<typeof square.decode>[1]) =>
+      hex.encode(square.decode(squares, { ...options, bitboard: true }));
+
+    it.each(chessBitboards)(
+      "agrees with python-chess on $hex",
+      ({ hex: mask, square: squares }) => {
+        expect(board(squares!)).toBe(mask);
+        expect(square.encode(hex.decode(mask!), { bitboard: true })).toBe(squares);
+      },
+    );
+
+    it("sets bit i for square i in every layout", () => {
+      expect(board("e4 d5")).toBe("0000000810000000");
+      expect(board("a8", { layout: "a8" })).toBe("0000000000000001");
+      expect(board("a2", { layout: "file" })).toBe("0000000000000002");
+      expect(board("(7, 7)", { pairs: true })).toBe("8000000000000000");
+    });
+
+    it("round trips each square alone and the full board in every layout and form", () => {
+      const boards = [
+        ...Array.from({ length: 64 }, (_, index) => {
+          const bytes = new Uint8Array(8);
+          const at = 7 - (index >> 3);
+          bytes[at] = 1 << (index & 7);
+          return bytes;
+        }),
+        new Uint8Array(8).fill(0xff),
+      ];
+      for (const layout of CHESS_LAYOUTS) {
+        for (const pairs of [false, true]) {
+          const options = { layout, pairs, bitboard: true };
+          for (const bytes of boards) {
+            expect(square.decode(square.encode(bytes, options), options)).toEqual(bytes);
+          }
+        }
+      }
+    });
+
+    it("reads squares in any order and writes them lowest first", () => {
+      expect(board("d5 e4")).toBe(board("e4 d5"));
+      expect(square.encode(hex.decode("0000000810000000"), { bitboard: true })).toBe("e4 d5");
+      expect(board("")).toBe("0000000000000000");
+      expect(square.encode(new Uint8Array(8), { bitboard: true })).toBe("");
+    });
+
+    it.each([
+      ["e4 E4", {}, 3, "e4 at index 3 is already on the board"],
+      ["(4, 3) (4,3)", { pairs: true }, 7, "e4 at index 7 is already on the board"],
+    ] as const)("refuses the square %s twice", (input, options, index, message) => {
+      const decode = () => square.decode(input, { ...options, bitboard: true });
+      expect(decode).toThrow(expect.objectContaining({ name: "DecodeError", index }));
+      expect(decode).toThrow(message);
+    });
+
+    it("takes exactly eight bytes and a boolean", () => {
+      for (const length of [0, 7, 9]) {
+        expect(() => square.encode(new Uint8Array(length), { bitboard: true })).toThrow(
+          `square: a bitboard is 8 bytes, not ${length}`,
+        );
+      }
+      expect(() => square.decode("e4", { bitboard: "yes" as never })).toThrow(InvalidOptionError);
+    });
   });
 });

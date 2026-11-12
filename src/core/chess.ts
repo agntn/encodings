@@ -14,6 +14,8 @@ export interface SquareOptions {
   layout?: ChessLayout;
   /** Squares as (file, rank) pairs counted from 0, such as `(4, 3)` for e4. Default: false. */
   pairs?: boolean;
+  /** The squares as one set: eight bytes big-endian, bit i for square i. Default: false. */
+  bitboard?: boolean;
 }
 
 /** Chess squares as bytes, one square per byte from 0 to 63. */
@@ -21,8 +23,8 @@ export interface SquareCodec {
   /**
    * Writes square indices as squares.
    *
-   * @param bytes - One square index per byte, 0 to 63.
-   * @param options - Layout, and whether to write pairs.
+   * @param bytes - One square index per byte, 0 to 63, or a bitboard of eight bytes.
+   * @param options - Layout, pairs, and whether the bytes are a bitboard.
    * @returns {string} The squares, spaced.
    */
   encode(bytes: Uint8Array, options?: Readonly<SquareOptions>): string;
@@ -30,8 +32,8 @@ export interface SquareCodec {
    * Reads squares as their indices.
    *
    * @param text - Squares split by whitespace or commas.
-   * @param options - Layout, and whether the squares are pairs.
-   * @returns {Uint8Array} One index per square.
+   * @param options - Layout, pairs, and whether to pack the squares into a bitboard.
+   * @returns {Uint8Array} One index per square, or the eight bytes of a bitboard.
    */
   decode(text: string, options?: Readonly<SquareOptions>): Uint8Array;
 }
@@ -40,6 +42,12 @@ export interface SquareCodec {
 interface Square {
   readonly file: number;
   readonly rank: number;
+}
+
+/** A square read from the text and the index it starts at. */
+interface Placed {
+  readonly square: Square;
+  readonly at: number;
 }
 
 /** A value read from the text and the index just past it. */
@@ -51,6 +59,9 @@ interface Read<T> {
 const NAME = "square";
 
 const FILES = "abcdefgh";
+
+/** Bytes in a bitboard, one per rank of eight squares. */
+const BITBOARD_BYTES = 8;
 
 /** What may sit inside a pair, around its digits and marks. */
 const SPACE = "\t\n\f\r ";
@@ -65,12 +76,15 @@ const SEPARATOR = "\t\n\f\r ,";
  * @returns {Required<SquareOptions>} The options with their defaults.
  */
 function squareOptions(options: Readonly<SquareOptions>): Required<SquareOptions> {
-  const { layout = "a1", pairs = false } = options;
+  const { layout = "a1", pairs = false, bitboard = false } = options;
   if (!(CHESS_LAYOUTS as readonly unknown[]).includes(layout)) {
     throw new InvalidOptionError("layout", layout, `use one of ${CHESS_LAYOUTS.join(", ")}`);
   }
   if (typeof pairs !== "boolean") throw new InvalidOptionError("pairs", pairs, "must be a boolean");
-  return { layout, pairs };
+  if (typeof bitboard !== "boolean") {
+    throw new InvalidOptionError("bitboard", bitboard, "must be a boolean");
+  }
+  return { layout, pairs, bitboard };
 }
 
 /**
@@ -214,25 +228,79 @@ function pairOf(text: string, start: number): Read<Square> {
  * Reads squares written as pairs, split by whitespace or commas.
  *
  * @param text - The text.
- * @returns {Square[]} The squares.
+ * @returns {Placed[]} The squares.
  */
-function pairsOf(text: string): Square[] {
-  const squares: Square[] = [];
+function pairsOf(text: string): Placed[] {
+  const squares: Placed[] = [];
   let at = skip(text, 0, SEPARATOR);
   while (at < text.length) {
     const pair = pairOf(text, at);
-    squares.push(pair.value);
+    squares.push({ square: pair.value, at });
     at = skip(text, pair.next, SEPARATOR);
   }
   return squares;
+}
+
+/**
+ * Reads squares written as names, split by whitespace or commas.
+ *
+ * @param text - The text.
+ * @returns {Placed[]} The squares.
+ */
+function namesOf(text: string): Placed[] {
+  return Array.from(text.matchAll(NUMBER), (match) => ({
+    square: nameOf(match[0], match.index),
+    at: match.index,
+  }));
+}
+
+/**
+ * Packs squares into a bitboard, each square once.
+ *
+ * @param squares - The squares and where each one starts.
+ * @param layout - How squares are numbered.
+ * @returns {Uint8Array} Eight bytes, big-endian, bit i for square i.
+ */
+function packBitboard(squares: readonly Placed[], layout: ChessLayout): Uint8Array {
+  const board = new Uint8Array(BITBOARD_BYTES);
+  for (const { square: one, at } of squares) {
+    const index = indexOf(one, layout);
+    const byte = BITBOARD_BYTES - 1 - (index >> 3);
+    const bit = 1 << (index & 7);
+    if ((board[byte]! & bit) !== 0) {
+      const name = `${FILES[one.file]}${one.rank + 1}`;
+      throw new DecodeError(NAME, `${name} at index ${at} is already on the board`, at);
+    }
+    board[byte]! |= bit;
+  }
+  return board;
+}
+
+/**
+ * Lists the squares a bitboard holds.
+ *
+ * @param bytes - Eight bytes, big-endian, bit i for square i.
+ * @returns {number[]} The square indices, lowest first.
+ */
+function unpackBitboard(bytes: ArrayLike<number>): number[] {
+  if (bytes.length !== BITBOARD_BYTES) {
+    throw new EncodingError(`${NAME}: a bitboard is ${BITBOARD_BYTES} bytes, not ${bytes.length}`);
+  }
+  const indices: number[] = [];
+  for (let index = 0; index < 64; index += 1) {
+    const byte = bytes[BITBOARD_BYTES - 1 - (index >> 3)]!;
+    if ((byte >> (index & 7)) & 1) indices.push(index);
+  }
+  return indices;
 }
 
 /** Chess squares, one byte each: `e4 d5` is `[28, 35]` from a1, rank by rank. */
 export const square: SquareCodec = {
   encode(input, options = {}) {
     requireBytes(`${NAME}: encode`, input);
-    const { layout, pairs } = squareOptions(options);
-    return Array.from(input, (byte, at) => {
+    const { layout, pairs, bitboard } = squareOptions(options);
+    const indices = bitboard ? unpackBitboard(input) : input;
+    return Array.from(indices, (byte, at) => {
       if (byte > 63) {
         throw new EncodingError(`${NAME}: byte ${byte} at index ${at} is over 63, the last square`);
       }
@@ -242,10 +310,9 @@ export const square: SquareCodec = {
   },
   decode(text, options = {}) {
     requireText(`${NAME}: decode`, text);
-    const { layout, pairs } = squareOptions(options);
-    const squares = pairs
-      ? pairsOf(text)
-      : Array.from(text.matchAll(NUMBER), (match) => nameOf(match[0], match.index));
-    return Uint8Array.from(squares, (one) => indexOf(one, layout));
+    const { layout, pairs, bitboard } = squareOptions(options);
+    const squares = pairs ? pairsOf(text) : namesOf(text);
+    if (bitboard) return packBitboard(squares, layout);
+    return Uint8Array.from(squares, ({ square: one }) => indexOf(one, layout));
   },
 };

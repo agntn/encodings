@@ -94,6 +94,14 @@ describe("identify", () => {
     expect(layouts).toEqual([undefined]);
   });
 
+  /* A bitboard reads the same squares again, packed, so it would only crowd the list. */
+  it("never guesses a bitboard", () => {
+    const boards = ["e4 d5", "(4, 3) (3, 4)", "a1"].flatMap((text) =>
+      identify(text, { limit: 50 }).filter((candidate) => candidate.options?.["bitboard"]),
+    );
+    expect(boards).toEqual([]);
+  });
+
   it("never reads bits as a prefix code it would have to guess", () => {
     for (const text of ["010110111", "0", "1111 0000", encode("binary", "Hi")]) {
       expect(identify(text, { limit: 20 }).map((candidate) => candidate.encoding)).not.toContain(
