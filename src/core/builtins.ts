@@ -453,11 +453,21 @@ export const builtins: readonly Encoding[] = [
     "hex",
     {
       label: "Hex (Base16)",
-      description: "Two hex digits per byte; decoding takes either case, spaces and a 0x prefix",
+      description:
+        "Two hex digits per byte, or one U+ number per code point; decoding takes either case, spaces and a 0x prefix",
       family: "hex",
-      standard: "RFC 4648 §8",
+      standard: "RFC 4648 §8; Unicode code points",
       alphabet: "0123456789abcdef",
       options: [
+        {
+          name: "codepoints",
+          type: "boolean",
+          required: false,
+          default: false,
+          description:
+            "Each number is a Unicode code point of UTF-8 text, such as U+017C or 17c for ż; encoding writes U+017C",
+          decode: true,
+        },
         {
           name: "upper",
           type: "boolean",
@@ -467,8 +477,12 @@ export const builtins: readonly Encoding[] = [
         },
       ],
     },
-    (bytes, values) => hex.encode(bytes, { upper: values["upper"] === true }),
-    (text) => hex.decode(text),
+    (bytes, values) =>
+      hex.encode(bytes, {
+        codepoints: values["codepoints"] === true,
+        upper: values["upper"] === true,
+      }),
+    (text, values) => hex.decode(text, { codepoints: values["codepoints"] === true }),
   ),
   define(
     "base32",

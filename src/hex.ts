@@ -1,1 +1,1 @@
-export { hex, type HexEncodeOptions } from "./core/hex.ts";
+export { hex, type HexCodec, type HexEncodeOptions, type HexOptions } from "./core/hex.ts";

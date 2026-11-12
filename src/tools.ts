@@ -103,7 +103,8 @@ const numbers = Type.Optional(
 );
 const codepoints = Type.Optional(
   Type.Boolean({
-    description: "decimal: each number is a Unicode code point of UTF-8 text, so 380 is ż",
+    description:
+      "decimal and hex: each number is a Unicode code point of UTF-8 text, so 380 or U+017C is ż",
   }),
 );
 const radix = Type.Optional(

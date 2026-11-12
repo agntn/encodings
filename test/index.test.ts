@@ -166,7 +166,9 @@ describe("encode and decode through the registry", () => {
     expect(() => encode("base45", "x", { upper: true })).toThrow(
       "Invalid option upper=true: this encoding takes no options",
     );
-    expect(() => encode("hex", "x", { lower: true })).toThrow("not an option here; use upper");
+    expect(() => encode("hex", "x", { lower: true })).toThrow(
+      "not an option here; use codepoints, upper",
+    );
     expect(() => encode("hex", "x", { upper: "yes" })).toThrow("must be a boolean");
     expect(encode("base32", "f")).toBe("MY======");
     expect(encode("base32", "f", { padding: false })).toBe("MY");
@@ -217,7 +219,12 @@ describe("encode and decode through the registry", () => {
     expect(() => decode("base85", "x", { delimiters: true })).toThrow(
       "not an option here; use alphabet",
     );
-    expect(() => decode("hex", "41", { upper: true })).toThrow("this encoding takes no options");
+    expect(() => decode("octal", "101", { separate: true })).toThrow(
+      "this encoding takes no options",
+    );
+    expect(() => decode("hex", "41", { upper: true })).toThrow(
+      "not an option here; use codepoints",
+    );
     expect(() => decode("base32", "CO", { alphabet: true })).toThrow("must be a string");
     expect(() => decode("base58", "1", { alphabet: "z" })).toThrow(
       "use one of bitcoin, flickr, ripple",

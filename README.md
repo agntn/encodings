@@ -112,7 +112,8 @@ That's most of it, really. Strings go in as UTF-8, bytes come out as `Uint8Array
 | Encoding                       | Variants as options                                          |
 | ------------------------------ | ------------------------------------------------------------ |
 | `binary`                       | `symbols`, `bits`, `order`: `msb`, `lsb`                     |
-| `octal`, `hex`                 |                                                              |
+| `octal`                        |                                                              |
+| `hex`                          | `codepoints` for Unicode code points, like `U+017C` for `ż`  |
 | `decimal`                      | `codepoints` for Unicode code points, such as `380` for `ż`  |
 | `integer`                      | `radix`, `digits`, `bijective`; `width` reads leading zeros  |
 | `base32`                       | `alphabet`: `standard`, `hex`, `crockford`, `z`              |
