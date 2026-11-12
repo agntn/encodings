@@ -228,6 +228,26 @@ describe("encodings MCP server", () => {
     );
   });
 
+  it("reads one number in any base, padded to a width, and writes it back", async () => {
+    expect(
+      await call("encodings_decode", {
+        encoding: "integer",
+        text: "83148456176406514527787617677760005720350",
+        options: { radix: 9, width: 20 },
+        outputFormat: "hex",
+      }),
+    ).toBe(
+      "integer (radix=9, width=20) → 20 bytes as hex:\n00000003a0c92075c0dbf3b8acbc5f96ce3f0ad2",
+    );
+    expect(
+      await call("encodings_encode", {
+        encoding: "bigint",
+        input: "Hello",
+        options: { radix: 16 },
+      }),
+    ).toBe("integer (5 bytes):\n48656c6c6f");
+  });
+
   it("offers in the schema every option an encoding writes or reads with", () => {
     const writes = Object.keys(encodeSchema.properties.options.properties);
     const reads = Object.keys(decodeSchema.properties.options.properties);
@@ -267,7 +287,7 @@ describe("encodings MCP server", () => {
   });
 
   it("lists encodings and shows one", async () => {
-    expect((await call("encodings_info", {})).split("\n")).toHaveLength(15);
+    expect((await call("encodings_info", {})).split("\n")).toHaveLength(16);
     expect(await call("encodings_info", { encoding: "base32" })).toContain(
       'alphabet (string, default "standard", decode too)',
     );
@@ -457,6 +477,9 @@ describe("executors without the schema", () => {
     expect(() =>
       encodingsEncode({ encoding: "binary", input: "x", options: { symbols: "a".repeat(4097) } }),
     ).toThrow("must be 1 to 4096 characters");
+    expect(() =>
+      encodingsDecode({ encoding: "integer", text: "1", options: { width: 1_000_000_000 } }),
+    ).toThrow("Invalid option width=1000000000: must be at most 100000");
     expect(() => encodingsIdentify({ text: "x", limit: 99 })).toThrow("from 1 to 20");
     expect(() => encodingsIdentify({ text: "x", peel: "yes" })).toThrow("must be a boolean");
     expect(
@@ -469,7 +492,7 @@ describe("executors without the schema", () => {
       ],
     });
     expect(() => encodingsInfo({ family: "base62" })).toThrow(
-      "use one of binary, octal, decimal, hex",
+      "use one of binary, octal, decimal, integer, hex",
     );
     expect(() => encodingsCharsetConvert({ text: "x" })).toThrow(
       "Option from is missing: use one of utf8, hex, base64, ibm037",

@@ -48,6 +48,7 @@ export function has(name: string): boolean {
 const ALIASES: Readonly<Record<string, string>> = {
   base2: "binary",
   bin: "binary",
+  bigint: "integer",
   base16: "hex",
   hexadecimal: "hex",
   b32: "base32",

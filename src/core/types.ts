@@ -5,6 +5,7 @@ export const encodingFamilies = [
   "binary",
   "octal",
   "decimal",
+  "integer",
   "hex",
   "base32",
   "base45",
@@ -35,7 +36,7 @@ export interface EncodingOption {
   choices?: string[];
   /** Whether turning it on makes the text carry a checksum that decoding verifies. */
   checksum?: boolean;
-  /** Only narrows what `decode` takes, so `encode` refuses it and `identify` skips it. */
+  /** Applies to `decode` alone, so `encode` refuses it and `identify` skips it. */
   narrows?: boolean;
 }
 

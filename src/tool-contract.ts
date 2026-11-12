@@ -15,7 +15,7 @@ export const MAX_PREFIX_LENGTH = 83;
  */
 export const MAX_BASE58_LENGTH = 10_000;
 
-/** Longest `symbols` option: two binary symbols, or a base256 table of up to 256. */
+/** Longest `symbols` or `digits` option: two binary symbols, a base256 table, integer digits. */
 export const MAX_SYMBOLS_LENGTH = 4096;
 
 /** Most candidates `encodings_identify` returns. */

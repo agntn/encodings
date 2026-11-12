@@ -239,11 +239,15 @@ function optionsArgument(value: unknown): object {
 /** Longest value of each free text option, checked here as the schema checks it. */
 const OPTION_LENGTHS: Readonly<Record<string, number>> = {
   symbols: MAX_SYMBOLS_LENGTH,
+  digits: MAX_SYMBOLS_LENGTH,
   sample: MAX_TEXT_LENGTH,
 };
 
+/** Largest value of each number option that sizes the output, as the schema caps it. */
+const OPTION_MAXIMA: Readonly<Record<string, number>> = { width: MAX_TEXT_LENGTH };
+
 /**
- * Checks the length of a free text option, which a caller without the schema could make huge.
+ * Checks a free text or sizing option, which a caller without the schema could make huge.
  *
  * @param key - Option name.
  * @param value - The value as passed.
@@ -252,6 +256,10 @@ const OPTION_LENGTHS: Readonly<Record<string, number>> = {
 function optionValue(key: string, value: unknown): string | number | boolean {
   const max = Object.hasOwn(OPTION_LENGTHS, key) ? OPTION_LENGTHS[key] : undefined;
   if (max !== undefined && typeof value === "string") return stringArgument(key, value, max);
+  const most = Object.hasOwn(OPTION_MAXIMA, key) ? OPTION_MAXIMA[key] : undefined;
+  if (most !== undefined && typeof value === "number" && value > most) {
+    throw new InvalidOptionError(key, value, `must be at most ${most}`);
+  }
   return value as string | number | boolean;
 }
 

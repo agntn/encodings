@@ -15,6 +15,7 @@ const markers: Record<(typeof entries)[number], string> = {
   binary: "is not a bit",
   octal: "is not an octal digit",
   decimal: "is not a decimal digit",
+  integer: "over width",
   hex: "is not a hex digit",
   base32: "ybndrfg8ejkmcpqxot1uwisza345h769",
   base45: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:",

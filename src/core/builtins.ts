@@ -23,6 +23,7 @@ import { decimal } from "./decimal.ts";
 import { EncodingError, InvalidOptionError, MissingOptionError } from "./errors.ts";
 import { hex } from "./hex.ts";
 import { html } from "./html.ts";
+import { integer, type IntegerOptions } from "./integer.ts";
 import { octal } from "./octal.ts";
 import { quotedPrintable } from "./quoted-printable.ts";
 import type {
@@ -142,6 +143,21 @@ function binaryOptions(values: Values): BinaryOptions {
     symbols: String(values["symbols"]),
     bits: Number(values["bits"]),
     order: String(values["order"]) as BitOrder,
+  };
+}
+
+/**
+ * Reads integer options from checked values; `radix` has no default, since `digits` sets it.
+ *
+ * @param values - Checked option values.
+ * @returns {IntegerOptions} The codec options.
+ */
+function integerOptions(values: Values): IntegerOptions {
+  const { radix, digits } = values;
+  return {
+    ...(radix === undefined ? {} : { radix: Number(radix) }),
+    ...(digits === undefined ? {} : { digits: String(digits) }),
+    bijective: values["bijective"] === true,
   };
 }
 
@@ -324,6 +340,55 @@ export const builtins: readonly Encoding[] = [
     },
     (bytes, values) => decimal.encode(bytes, { separate: values["separate"] === true }),
     (text) => decimal.decode(text),
+  ),
+  define(
+    "integer",
+    {
+      label: "Integer",
+      description: "One whole number in any base, read as big-endian bytes; bijective numerals too",
+      family: "integer",
+      standard: "Unsigned big-endian integer in a positional numeral",
+      alphabet: "0123456789",
+      options: [
+        {
+          name: "radix",
+          type: "number",
+          required: false,
+          description:
+            "Base from 2 to 36, digits 0-9 then a-z (default 10); up to 35 with bijective",
+          decode: true,
+        },
+        {
+          name: "digits",
+          type: "string",
+          required: false,
+          description: "One symbol per digit, lowest first, in place of radix; case counts",
+          decode: true,
+        },
+        {
+          name: "bijective",
+          type: "boolean",
+          required: false,
+          default: false,
+          description: "No zero digit: the first symbol is 1, as in spreadsheet columns",
+          decode: true,
+        },
+        {
+          name: "width",
+          type: "number",
+          required: false,
+          description: "Bytes to fill with leading zeros; a number that needs more is refused",
+          decode: true,
+          narrows: true,
+        },
+      ],
+    },
+    (bytes, values) => integer.encode(bytes, integerOptions(values)),
+    (text, values) =>
+      integer.decode(text, {
+        ...integerOptions(values),
+        ...(values["width"] === undefined ? {} : { width: Number(values["width"]) }),
+      }),
   ),
   define(
     "hex",

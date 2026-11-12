@@ -54,6 +54,9 @@ const bits = Type.Optional(
 const order = text("binary: msb or lsb first (default msb)");
 const sample = text("base256: text whose symbols, in order of first appearance, make the table");
 const multibase = flag("base256: the 🚀 multibase prefix");
+const radix = Type.Optional(Type.Integer({ description: "integer: base, 2 to 36 (default 10)" }));
+const digits = text("integer: one symbol per digit, lowest first, in place of --radix");
+const bijective = flag("integer: no zero digit, the first symbol is 1");
 
 /** The flags `encode` turns into encoding options, which each encoding checks against its own. */
 export const encodeFlags = {
@@ -68,6 +71,9 @@ export const encodeFlags = {
   order,
   sample,
   multibase,
+  radix,
+  digits,
+  bijective,
   alphabet,
   check: flag("base58: Base58Check, with a double SHA-256 checksum"),
   blocks: flag("base58: Monero's blocks, 8 bytes to 11 characters"),
@@ -88,6 +94,10 @@ export const decodeFlags = {
   order,
   sample,
   multibase,
+  radix,
+  digits,
+  bijective,
+  width: Type.Optional(Type.Integer({ description: "integer: bytes to fill with leading zeros" })),
   canonical: flag("base32, base64: refuse non-zero spare bits in the last character"),
 };
 

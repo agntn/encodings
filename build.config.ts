@@ -5,6 +5,7 @@ export const familyEntries = [
   "binary",
   "octal",
   "decimal",
+  "integer",
   "hex",
   "base32",
   "base45",

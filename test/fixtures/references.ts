@@ -18,6 +18,8 @@
  * - `whatwg`: entities 8.1.0 `decodeHTML`, the text-content reading of HTML references, over
  *   the corners of the WHATWG tokenizer: legacy names without `;`, the Windows-1252 remap,
  *   out-of-range numbers and names that stand for two code points.
+ * - `integers`: CPython 3.14.9 `int.to_bytes` and `format(n, "o")`, with base 9, base 62 and the
+ *   bijective numerals written digit by digit through `divmod`.
  */
 
 /** Rows keyed by encoding name; `hex` is the input. */
@@ -934,3 +936,15 @@ export const whatwg: Readonly<Record<string, string>> = {
   "&Amp;": "&Amp;",
   "&;": "&;",
 };
+
+/** One number of 40 digits in each numeral, and `Hello` as a number. */
+export const integers = {
+  decimal: "1234567890123456789012345678901234567890",
+  hex: "03a0c92075c0dbf3b8acbc5f96ce3f0ad2",
+  octal: "16406222016560155763561262742771331617605322",
+  base9: "83148456176406514527787617677760005720350",
+  bijective9: "83148456176396514527787617677758895719349",
+  base62: "SGanGcXwnJ9W342dtGIKHK",
+  bijectiveLetters: "GRNCEECJJMJNTKPABNGCKYAPXKFJ",
+  hello: "310939249775",
+} as const;
