@@ -18,6 +18,7 @@ export const encodingFamilies = [
   "uuencode",
   "quoted-printable",
   "html",
+  "ita2",
 ] as const;
 
 /** Family of an encoding. Registered encodings may name others. */

@@ -24,6 +24,7 @@ import { EncodingError, InvalidOptionError, MissingOptionError } from "./errors.
 import { hex } from "./hex.ts";
 import { html } from "./html.ts";
 import { integer, type IntegerOptions } from "./integer.ts";
+import { ITA2_ALPHABETS, ita2, type Ita2Alphabet, type Ita2Options } from "./ita2.ts";
 import { octal } from "./octal.ts";
 import { quotedPrintable } from "./quoted-printable.ts";
 import type {
@@ -158,6 +159,20 @@ function integerOptions(values: Values): IntegerOptions {
     ...(radix === undefined ? {} : { radix: Number(radix) }),
     ...(digits === undefined ? {} : { digits: String(digits) }),
     bijective: values["bijective"] === true,
+  };
+}
+
+/**
+ * Reads ita2 options from checked values.
+ *
+ * @param values - Checked option values.
+ * @returns {Ita2Options} The codec options.
+ */
+function ita2Options(values: Values): Ita2Options {
+  return {
+    alphabet: String(values["alphabet"]) as Ita2Alphabet,
+    order: String(values["order"]) as BitOrder,
+    numbers: values["numbers"] === true,
   };
 }
 
@@ -758,5 +773,54 @@ export const builtins: readonly Encoding[] = [
     },
     (bytes, values) => html.encode(bytes, { ascii: values["ascii"] === true }),
     (text) => html.decode(text),
+  ),
+  define(
+    "ita2",
+    {
+      label: "ITA2 (Baudot-Murray)",
+      description:
+        "Five-bit teleprinter code with letters and figures shifts; ITA1 and US-TTY tables too",
+      family: "ita2",
+      standard: "ITU-T S.1 (ITA2); CCITT-1 (ITA1); US-TTY",
+      alphabet: "01",
+      options: [
+        {
+          name: "alphabet",
+          type: "string",
+          required: false,
+          default: "ita2",
+          choices: [...ITA2_ALPHABETS],
+          description: "ita2, Baudot's ita1, or us-tty, which differs from ita2 in eight figures",
+          decode: true,
+        },
+        {
+          name: "order",
+          type: "string",
+          required: false,
+          default: "msb",
+          choices: ["msb", "lsb"],
+          description: "msb writes element 5 first, as most tables do; lsb element 1, as ITU-T S.1",
+          decode: true,
+        },
+        {
+          name: "numbers",
+          type: "boolean",
+          required: false,
+          default: false,
+          description: "Codes as decimal numbers from 0 to 31 in place of bits",
+          decode: true,
+        },
+        {
+          name: "separate",
+          type: "boolean",
+          required: false,
+          default: true,
+          description: "Put a space between codes written as bits",
+        },
+      ],
+    },
+    (bytes, values) =>
+      ita2.encode(bytes, { ...ita2Options(values), separate: values["separate"] === true }),
+    (text, values) => ita2.decode(text, ita2Options(values)),
   ),
 ];

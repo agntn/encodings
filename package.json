@@ -17,6 +17,7 @@
     "bech32m",
     "encoding",
     "html",
+    "ita2",
     "mcp",
     "openpgp",
     "quoted-printable",
@@ -112,6 +113,10 @@
     "./html": {
       "types": "./dist/html.d.mts",
       "import": "./dist/html.mjs"
+    },
+    "./ita2": {
+      "types": "./dist/ita2.d.mts",
+      "import": "./dist/ita2.mjs"
     },
     "./charsets": {
       "types": "./dist/charsets.d.mts",

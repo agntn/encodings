@@ -28,6 +28,7 @@ const BUILTINS = [
   "uuencode",
   "quoted-printable",
   "html",
+  "ita2",
 ] as const;
 
 /** An icon, a one-liner and who writes it, per encoding. Everything else comes from `info()`. */
@@ -72,6 +73,11 @@ const PRESENTATION: Record<BuiltinEncoding, { icon: string; blurb: string; usedB
     blurb: "&amp; and friends. How a page spells what it can't type",
     usedBy: "HTML, RSS, every web archive",
   },
+  ita2: {
+    icon: "i-lucide-printer",
+    blurb: "Five bits a character and two shift keys. Capitals only, like it's 1930",
+    usedBy: "Telex, RTTY, teleprinters",
+  },
 };
 
 /** Labels a page shows per family. The keys come from the library. */
@@ -92,6 +98,7 @@ const FAMILY_LABELS: Record<(typeof encodingFamilies)[number], string> = {
   uuencode: "uuencode",
   "quoted-printable": "Quoted-Printable",
   html: "HTML",
+  ita2: "ITA2",
 };
 
 /** How the landing groups the registry: by how an encoding turns bytes into text. */
@@ -124,6 +131,7 @@ const GROUP_OF: Record<BuiltinEncoding, GroupKey> = {
   uuencode: "mail",
   "quoted-printable": "mail",
   html: "markup",
+  ita2: "bits",
 };
 
 export interface EncodingEntry {
@@ -253,6 +261,11 @@ export function alphabetSize(info: EncodingInfo): number {
 /** Options a page encodes the sample with, where the encoding needs any. */
 export const SAMPLE_OPTIONS: Partial<Record<BuiltinEncoding, Record<string, string | number | boolean>>> = {
   bech32: { prefix: "hi" },
+};
+
+/** What a page encodes instead of `hello world!`, which a teleprinter can't type. */
+export const SAMPLE_INPUTS: Partial<Record<BuiltinEncoding, string>> = {
+  ita2: "HELLO WORLD?",
 };
 
 /** Pseudo-random bytes the overhead is measured on: enough that padding and leading zeros wash out. */

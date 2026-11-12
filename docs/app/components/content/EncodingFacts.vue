@@ -3,6 +3,7 @@ import { create } from "@agntn/encodings";
 import { SAMPLE_INPUT } from "../../composables/useLandingSample";
 import {
   ENCODINGS,
+  SAMPLE_INPUTS,
   SAMPLE_OPTIONS,
   alphabetCells,
   alphabetSize,
@@ -21,6 +22,7 @@ const props = defineProps<{ name: string }>();
 const entry = computed(() => encodingEntry(props.name));
 const position = computed(() => registryPosition(props.name));
 const sampleOptions = computed(() => (entry.value ? (SAMPLE_OPTIONS[entry.value.slug] ?? {}) : {}));
+const sampleInput = computed(() => (entry.value ? (SAMPLE_INPUTS[entry.value.slug] ?? SAMPLE_INPUT) : SAMPLE_INPUT));
 
 /** The options in the order `info()` declares them. */
 const options = computed(() =>
@@ -44,7 +46,7 @@ const kin = computed(() =>
 const sample = computed(() => {
   if (!entry.value) return undefined;
   const encoding = create(entry.value.slug);
-  const text = encoding.encode(SAMPLE_INPUT, sampleOptions.value);
+  const text = encoding.encode(sampleInput.value, sampleOptions.value);
   const { bytes, details } = encoding.decode(text);
   return {
     text,
@@ -63,7 +65,7 @@ const cells = computed(() =>
 );
 const call = computed(() => {
   const literal = optionLiteral(sampleOptions.value);
-  return `encode("${props.name}", "${SAMPLE_INPUT}"${literal ? `, ${literal}` : ""})`;
+  return `encode("${props.name}", "${sampleInput.value}"${literal ? `, ${literal}` : ""})`;
 });
 const guard = computed(() => {
   if (!entry.value) return "";
@@ -76,14 +78,14 @@ const guard = computed(() => {
 const cli = computed(() => {
   if (!entry.value) return "";
   const flags = optionFlags(sampleOptions.value);
-  return `encodings encode ${entry.value.slug} ${shellArg(SAMPLE_INPUT)}${flags ? ` ${flags}` : ""}`;
+  return `encodings encode ${entry.value.slug} ${shellArg(sampleInput.value)}${flags ? ` ${flags}` : ""}`;
 });
 const subpath = computed(() =>
   entry.value ? `import { ${codecExport(entry.value)} } from "@agntn/encodings/${entry.value.info.family}"` : "",
 );
 const playground = computed(() => {
   if (!entry.value) return "/playground";
-  const query = new URLSearchParams({ op: "encode", encoding: entry.value.slug, input: SAMPLE_INPUT });
+  const query = new URLSearchParams({ op: "encode", encoding: entry.value.slug, input: sampleInput.value });
   for (const [name, value] of Object.entries(sampleOptions.value)) query.set(name, String(value));
   return `/playground?${query.toString()}`;
 });

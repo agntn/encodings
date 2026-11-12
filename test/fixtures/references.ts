@@ -20,6 +20,9 @@
  *   out-of-range numbers and names that stand for two code points.
  * - `integers`: CPython 3.14.9 `int.to_bytes` and `format(n, "o")`, with base 9, base 62 and the
  *   bijective numerals written digit by digit through `divmod`.
+ * - `baudot`: python-baudot 0.1.1.post2 `encode_str` with `ITA2_STANDARD` and `ITA2_US`, over
+ *   `random.seed(7)` capitals, figures and spaces. It fills the figures of F, G and H, which
+ *   ITU-T S.1 leaves unassigned, so the ITA2 rows go without them.
  */
 
 /** Rows keyed by encoding name; `hex` is the input. */
@@ -947,4 +950,40 @@ export const integers = {
   base62: "SGanGcXwnJ9W342dtGIKHK",
   bijectiveLetters: "GRNCEECJJMJNTKPABNGCKYAPXKFJ",
   hello: "310939249775",
+} as const;
+
+/** Text and the codes python-baudot writes for it, a letters or figures shift first. */
+export const baudot = {
+  ita2: [
+    { text: "U", codes: "31 7" },
+    { text: "JZ", codes: "31 11 17" },
+    { text: ".DE8G", codes: "27 28 31 9 1 27 6 31 26" },
+    { text: "X:D6NCF10EPF", codes: "31 29 27 14 31 9 27 21 31 12 14 13 27 23 22 31 1 22 13" },
+    {
+      text: "91D-HO,,:D-:ZDOC9IS0J8H-T9/LG:",
+      codes:
+        "27 24 23 31 9 27 3 31 20 24 27 12 12 14 31 9 27 3 14 31 17 9 24 14 27 24 31 6 5 27 22 31 11 27 6 31 20 27 3 31 16 27 24 29 31 18 26 27 14",
+    },
+    {
+      text: "-,MXG9'E-D)N5/81U3:3XTPL PF-T75V+2S(EH60KVJ50C?E9-UV W(5:3EF",
+      codes:
+        "27 3 12 31 28 29 26 27 24 5 31 1 27 3 31 9 27 18 31 12 27 16 29 6 23 31 7 27 1 14 1 31 29 16 22 18 4 22 13 27 3 31 16 27 7 16 31 30 27 17 19 31 5 27 15 31 1 20 27 21 22 31 15 30 11 27 16 22 31 14 27 25 31 1 27 24 3 31 7 30 4 19 27 15 16 14 1 31 1 13",
+    },
+  ],
+  "us-tty": [
+    { text: "R", codes: "31 10" },
+    { text: "4 ", codes: "27 10 4" },
+    { text: "?ED! ", codes: "27 25 31 1 9 27 13 4" },
+    { text: "T.-/2S$Y?WB3", codes: "31 16 27 28 3 29 19 31 5 27 9 31 21 27 25 31 19 25 27 1" },
+    {
+      text: "WK)H5DN'SI&PZZ5FK2Z9RI19R$0W/Y",
+      codes:
+        "31 19 15 27 18 31 20 27 16 31 9 12 27 11 31 5 6 27 26 31 22 17 17 27 16 31 13 15 27 19 31 17 27 24 31 10 6 27 23 24 31 10 27 9 22 31 19 27 29 31 21",
+    },
+    {
+      text: "OJFLJO?OA5:LQSAJ08X)-UI 6)./&D3'/;9ZZZZG4,ZDMEN2KHV(DGA-J8GX",
+      codes:
+        "31 24 11 13 18 11 24 27 25 31 24 3 27 16 14 31 18 23 5 3 11 27 22 6 31 29 27 18 3 31 7 6 4 27 21 18 28 29 26 31 9 27 1 11 29 30 24 31 17 17 17 17 26 27 10 12 31 17 9 28 1 12 27 19 31 15 20 30 27 15 31 9 26 3 27 3 31 11 27 6 31 26 29",
+    },
+  ],
 } as const;

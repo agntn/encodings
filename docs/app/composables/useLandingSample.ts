@@ -25,8 +25,8 @@ const ORDER: readonly EncodingEntry["slug"][] = [
   "uuencode",
 ];
 
-/** Sits the walk out: `hello world!` is already HTML, so the panels would show it unchanged. */
-const QUIET: readonly EncodingEntry["slug"][] = ["html"];
+/** Sits the walk out: `hello world!` is already HTML, and a teleprinter has no small letters. */
+const QUIET: readonly EncodingEntry["slug"][] = ["html", "ita2"];
 
 /** Every built-in, in `ORDER` first; a newcomer missing from it joins at the end. */
 const WALK: readonly EncodingEntry[] = [

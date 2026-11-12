@@ -28,6 +28,7 @@ const markers: Record<(typeof entries)[number], string> = {
   uuencode: "begin-base64",
   "quoted-printable": "must be escaped",
   html: "a reference names a character",
+  ita2: "teleprinters print capitals only",
   charsets: "has no byte",
   rlp: "wraps a single byte",
   armor: "a cleartext signed message is not armor",
