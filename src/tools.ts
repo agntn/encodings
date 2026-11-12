@@ -319,7 +319,7 @@ export const encodeTool = defineTool({
   name: "encodings_encode",
   title: "Encode",
   description:
-    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, integer (the bytes as one number in any base), base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, base256 (base256emoji and any table of symbols), bech32 (Bech32m too), uuencode, quoted-printable, html (character references such as &amp;) ita2 (Baudot teleprinter code: capitals and figures in five bits, ITA1 and US-TTY too) or prefix (variable-length codewords from a codebook, truncated binary, unary or Elias gamma).",
+    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, integer (the bytes as one number in any base), base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, base256 (base256emoji and any table of symbols), bech32 (Bech32m too), uuencode, quoted-printable, html (character references such as &amp;), ita2 (Baudot teleprinter code: capitals and figures in five bits, ITA1 and US-TTY too) or prefix (variable-length codewords from a codebook, truncated binary, unary or Elias gamma).",
   snippet: "Use encodings_encode to write text or bytes in base64, base58, bech32 and the like.",
   guidelines: [
     "Text is encoded as UTF-8. For bytes, pass them in hex or base64 and set inputFormat.",
