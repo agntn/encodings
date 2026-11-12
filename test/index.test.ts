@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vite-plus/test";
 import { familyEntries } from "../build.config.ts";
 import {
+  EncodingError,
   InvalidOptionError,
   UnknownEncodingError,
   create,
@@ -138,6 +139,47 @@ describe("resolveEncoding", () => {
     );
     expect(() => resolveEncoding("toString")).toThrow(UnknownEncodingError);
     expect(() => resolveEncoding("base58check")).toThrow(UnknownEncodingError);
+  });
+
+  it("names the argument when the encoding name is not a string", () => {
+    expect(() => resolveEncoding(5 as never)).toThrow(EncodingError);
+    expect(() => resolveEncoding(5 as never)).toThrow(
+      "resolveEncoding takes the encoding name as a string, got number",
+    );
+    expect(() => create(null as never)).toThrow(
+      "create takes the encoding name as a string, got null",
+    );
+    expect(() => encodingInfos(5 as never)).toThrow(
+      "encodingInfos takes the family as a string, got number",
+    );
+  });
+});
+
+describe("encode and decode with the arguments out of order", () => {
+  const bytes = Uint8Array.of(1);
+
+  it("says the arguments look swapped when the second one is an encoding", () => {
+    expect(() => encode(bytes as never, "hex")).toThrow(EncodingError);
+    expect(() => encode(bytes as never, "hex")).toThrow(
+      'encode takes the encoding name as a string, got bytes; the arguments look swapped, call it as encode("hex", input)',
+    );
+    expect(() => decode(bytes as never, "Base 64")).toThrow(
+      'decode takes the encoding name as a string, got bytes; the arguments look swapped, call it as decode("base64", text)',
+    );
+  });
+
+  it("states the order when nothing points at a swap", () => {
+    expect(() => encode(5 as never, bytes)).toThrow(
+      "encode takes the encoding name as a string, got number; call it as encode(name, input)",
+    );
+    expect(() => decode(bytes as never, "zz")).toThrow(
+      "decode takes the encoding name as a string, got bytes; call it as decode(name, text)",
+    );
+  });
+
+  it("leaves a string name as it was", () => {
+    expect(() => encode("nope", bytes)).toThrow(UnknownEncodingError);
+    expect(encode("hex", Uint8Array.of(1, 171))).toBe("01ab");
   });
 });
 

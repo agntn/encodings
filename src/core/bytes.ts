@@ -29,13 +29,14 @@ export function isBytes(value: unknown): value is Uint8Array {
 }
 
 /**
- * Names the type of a caller's value for an error, `null` and arrays included.
+ * Names the type of a caller's value for an error, `null`, arrays and bytes included.
  *
  * @param value - Any value.
- * @returns {string} Such as `string`, `null` or `array`.
+ * @returns {string} Such as `string`, `null`, `array` or `bytes`.
  */
 export function typeName(value: unknown): string {
   if (value === null) return "null";
+  if (isBytes(value)) return "bytes";
   return Array.isArray(value) ? "array" : typeof value;
 }
 
