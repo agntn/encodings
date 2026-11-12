@@ -155,6 +155,11 @@ const layout = Type.Optional(
 const pairs = Type.Optional(
   Type.Boolean({ description: "square: (file, rank) pairs counted from 0, so (4, 3) is e4" }),
 );
+const bitboard = Type.Optional(
+  Type.Boolean({
+    description: "square: the squares as one bitboard, 8 bytes big-endian, bit i for square i",
+  }),
+);
 const text = (description: string) =>
   Type.String({ minLength: 1, maxLength: MAX_TEXT_LENGTH, description });
 
@@ -216,6 +221,7 @@ export const encodeSchema = closed({
       n,
       layout,
       pairs,
+      bitboard,
       delimiters: Type.Optional(
         Type.Boolean({ description: "base85 with the ascii85 alphabet: wrap in <~ and ~>" }),
       ),
@@ -269,6 +275,7 @@ export const decodeSchema = closed({
       n,
       layout,
       pairs,
+      bitboard,
       width: Type.Optional(
         Type.Integer({
           minimum: 1,

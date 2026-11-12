@@ -248,6 +248,15 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
     expect(run("decode", "square", "e9").stderr).toContain('"9" (U+0039) is not a rank, 1 to 8');
   });
 
+  it("packs chess squares into a bitboard and back", () => {
+    expect(run("decode", "square", "e4 d5", "--bitboard", "-o", "hex").stdout).toBe(
+      "0000000810000000\n",
+    );
+    expect(
+      run("encode", "square", "000000000000ff00", "--input-format", "hex", "--bitboard").stdout,
+    ).toBe("a2 b2 c2 d2 e2 f2 g2 h2\n");
+  });
+
   it("writes teleprinter codes and reads them back in another table and form", () => {
     expect(run("encode", "ita2", "A1").stdout).toBe("00011 11011 10111\n");
     expect(run("encode", "baudot", "A1", "--order", "lsb").stdout).toBe("11000 11011 11101\n");

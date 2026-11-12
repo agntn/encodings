@@ -267,6 +267,25 @@ describe("encodings MCP server", () => {
     ).toBe("square (2 bytes):\n(4, 3) (3, 4)");
   });
 
+  it("packs squares into a bitboard and reads one back", async () => {
+    expect(
+      await call("encodings_decode", {
+        encoding: "square",
+        text: "e4 d5",
+        options: { bitboard: true },
+        outputFormat: "hex",
+      }),
+    ).toBe("square (bitboard) → 8 bytes as hex:\n0000000810000000");
+    expect(
+      await call("encodings_encode", {
+        encoding: "square",
+        input: "000000000000ff00",
+        inputFormat: "hex",
+        options: { bitboard: true },
+      }),
+    ).toBe("square (8 bytes):\na2 b2 c2 d2 e2 f2 g2 h2");
+  });
+
   it("reads teleprinter codes in a table and writes them as numbers", async () => {
     expect(
       await call("encodings_decode", {

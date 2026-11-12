@@ -214,7 +214,11 @@ function readPrefix(text: string, values: Values): Decoded {
  * @returns {SquareOptions} The codec options.
  */
 function squareOptions(values: Values): SquareOptions {
-  return { layout: String(values["layout"]) as ChessLayout, pairs: values["pairs"] === true };
+  return {
+    layout: String(values["layout"]) as ChessLayout,
+    pairs: values["pairs"] === true,
+    bitboard: values["bitboard"] === true,
+  };
 }
 
 /**
@@ -963,6 +967,14 @@ export const builtins: readonly Encoding[] = [
           required: false,
           default: false,
           description: "Squares as (file, rank) pairs counted from 0, such as (4, 3) for e4",
+          decode: true,
+        },
+        {
+          name: "bitboard",
+          type: "boolean",
+          required: false,
+          default: false,
+          description: "The squares as one bitboard: 8 bytes big-endian, bit i for square i",
           decode: true,
         },
       ],
