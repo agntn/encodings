@@ -2,13 +2,14 @@ import { TextWriter, requireBytes, requireText } from "./bytes.ts";
 import { DecodeError, InvalidOptionError, MissingOptionError, named } from "./errors.ts";
 import { WINDOWS1252_C1 } from "./windows1252.ts";
 
-/** IBM EBCDIC 037, 273, 500, 1140 and 1141 (037 and 273 with €), ISO 8859-1 and Windows-1252. */
+/** EBCDIC 037, 273, 500, 1140, 1141 (the last two with €), DOS 437, Latin-1, Windows-1252. */
 export const CODE_PAGES = [
   "ibm037",
   "ibm273",
   "ibm500",
   "ibm1140",
   "ibm1141",
+  "ibm437",
   "latin1",
   "windows1252",
 ] as const;
@@ -44,6 +45,11 @@ const IBM500 =
   "Øabcdefghi«»ðýþ±°jklmnopqrªºæ¸Æ¤µ~stuvwxyz¡¿ÐÝÞ®¢£¥·©§¶¼½¾¬|¯¨´×" +
   "{ABCDEFGHI­ôöòóõ}JKLMNOPQR¹ûüùúÿ\\÷STUVWXYZ²ÔÖÒÓÕ0123456789³ÛÜÙÚ\u009F";
 
+/** IBM 437 from 0x80 up: DOS box drawing, Greek and accents. */
+const IBM437_HIGH =
+  "ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐" +
+  "└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■\u00A0";
+
 /** ISO 8859-1: every byte is the code point of the same number. */
 const LATIN1 = String.fromCodePoint(...Array.from({ length: 256 }, (_, byte) => byte));
 
@@ -63,6 +69,7 @@ const TABLES: Readonly<Record<CodePage, string>> = {
   ibm500: IBM500,
   ibm1140: withEuro(IBM037),
   ibm1141: withEuro(IBM273),
+  ibm437: `${LATIN1.slice(0, 0x80)}${IBM437_HIGH}`,
   latin1: LATIN1,
   windows1252: `${LATIN1.slice(0, 0x80)}${WINDOWS1252_C1}${LATIN1.slice(0xa0)}`,
 };
