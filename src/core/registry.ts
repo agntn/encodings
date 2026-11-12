@@ -1,6 +1,6 @@
 import { builtins } from "./builtins.ts";
-import type { BytesInput } from "./bytes.ts";
-import { UnknownEncodingError } from "./errors.ts";
+import { isBytes, typeName, type BytesInput } from "./bytes.ts";
+import { EncodingError, UnknownEncodingError, quote } from "./errors.ts";
 import type { DecodeOptions, Decoded, EncodeOptions, Encoding, EncodingInfo } from "./types.ts";
 
 let entries: Map<string, Encoding> | undefined;
@@ -82,21 +82,78 @@ function bare(name: string): string {
 }
 
 /**
- * Finds the registry name for a name as a person types it: the exact name, then any registered
- * name with the same bare spelling, then a known alias such as `qp` or `b64`.
+ * `resolveEncoding` that answers a miss with `undefined` instead of throwing.
  *
  * @param name - Name as typed.
- * @returns {string} The registry name.
+ * @returns {string | undefined} The registry name, if any.
  */
-export function resolveEncoding(name: string): string {
+function lookup(name: string): string | undefined {
   const trimmed = name.trim();
   if (has(trimmed)) return trimmed;
   const wanted = bare(trimmed);
   const match = encodings().find((entry) => bare(entry) === wanted);
   if (match) return match;
   const alias = ALIASES[wanted];
-  if (alias && has(alias)) return alias;
-  throw new UnknownEncodingError(name, encodings());
+  return alias && has(alias) ? alias : undefined;
+}
+
+/**
+ * How every refusal of a name that isn't a string starts.
+ *
+ * @param where - The function called, such as `create`.
+ * @param name - What came in as the name.
+ * @returns {string} The opening of the message.
+ */
+function notAName(where: string, name: unknown): string {
+  return `${where} takes the encoding name as a string, got ${typeName(name)}`;
+}
+
+/**
+ * Refuses a name before `trim` dies on it with a bare TypeError.
+ *
+ * @param where - The function called, such as `create`.
+ * @param name - What came in as the name.
+ * @throws {EncodingError} When `name` isn't a string.
+ */
+function requireName(where: string, name: unknown): asserts name is string {
+  if (typeof name !== "string") throw new EncodingError(notAName(where, name));
+}
+
+/** What `encode` and `decode` take after the name. */
+const SECOND = { encode: "input", decode: "text" } as const;
+
+/**
+ * Refuses a name that isn't a string and writes the call out the right way round.
+ *
+ * @param call - `encode` or `decode`.
+ * @param args - The first two arguments, as passed.
+ * @throws {EncodingError} When the name isn't a string.
+ */
+function requireOrder(call: keyof typeof SECOND, args: readonly [unknown, unknown]): void {
+  const [name, second] = args;
+  if (typeof name === "string") return;
+  const swapped = isBytes(name) && typeof second === "string" ? lookup(second) : undefined;
+  const hint =
+    swapped === undefined
+      ? `call it as ${call}(name, ${SECOND[call]})`
+      : `the arguments look swapped, call it as ${call}(${quote(swapped)}, ${SECOND[call]})`;
+  throw new EncodingError(`${notAName(call, name)}; ${hint}`);
+}
+
+/**
+ * Finds the registry name for a name as a person types it: the exact name, then any registered
+ * name with the same bare spelling, then a known alias such as `qp` or `b64`.
+ *
+ * @param name - Name as typed.
+ * @returns {string} The registry name.
+ * @throws {EncodingError} When `name` is not a string.
+ * @throws {UnknownEncodingError} When nothing matches.
+ */
+export function resolveEncoding(name: string): string {
+  requireName("resolveEncoding", name);
+  const found = lookup(name);
+  if (found === undefined) throw new UnknownEncodingError(name, encodings());
+  return found;
 }
 
 /**
@@ -106,6 +163,7 @@ export function resolveEncoding(name: string): string {
  * @returns {Encoding} The encoding.
  */
 export function create(name: string): Encoding {
+  requireName("create", name);
   return registry().get(resolveEncoding(name))!;
 }
 
@@ -118,6 +176,7 @@ export function create(name: string): Encoding {
  * @returns {string} The encoded text.
  */
 export function encode(name: string, input: BytesInput, options?: EncodeOptions): string {
+  requireOrder("encode", [name, input]);
   return create(name).encode(input, options);
 }
 
@@ -130,6 +189,7 @@ export function encode(name: string, input: BytesInput, options?: EncodeOptions)
  * @returns {Decoded} The bytes and any non-data parts of the text.
  */
 export function decode(name: string, text: string, options?: DecodeOptions): Decoded {
+  requireOrder("decode", [name, text]);
   return create(name).decode(text, options);
 }
 
@@ -142,6 +202,9 @@ export function decode(name: string, text: string, options?: DecodeOptions): Dec
 export function encodingInfos(family?: string): EncodingInfo[] {
   const infos = encodings().map((name) => registry().get(name)!.info());
   if (family === undefined) return infos;
+  if (typeof family !== "string") {
+    throw new EncodingError(`encodingInfos takes the family as a string, got ${typeName(family)}`);
+  }
   const wanted = bare(family);
   return infos.filter((info) => bare(info.family) === wanted);
 }
