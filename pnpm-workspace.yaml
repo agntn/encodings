@@ -61,7 +61,7 @@ catalogs:
     agents: 0.30.1
     better-sqlite3: 12.11.1
     docus: 5.15.0
-    nuxt: 4.6.2
+    nuxt: 4.6.3
     ufo: 1.6.4
     zod: 4.6.6
   dev:
