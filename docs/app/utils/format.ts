@@ -42,16 +42,21 @@ export function readingName(encoding: string, options: Record<string, unknown> =
   return parts.length > 0 ? `${encoding} (${parts.join(", ")})` : encoding;
 }
 
-/** Option values as CLI flags: `--salt 00ff --N 1024`. */
+/** An option name as a CLI flag, so `enPassant` turns into `en-passant`. */
+function flagName(name: string): string {
+  return name.replaceAll(/([a-z0-9])([A-Z])/gu, "$1-$2").replaceAll("_", "-").toLowerCase();
+}
+
+/** Option values as CLI flags: `--salt 00ff --en-passant e3`. */
 export function optionFlags(options: Record<string, unknown>): string {
   return Object.entries(options)
     .filter(([, value]) => value !== undefined && value !== "" && value !== null)
     .map(([name, value]) =>
       typeof value === "boolean"
         ? value
-          ? `--${name}`
-          : `--no-${name}`
-        : `--${name} ${shellArg(String(value))}`,
+          ? `--${flagName(name)}`
+          : `--no-${flagName(name)}`
+        : `--${flagName(name)} ${shellArg(String(value))}`,
     )
     .join(" ");
 }

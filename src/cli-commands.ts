@@ -64,9 +64,10 @@ const bijective = flag("integer: no zero digit, the first symbol is 1");
 const codebook = text("prefix: codewords by symbol, such as A=0 B=10 C=11");
 const code = text("prefix: truncated, unary or gamma in place of --codebook");
 const n = Type.Optional(Type.Integer({ description: "prefix --code truncated: how many symbols" }));
-const layout = text("square: a1 (default), a8 or file, which square is 0");
+const layout = text("square, fen: a1 (default), a8 or file, which square is 0");
 const pairs = flag("square: (file, rank) pairs counted from 0, such as (4, 3) for e4");
 const bitboard = flag("square: the squares as one 8-byte bitboard, bit i for square i");
+const diagram = flag("fen: the board as eight lines of pieces and dots, no fields");
 
 /** The flags `encode` turns into encoding options, which each encoding checks against its own. */
 export const encodeFlags = {
@@ -94,6 +95,12 @@ export const encodeFlags = {
   layout,
   pairs,
   bitboard,
+  diagram,
+  turn: text("fen: side to move, w (default) or b"),
+  castling: text("fen: castling rights such as KQkq, or - (default)"),
+  enPassant: text("fen: en passant square on rank 3 or 6, or - (default)"),
+  halfmove: Type.Optional(Type.Integer({ description: "fen: halfmove clock (default 0)" })),
+  fullmove: Type.Optional(Type.Integer({ description: "fen: move number (default 1)" })),
   alphabet,
   check: flag("base58: Base58Check, with a double SHA-256 checksum"),
   blocks: flag("base58: Monero's blocks, 8 bytes to 11 characters"),
@@ -125,6 +132,7 @@ export const decodeFlags = {
   layout,
   pairs,
   bitboard,
+  diagram,
   width: Type.Optional(Type.Integer({ description: "integer: bytes to fill with leading zeros" })),
   canonical: flag("base32, base64: refuse non-zero spare bits in the last character"),
 };

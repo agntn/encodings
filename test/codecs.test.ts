@@ -24,6 +24,7 @@ import {
   type RlpInput,
   type RlpItem,
   decimal,
+  fen,
   hex,
   html,
   integer,
@@ -46,6 +47,7 @@ import {
   base58checkVariants,
   baudot,
   chessBitboards,
+  chessPositions,
   chessSquares,
   codePages,
   codePoints,
@@ -2491,5 +2493,206 @@ describe("square", () => {
       }
       expect(() => square.decode("e4", { bitboard: "yes" as never })).toThrow(InvalidOptionError);
     });
+  });
+});
+
+describe("fen", () => {
+  const start = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  const board = (text: string, options?: Parameters<typeof fen.decode>[1]) =>
+    new TextDecoder().decode(fen.decode(text, options).bytes);
+
+  it("reads and writes the starting position", () => {
+    const { bytes, fields } = fen.decode(start);
+    expect(new TextDecoder().decode(bytes)).toBe(
+      "RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr",
+    );
+    expect(fields).toEqual({
+      turn: "w",
+      castling: "KQkq",
+      enPassant: "-",
+      halfmove: 0,
+      fullmove: 1,
+    });
+    expect(fen.encode(bytes, fields)).toBe(start);
+  });
+
+  it.each(chessPositions)("agrees with python-chess on $fen", (row) => {
+    for (const layout of CHESS_LAYOUTS) {
+      const { bytes, fields } = fen.decode(row.fen!, { layout });
+      expect(new TextDecoder().decode(bytes)).toBe(row[layout]);
+      expect(fen.encode(bytes, { ...fields, layout })).toBe(row.fen);
+      expect(fen.encode(bytes, { layout, diagram: true })).toBe(row.diagram);
+      expect(fen.decode(row.diagram!, { layout, diagram: true }).bytes).toEqual(bytes);
+    }
+  });
+
+  it("writes the fields after the board from options, with the defaults python-chess fills in", () => {
+    const { bytes } = fen.decode(start);
+    expect(fen.encode(bytes)).toBe("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1");
+    expect(
+      fen.encode(bytes, { turn: "b", castling: "Kq", enPassant: "e3", halfmove: 7, fullmove: 40 }),
+    ).toBe("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b Kq e3 7 40");
+  });
+
+  it("keeps only the fields a FEN cut short has", () => {
+    expect(fen.decode("8/8/8/8/8/8/8/8").fields).toEqual({});
+    expect(fen.decode("4k3/8/8/8/8/8/4P3/4K3 b").fields).toEqual({ turn: "b" });
+    expect(fen.decode("4k3/8/8/8/8/8/4P3/4K3 w - e3").fields).toEqual({
+      turn: "w",
+      castling: "-",
+      enPassant: "e3",
+    });
+  });
+
+  it("takes extra spaces and line breaks between the fields", () => {
+    expect(fen.decode(`  ${start.replaceAll(" ", "  \n")}\n`).fields).toEqual(
+      fen.decode(start).fields,
+    );
+  });
+
+  it("reads a diagram with or without spaces between the squares", () => {
+    const diagram = fen.encode(fen.decode(start).bytes, { diagram: true });
+    expect(diagram.split("\n")[0]).toBe("r n b q k b n r");
+    expect(board(diagram.replaceAll(" ", ""), { diagram: true })).toBe(board(start));
+    expect(board(`\n${diagram.replaceAll("\n", "\r\n")}\n\n`, { diagram: true })).toBe(
+      board(start),
+    );
+    expect(fen.decode(diagram, { diagram: true }).fields).toEqual({});
+  });
+
+  it.each([
+    [
+      "rnbqkbnr/pppppppp/44/8/8/8/PPPPPPPP/RNBQKBNR",
+      19,
+      '"4" (U+0034) at index 19 follows another count',
+    ],
+    [
+      "rnbqkbnr/pppppppp/9/8/8/8/PPPPPPPP/RNBQKBNR",
+      18,
+      '"9" (U+0039) at index 18 is not a piece or a count',
+    ],
+    ["rnbqkbnr/pppxpppp/8/8/8/8/PPPPPPPP/RNBQKBNR", 12, '"x" (U+0078) at index 12 is not a piece'],
+    ["rnbqkbnr/ppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", 16, "rank 7 has 7 squares, not 8, at index 16"],
+    ["rnbqkbnr/ppppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", 17, "rank 7 runs past the h file at index 17"],
+    [
+      "rnbqkbnr/pppppppp/7p1/8/8/8/PPPPPPPP/RNBQKBNR",
+      20,
+      "rank 6 runs past the h file at index 20",
+    ],
+    ["rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP w", 34, "the board has 7 ranks, not 8"],
+    ["8/8/8/8/8/8/8/8/8", 15, "the board has more than 8 ranks at index 15"],
+    ["8/8/8/8/8/8/8/8 x", 16, '"x" at index 16 is not a side to move; use w or b'],
+    ["8/8/8/8/8/8/8/8 w kqKQ", 20, '"K" (U+004B) at index 20 is out of place'],
+    ["8/8/8/8/8/8/8/8 w KK", 19, '"K" (U+004B) at index 19 is out of place'],
+    ["8/8/8/8/8/8/8/8 w KQkx", 21, '"x" (U+0078) at index 21 is out of place'],
+    [
+      "8/8/8/8/8/8/8/8 w - e4",
+      21,
+      '"4" (U+0034) at index 21 is out of place; use a square on rank 3 or 6',
+    ],
+    ["8/8/8/8/8/8/8/8 w - j3", 20, '"j3" at index 20 is not an en passant square'],
+    [
+      "8/8/8/8/8/8/8/8 w - - 1x",
+      23,
+      '"x" (U+0078) at index 23 is out of place; use a whole number, 0 or more',
+    ],
+    [
+      "8/8/8/8/8/8/8/8 w - - 0 0",
+      24,
+      '"0" at index 24 is not a move number; use a whole number, 1 or more',
+    ],
+    ["8/8/8/8/8/8/8/8 w - - 0 1 +", 26, '"+" at index 26 follows the move number'],
+    ["8/8/8/8/8/8/8/8 w - - 99999999999999999 1", 22, "is too large to count"],
+  ] as const)("points at the bad character in %s", (input, index, message) => {
+    const decode = () => fen.decode(input);
+    expect(decode).toThrow(expect.objectContaining({ name: "DecodeError", index }));
+    expect(decode).toThrow(message);
+  });
+
+  /* Seven empty ranks, 16 characters each with the line break, so rank 1 starts at 112. */
+  const ranks = ". . . . . . . .\n".repeat(7);
+
+  it.each([
+    [". . . .\n. . . .", undefined, "a diagram has 8 lines, not 2"],
+    [`${ranks}. . . x . . . .`, 118, '"x" (U+0078) at index 118 is not a piece or a .'],
+    [`${ranks}. . . . . . . . .`, 128, "rank 1 runs past the h file at index 128"],
+    [`${ranks}. . .`, 117, "rank 1 has 3 squares, not 8, at index 117"],
+  ] as const)("points at the bad character in the diagram %j", (input, index, message) => {
+    const decode = () => fen.decode(input, { diagram: true });
+    expect(decode).toThrow(expect.objectContaining({ name: "DecodeError", index }));
+    expect(decode).toThrow(message);
+  });
+
+  it("names a long field by its length, not its text", () => {
+    const decode = () => fen.decode(`8/8/8/8/8/8/8/8 w - - ${"9".repeat(30)}`);
+    expect(decode).toThrow("fen: a field of 30 characters at index 22 is too large to count");
+    expect(() => fen.decode(`8/8/8/8/8/8/8/8 w - - 0 1 ${"x".repeat(1000)}`)).toThrow(
+      "fen: a field of 1000 characters at index 26 follows the move number",
+    );
+  });
+
+  it("names a line separator as a code point", () => {
+    expect(() => fen.decode("8/8/8/8/8/8/8/8\u2028")).toThrow("U+2028 at index 15 is not a piece");
+  });
+
+  it("counts indices across CRLF and CR line breaks in a diagram", () => {
+    const rows = `${fen.encode(fen.decode(start).bytes, { diagram: true })} x`;
+    for (const lineBreak of ["\r\n", "\r"]) {
+      const text = `${lineBreak}${rows.replaceAll("\n", lineBreak)}`;
+      expect(() => fen.decode(text, { diagram: true })).toThrow(
+        expect.objectContaining({ index: text.indexOf("x") }),
+      );
+    }
+  });
+
+  it("refuses a long blank diagram in linear time", () => {
+    const started = performance.now();
+    expect(() => fen.decode(" ".repeat(100_000), { diagram: true })).toThrow("has 8 lines, not 0");
+    expect(performance.now() - started).toBeLessThan(500);
+  });
+
+  it("refuses a board that isn't 64 piece letters and dots", () => {
+    expect(() => fen.encode(new Uint8Array(63))).toThrow("fen: a board is 64 bytes, not 63");
+    const bytes = fen.decode(start).bytes;
+    bytes[9] = 0x78;
+    expect(() => fen.encode(bytes)).toThrow("fen: byte 120 at index 9 is not a piece");
+  });
+
+  it.each([
+    [{ turn: "white" }, "turn"],
+    [{ castling: "QK" }, "castling"],
+    [{ castling: "" }, "castling"],
+    [{ enPassant: "e4" }, "enPassant"],
+    [{ halfmove: -1 }, "halfmove"],
+    [{ halfmove: 1.5 }, "halfmove"],
+    [{ fullmove: 0 }, "fullmove"],
+    [{ layout: "h8" }, "layout"],
+    [{ diagram: "yes" }, "diagram"],
+  ] as const)("refuses the option %o", (options, option) => {
+    const bytes = fen.decode(start).bytes;
+    expect(() => fen.encode(bytes, options as never)).toThrow(
+      expect.objectContaining({ name: "InvalidOptionError", option }),
+    );
+  });
+
+  it("refuses the fields after the board next to a diagram", () => {
+    const bytes = fen.decode(start).bytes;
+    expect(() => fen.encode(bytes, { diagram: true, castling: "KQkq" })).toThrow(
+      "Invalid option castling=KQkq: a diagram shows the board alone",
+    );
+  });
+
+  it("round trips every piece on every square in every layout", () => {
+    for (const layout of CHESS_LAYOUTS) {
+      for (const piece of "PNBRQKpnbrqk") {
+        for (let at = 0; at < 64; at += 1) {
+          const bytes = new Uint8Array(64).fill(0x2e);
+          bytes[at] = piece.codePointAt(0)!;
+          expect(fen.decode(fen.encode(bytes, { layout }), { layout }).bytes).toEqual(bytes);
+          const diagram = fen.encode(bytes, { layout, diagram: true });
+          expect(fen.decode(diagram, { layout, diagram: true }).bytes).toEqual(bytes);
+        }
+      }
+    }
   });
 });

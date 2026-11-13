@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vite-plus/test";
-import { commandLine, textLine } from "../docs/app/utils/format.ts";
+import { commandLine, optionFlags, textLine } from "../docs/app/utils/format.ts";
 
 const cli = fileURLToPath(new URL("../src/cli.ts", import.meta.url));
 
@@ -45,6 +45,16 @@ describe("the playground's CLI line", { timeout: 20_000 }, () => {
     expect(shell(textLine("encodings convert", "-x", ["--from utf8", "--to hex"]))).toMatchObject({
       code: 0,
       stdout: Buffer.from("-x").toString("hex"),
+    });
+  });
+
+  it("spells a camelCase option as the kebab case flag the CLI takes", () => {
+    const flags = optionFlags({ enPassant: "e3", castling: "KQkq", diagram: false });
+    expect(flags).toBe("--en-passant e3 --castling KQkq --no-diagram");
+    const board = "RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr";
+    expect(shell(textLine("encodings encode fen", board, [flags]))).toMatchObject({
+      code: 0,
+      stdout: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq e3 0 1",
     });
   });
 

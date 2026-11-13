@@ -68,6 +68,8 @@ const ALIASES: Readonly<Record<string, string>> = {
   huffman: "prefix",
   squares: "square",
   chesssquare: "square",
+  forsythedwards: "fen",
+  forsyth: "fen",
 };
 
 /**

@@ -105,6 +105,13 @@ describe("family subpaths", () => {
     expect(await bundle("base58", "{ createBase58 }")).not.toContain(roundConstant);
   });
 
+  /* fen reads squares through chess.ts, so the dependency only runs one way. */
+  it("leaves the FEN parser out of a consumer of square alone", async () => {
+    const parser = "follows the move number";
+    expect(await bundle("chess")).toContain(parser);
+    expect(await bundle("chess", "{ square }")).not.toContain(parser);
+  });
+
   it("keeps the root entry whole: the registry and every family", async () => {
     const code = await bundle("index");
     for (const marker of [...Object.values(markers), ...registryMarkers]) {

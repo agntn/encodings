@@ -26,8 +26,8 @@ const ORDER: readonly EncodingEntry["slug"][] = [
 ];
 
 /** Sits the walk out: `hello world!` is already HTML, a teleprinter has no small letters, a
- * prefix code can't read without the codebook the panel never shows, and a board stops at 63. */
-const QUIET: readonly EncodingEntry["slug"][] = ["html", "ita2", "prefix", "square"];
+ * prefix code needs its codebook, and a chessboard wants squares, not greetings. */
+const QUIET: readonly EncodingEntry["slug"][] = ["html", "ita2", "prefix", "square", "fen"];
 
 /** Every built-in, in `ORDER` first; a newcomer missing from it joins at the end. */
 const WALK: readonly EncodingEntry[] = [

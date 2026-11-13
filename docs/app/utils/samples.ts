@@ -5,14 +5,16 @@ export const SAMPLE_INPUT = "hello world!";
 export const SAMPLE_OPTIONS: Readonly<Record<string, Record<string, string | number | boolean>>> = {
   bech32: { prefix: "hi" },
   prefix: { codebook: "A=0 B=10 R=110 C=1110 D=1111" },
+  fen: { castling: "KQkq" },
 };
 
-/** What a page encodes instead of `hello world!`: a teleprinter can't type it, a codebook of
- * five letters reads better than one of nine, and only bytes under 64 are squares. */
+/** What a page encodes instead of `hello world!`: a teleprinter can't type it, five letters beat
+ * nine, only bytes under 64 are squares, and a FEN starts from move one. */
 const SAMPLE_INPUTS: Readonly<Record<string, string>> = {
   ita2: "HELLO WORLD?",
   prefix: "ABRACADABRA",
   square: "1-0",
+  fen: "RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr",
 };
 
 /**

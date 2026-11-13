@@ -21,6 +21,7 @@ import { binary, type BinaryOptions, type BitOrder } from "./binary.ts";
 import { isBytes, requireText, toBytes, typeName, type BytesInput } from "./bytes.ts";
 import { CHESS_LAYOUTS, square, type ChessLayout, type SquareOptions } from "./chess.ts";
 import { decimal } from "./decimal.ts";
+import { FEN_TURNS, fen, type FenEncodeOptions, type FenOptions } from "./fen.ts";
 import { EncodingError, InvalidOptionError, MissingOptionError } from "./errors.ts";
 import { hex } from "./hex.ts";
 import { html } from "./html.ts";
@@ -219,6 +220,46 @@ function squareOptions(values: Values): SquareOptions {
     pairs: values["pairs"] === true,
     bitboard: values["bitboard"] === true,
   };
+}
+
+/**
+ * Reads the board options of fen from checked values.
+ *
+ * @param values - Checked option values.
+ * @returns {FenOptions} The layout and the diagram switch.
+ */
+function fenOptions(values: Values): FenOptions {
+  return { layout: String(values["layout"]) as ChessLayout, diagram: values["diagram"] === true };
+}
+
+/**
+ * Reads the encode options of fen from checked values, the fields after the board as given.
+ *
+ * @param values - Checked option values.
+ * @returns {FenEncodeOptions} The codec options.
+ */
+function fenEncodeOptions(values: Values): FenEncodeOptions {
+  const { turn, castling, enPassant, halfmove, fullmove } = values;
+  return {
+    ...fenOptions(values),
+    ...(turn === undefined ? {} : { turn: String(turn) as FenEncodeOptions["turn"] }),
+    ...(castling === undefined ? {} : { castling: String(castling) }),
+    ...(enPassant === undefined ? {} : { enPassant: String(enPassant) }),
+    ...(halfmove === undefined ? {} : { halfmove: Number(halfmove) }),
+    ...(fullmove === undefined ? {} : { fullmove: Number(fullmove) }),
+  };
+}
+
+/**
+ * Reads a FEN or a diagram, the fields after the board as details.
+ *
+ * @param text - The FEN or the diagram.
+ * @param values - Checked option values.
+ * @returns {Decoded} The board and the fields.
+ */
+function readFen(text: string, values: Values): Decoded {
+  const { bytes, fields } = fen.decode(text, fenOptions(values));
+  return { bytes, details: { ...fields } };
 }
 
 /**
@@ -981,5 +1022,67 @@ export const builtins: readonly Encoding[] = [
     },
     (bytes, values) => square.encode(bytes, squareOptions(values)),
     (text, values) => square.decode(text, squareOptions(values)),
+  ),
+  define(
+    "fen",
+    {
+      label: "FEN",
+      description: "Chess positions: the board as 64 bytes, a piece letter or . per square",
+      family: "chess",
+      standard: "PGN Standard §16.1 (Forsyth-Edwards Notation)",
+      alphabet: "PNBRQKpnbrqk0123456789/ .-wacdefgh",
+      options: [
+        {
+          name: "layout",
+          type: "string",
+          required: false,
+          default: "a1",
+          choices: [...CHESS_LAYOUTS],
+          description: "Which square is byte 0: a1 rank by rank, a8 as FEN reads, or file by file",
+          decode: true,
+        },
+        {
+          name: "diagram",
+          type: "boolean",
+          required: false,
+          default: false,
+          description: "The board as eight lines of pieces and dots, rank 8 first, no fields",
+          decode: true,
+        },
+        {
+          name: "turn",
+          type: "string",
+          required: false,
+          choices: [...FEN_TURNS],
+          description: "Side to move, w or b (default w)",
+        },
+        {
+          name: "castling",
+          type: "string",
+          required: false,
+          description: "Castling rights, such as KQkq, or - for none (default -)",
+        },
+        {
+          name: "enPassant",
+          type: "string",
+          required: false,
+          description: "En passant target square on rank 3 or 6, or - (default -)",
+        },
+        {
+          name: "halfmove",
+          type: "number",
+          required: false,
+          description: "Halfmoves since the last capture or pawn move (default 0)",
+        },
+        {
+          name: "fullmove",
+          type: "number",
+          required: false,
+          description: "Move number, from 1 (default 1)",
+        },
+      ],
+    },
+    (bytes, values) => fen.encode(bytes, fenEncodeOptions(values)),
+    readFen,
   ),
 ];

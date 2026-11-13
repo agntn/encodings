@@ -51,6 +51,7 @@ describe("@agntn/encodings", () => {
       "ita2",
       "prefix",
       "square",
+      "fen",
     ]);
   });
 
@@ -91,7 +92,7 @@ describe("family subpaths", () => {
     html: ["html"],
     ita2: ["ITA2_ALPHABETS", "ita2"],
     prefix: ["PREFIX_CODES", "prefix"],
-    chess: ["CHESS_LAYOUTS", "square"],
+    chess: ["CHESS_LAYOUTS", "FEN_TURNS", "fen", "square"],
     charsets: ["CODE_PAGES", "charsets"],
     rlp: ["rlp"],
     armor: ["armor"],

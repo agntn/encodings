@@ -20,6 +20,7 @@ import {
   INPUT_FORMATS,
   MAX_BASE58_LENGTH,
   MAX_CANDIDATES,
+  MAX_FEN_FIELD_LENGTH,
   MAX_NAME_LENGTH,
   MAX_SYMBOLS_LENGTH,
   MAX_TEXT_LENGTH,
@@ -242,6 +243,8 @@ const OPTION_LENGTHS: Readonly<Record<string, number>> = {
   digits: MAX_SYMBOLS_LENGTH,
   codebook: MAX_SYMBOLS_LENGTH,
   sample: MAX_TEXT_LENGTH,
+  castling: MAX_FEN_FIELD_LENGTH,
+  enPassant: MAX_FEN_FIELD_LENGTH,
 };
 
 /** Largest value of each number option that sizes the output, as the schema caps it. */
