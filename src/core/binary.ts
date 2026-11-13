@@ -75,18 +75,65 @@ function layout(options: Readonly<BinaryOptions>): Layout {
   return { zero, one, bits, lsb: order === "lsb", clusters };
 }
 
+/** Packs bits into bytes as the text gives them, so a long text never turns into a string per bit. */
+class BytePacker {
+  readonly #bits: number;
+  readonly #lsb: boolean;
+  readonly #out: Uint8Array;
+  #count = 0;
+  #value = 0;
+
+  /**
+   * @param checked - Bits per byte and their order.
+   * @param most - Most bits the text can hold, one per code unit.
+   */
+  constructor(checked: Readonly<Layout>, most: number) {
+    this.#bits = checked.bits;
+    this.#lsb = checked.lsb;
+    this.#out = new Uint8Array(Math.floor(most / checked.bits));
+  }
+
+  /**
+   * Adds the next bit in text order.
+   *
+   * @param bit - 0 or 1.
+   */
+  push(bit: number): void {
+    const at = this.#count % this.#bits;
+    this.#value = this.#lsb ? this.#value | (bit << at) : (this.#value << 1) | bit;
+    this.#count++;
+    if (at === this.#bits - 1) {
+      this.#out[this.#count / this.#bits - 1] = this.#value;
+      this.#value = 0;
+    }
+  }
+
+  /**
+   * The bytes read so far, refused when the last one is short.
+   *
+   * @returns {Uint8Array} One byte per full group of bits.
+   */
+  bytes(): Uint8Array {
+    if (this.#count % this.#bits !== 0) {
+      const unit = this.#bits === 8 ? "bytes" : `groups of ${this.#bits}`;
+      throw new DecodeError("binary", `${this.#count} bits are not whole ${unit}`);
+    }
+    return this.#out.slice(0, this.#count / this.#bits);
+  }
+}
+
 /**
  * Reads the bits of binary text, skipping ASCII whitespace.
  *
  * @param text - Binary text.
- * @param checked - The symbols and how to split the text.
- * @returns {string} The bits as `0` and `1`, in text order.
+ * @param checked - The symbols, how to split the text and how to pack the bits.
+ * @returns {Uint8Array} The bytes.
  */
-function bitsOf(text: string, checked: Readonly<Layout>): string {
+function bytesOf(text: string, checked: Readonly<Layout>): Uint8Array {
   const { zero, one, clusters } = checked;
-  const out: string[] = [];
+  const packer = new BytePacker(checked, text.length);
   const take = (segment: string, index: number): void => {
-    if (segment === zero || segment === one) out.push(segment === one ? "1" : "0");
+    if (segment === zero || segment === one) packer.push(segment === one ? 1 : 0);
     else if (!WHITESPACE.test(segment)) {
       const at = [zero, one].find((symbol) => segment.startsWith(symbol))?.length ?? 0;
       const stray = String.fromCodePoint(segment.codePointAt(at)!);
@@ -104,7 +151,7 @@ function bitsOf(text: string, checked: Readonly<Layout>): string {
       index += character.length;
     }
   }
-  return out.join("");
+  return packer.bytes();
 }
 
 /**
@@ -149,18 +196,6 @@ export const binary = {
    */
   decode(text: string, options: Readonly<BinaryOptions> = {}): Uint8Array {
     requireText("binary: decode", text);
-    const checked = layout(options);
-    const { bits, lsb } = checked;
-    const read = bitsOf(text, checked);
-    if (read.length % bits !== 0) {
-      const unit = bits === 8 ? "bytes" : `groups of ${bits}`;
-      throw new DecodeError("binary", `${read.length} bits are not whole ${unit}`);
-    }
-    const out = new Uint8Array(read.length / bits);
-    for (let index = 0; index < out.length; index++) {
-      const group = read.slice(index * bits, index * bits + bits);
-      out[index] = Number.parseInt(lsb ? Array.from(group).reverse().join("") : group, 2);
-    }
-    return out;
+    return bytesOf(text, layout(options));
   },
 } as const;
