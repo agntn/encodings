@@ -2691,12 +2691,18 @@ describe("fen", () => {
     expect(diagram).toEqual(bytes);
   });
 
-  it("puts white pawns first, a2 to h2 from a1 and a7 to h7 from a8", () => {
-    const boards = (layout: (typeof CHESS_LAYOUTS)[number]) =>
-      hex.encode(fen.decode(start, { layout, bitboards: true }).bytes).match(/.{16}/gu);
-    expect(boards("a1")?.[0]).toBe("000000000000ff00");
-    expect(boards("a8")?.[0]).toBe("00ff000000000000");
-    expect(boards("a1")?.[11]).toBe("1000000000000000");
+  it("puts white pawns first, a2 to h2 counted in the layout of the board", () => {
+    const pawns = (layout: (typeof CHESS_LAYOUTS)[number]) =>
+      fen.decode(start, { layout, bitboards: true }).bytes.subarray(0, 8);
+    expect(hex.encode(pawns("a1"))).toBe("000000000000ff00");
+    expect(hex.encode(pawns("a8"))).toBe("00ff000000000000");
+    for (const layout of CHESS_LAYOUTS) {
+      expect(square.encode(pawns(layout), { layout, bitboard: true })).toBe(
+        "a2 b2 c2 d2 e2 f2 g2 h2",
+      );
+    }
+    const kings = fen.decode(start, { bitboards: true }).bytes.subarray(88);
+    expect(square.encode(kings, { bitboard: true })).toBe("e8");
   });
 
   it("round trips the bitboards of every piece on every square in every layout", () => {
