@@ -583,6 +583,22 @@ function diagramCells(line: Token, rank: number): string[] {
 }
 
 /**
+ * Splits a diagram into its lines that hold something, each with its index, in one pass.
+ *
+ * @param text - The diagram.
+ * @returns {Token[]} The lines that aren't blank.
+ */
+function diagramLines(text: string): Token[] {
+  const lines: Token[] = [];
+  let at = 0;
+  for (const line of text.split(/\r\n|[\n\r]/u)) {
+    if (/[^\t ]/u.test(line)) lines.push({ text: line, at });
+    at += line.length + (text.startsWith("\r\n", at + line.length) ? 2 : 1);
+  }
+  return lines;
+}
+
+/**
  * Reads a diagram: eight lines, rank 8 first, a piece letter or `.` per square.
  *
  * @param text - The diagram.
@@ -590,10 +606,7 @@ function diagramCells(line: Token, rank: number): string[] {
  * @returns {FenDecoded} The board, without fields.
  */
 function readDiagram(text: string, layout: ChessLayout): FenDecoded {
-  const lines = Array.from(text.matchAll(/[^\n\r]*[^\t\n\r ][^\n\r]*/gu), (match) => ({
-    text: match[0],
-    at: match.index,
-  }));
+  const lines = diagramLines(text);
   if (lines.length !== 8) {
     throw new DecodeError(NAME, `a diagram has 8 lines, not ${lines.length}`);
   }

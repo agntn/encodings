@@ -2635,6 +2635,22 @@ describe("fen", () => {
     expect(() => fen.decode("8/8/8/8/8/8/8/8\u2028")).toThrow("U+2028 at index 15 is not a piece");
   });
 
+  it("counts indices across CRLF and CR line breaks in a diagram", () => {
+    const rows = `${fen.encode(fen.decode(start).bytes, { diagram: true })} x`;
+    for (const lineBreak of ["\r\n", "\r"]) {
+      const text = `${lineBreak}${rows.replaceAll("\n", lineBreak)}`;
+      expect(() => fen.decode(text, { diagram: true })).toThrow(
+        expect.objectContaining({ index: text.indexOf("x") }),
+      );
+    }
+  });
+
+  it("refuses a long blank diagram in linear time", () => {
+    const started = performance.now();
+    expect(() => fen.decode(" ".repeat(100_000), { diagram: true })).toThrow("has 8 lines, not 0");
+    expect(performance.now() - started).toBeLessThan(500);
+  });
+
   it("refuses a board that isn't 64 piece letters and dots", () => {
     expect(() => fen.encode(new Uint8Array(63))).toThrow("fen: a board is 64 bytes, not 63");
     const bytes = fen.decode(start).bytes;
