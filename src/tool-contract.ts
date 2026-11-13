@@ -55,6 +55,12 @@ export const CODES = ["truncated", "unary", "gamma"] as const;
 /** How `square` numbers the board, as `test/mcp.test.ts` holds them to `CHESS_LAYOUTS`. */
 export const LAYOUTS = ["a1", "a8", "file"] as const;
 
+/** Who moves next in a `fen`, as `test/mcp.test.ts` holds them to `FEN_TURNS`. */
+export const TURNS = ["w", "b"] as const;
+
+/** Longest `castling` or `enPassant` option of `fen`: `KQkq` and a square both fit. */
+export const MAX_FEN_FIELD_LENGTH = 4;
+
 /** Most symbols of truncated binary, as the codec caps it. */
 export const MAX_TRUNCATED_SYMBOLS = 2 ** 32;
 

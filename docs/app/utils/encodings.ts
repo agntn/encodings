@@ -32,6 +32,7 @@ const BUILTINS = [
   "ita2",
   "prefix",
   "square",
+  "fen",
 ] as const;
 
 /** An icon, a one-liner and who writes it, per encoding. Everything else comes from `info()`. */
@@ -91,6 +92,11 @@ const PRESENTATION: Record<BuiltinEncoding, { icon: string; blurb: string; usedB
     blurb: "One byte per square. e4 is 28 or 36, depending on who's counting",
     usedBy: "Chess engines, PGN and FEN tools, chess puzzles",
   },
+  fen: {
+    icon: "i-lucide-chess-queen",
+    blurb: "A whole position on one line. Bytes for the pieces, details for whose move it is",
+    usedBy: "Chess engines, PGN headers, Lichess and puzzle passwords",
+  },
 };
 
 /** Labels a page shows per family. The keys come from the library. */
@@ -149,6 +155,7 @@ const GROUP_OF: Record<BuiltinEncoding, GroupKey> = {
   ita2: "bits",
   prefix: "bits",
   square: "values",
+  fen: "values",
 };
 
 export interface EncodingEntry {

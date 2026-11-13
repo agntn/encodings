@@ -257,6 +257,36 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
     ).toBe("a2 b2 c2 d2 e2 f2 g2 h2\n");
   });
 
+  it("reads a FEN with its fields on stderr and writes one with kebab case flags", () => {
+    const read = run("decode", "fen", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    expect(read.stdout).toBe("RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr");
+    expect(read.stderr).toBe("turn: w\ncastling: KQkq\nenPassant: -\nhalfmove: 0\nfullmove: 1\n");
+    expect(
+      run(
+        "encode",
+        "fen",
+        "RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr",
+        "--castling",
+        "KQkq",
+        "--en-passant",
+        "e3",
+        "--turn",
+        "b",
+      ).stdout,
+    ).toBe("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq e3 0 1\n");
+    expect(
+      run(
+        "encode",
+        "fen",
+        "RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr",
+        "--diagram",
+      ).stdout.split("\n")[0],
+    ).toBe("r n b q k b n r");
+    expect(run("decode", "fen", "8/8/8/8/8/8/8/8 w KK").stderr).toContain(
+      '"K" (U+004B) at index 19 is out of place',
+    );
+  });
+
   it("writes teleprinter codes and reads them back in another table and form", () => {
     expect(run("encode", "ita2", "A1").stdout).toBe("00011 11011 10111\n");
     expect(run("encode", "baudot", "A1", "--order", "lsb").stdout).toBe("11000 11011 11101\n");
@@ -282,7 +312,7 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
   });
 
   it("lists encodings and shows one", () => {
-    expect(run("list").stdout.trim().split("\n")).toHaveLength(19);
+    expect(run("list").stdout.trim().split("\n")).toHaveLength(20);
     expect(run("list", "--family", "base64").stdout.trim().split("\n")).toHaveLength(1);
     expect(run("list", "bech32").stdout).toContain(
       "prefix (string, required): Human-readable part",

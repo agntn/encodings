@@ -129,6 +129,7 @@ const UNGUESSED: Readonly<Record<string, readonly string[]>> = {
   ita2: ["numbers"],
   prefix: ["code"],
   square: ["layout", "bitboard"],
+  fen: ["layout"],
 };
 
 /**

@@ -1878,6 +1878,8 @@ button.console-lead:focus-visible {
 }
 .console-rule-title > span:first-child {
   order: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .console-rule-title > span:first-child > span {
   color: var(--ui-text-dimmed);

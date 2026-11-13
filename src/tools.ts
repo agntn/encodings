@@ -16,12 +16,14 @@ import {
   INPUT_FORMATS,
   LAYOUTS,
   MAX_CANDIDATES,
+  MAX_FEN_FIELD_LENGTH,
   MAX_NAME_LENGTH,
   MAX_PREFIX_LENGTH,
   MAX_SYMBOLS_LENGTH,
   MAX_TEXT_LENGTH,
   MAX_TRUNCATED_SYMBOLS,
   OUTPUT_FORMATS,
+  TURNS,
 } from "./tool-contract.ts";
 
 type ToolOperations = typeof import("./tool-operations.ts");
@@ -149,7 +151,7 @@ const n = Type.Optional(
 const layout = Type.Optional(
   Type.Enum(LAYOUTS, {
     description:
-      "square: a1 = 0 rank by rank (default), a8 = 0 as FEN reads the board, or file by file",
+      "square and fen: a1 = 0 rank by rank (default), a8 = 0 as FEN reads the board, or file by file",
   }),
 );
 const pairs = Type.Optional(
@@ -160,6 +162,15 @@ const bitboard = Type.Optional(
     description: "square: the squares as one bitboard, 8 bytes big-endian, bit i for square i",
   }),
 );
+const diagram = Type.Optional(
+  Type.Boolean({
+    description: "fen: the board as eight lines of pieces and dots, rank 8 first, no fields",
+  }),
+);
+const fenField = (description: string) =>
+  Type.Optional(Type.String({ minLength: 1, maxLength: MAX_FEN_FIELD_LENGTH, description }));
+const fenClock = (minimum: number, description: string) =>
+  Type.Optional(Type.Integer({ minimum, maximum: Number.MAX_SAFE_INTEGER, description }));
 const text = (description: string) =>
   Type.String({ minLength: 1, maxLength: MAX_TEXT_LENGTH, description });
 
@@ -222,6 +233,12 @@ export const encodeSchema = closed({
       layout,
       pairs,
       bitboard,
+      diagram,
+      turn: Type.Optional(Type.Enum(TURNS, { description: "fen: side to move (default w)" })),
+      castling: fenField("fen: castling rights such as KQkq, or - (default -)"),
+      enPassant: fenField("fen: en passant square on rank 3 or 6, or - (default -)"),
+      halfmove: fenClock(0, "fen: halfmoves since the last capture or pawn move (default 0)"),
+      fullmove: fenClock(1, "fen: move number (default 1)"),
       delimiters: Type.Optional(
         Type.Boolean({ description: "base85 with the ascii85 alphabet: wrap in <~ and ~>" }),
       ),
@@ -276,6 +293,7 @@ export const decodeSchema = closed({
       layout,
       pairs,
       bitboard,
+      diagram,
       width: Type.Optional(
         Type.Integer({
           minimum: 1,
@@ -348,7 +366,7 @@ export const encodeTool = defineTool({
   name: "encodings_encode",
   title: "Encode",
   description:
-    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, integer (the bytes as one number in any base), base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, base256 (base256emoji and any table of symbols), bech32 (Bech32m too), uuencode, quoted-printable, html (character references such as &amp;), ita2 (Baudot teleprinter code: capitals and figures in five bits, ITA1 and US-TTY too), prefix (variable-length codewords from a codebook, truncated binary, unary or Elias gamma) or square (chess squares such as e4, one byte each from 0 to 63).",
+    "Write text or bytes in a binary-to-text encoding: hex, binary, octal, decimal, integer (the bytes as one number in any base), base32, base45, base58 (Base58Check too), base64, base85 (Ascii85 and Z85 too), base91, base256 (base256emoji and any table of symbols), bech32 (Bech32m too), uuencode, quoted-printable, html (character references such as &amp;), ita2 (Baudot teleprinter code: capitals and figures in five bits, ITA1 and US-TTY too), prefix (variable-length codewords from a codebook, truncated binary, unary or Elias gamma), square (chess squares such as e4, one byte each from 0 to 63) or fen (a chess position, the board as 64 bytes of piece letters, or as a diagram).",
   snippet: "Use encodings_encode to write text or bytes in base64, base58, bech32 and the like.",
   guidelines: [
     "Text is encoded as UTF-8. For bytes, pass them in hex or base64 and set inputFormat.",

@@ -102,6 +102,15 @@ describe("identify", () => {
     expect(boards).toEqual([]);
   });
 
+  /* Every layout reads the same board, so a guess would list one position three times. */
+  it("reads a FEN, but never guesses which square is byte 0", () => {
+    const candidates = identify("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", {
+      limit: 50,
+    }).filter((candidate) => candidate.encoding === "fen");
+    expect(candidates).toMatchObject([{ details: { castling: "KQkq" } }]);
+    expect(candidates.map((candidate) => candidate.options?.["layout"])).toEqual([undefined]);
+  });
+
   it("never reads bits as a prefix code it would have to guess", () => {
     for (const text of ["010110111", "0", "1111 0000", encode("binary", "Hi")]) {
       expect(identify(text, { limit: 20 }).map((candidate) => candidate.encoding)).not.toContain(

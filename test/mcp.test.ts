@@ -1,10 +1,10 @@
 import { existsSync } from "node:fs";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { afterEach, describe, expect, it } from "vite-plus/test";
-import { CHESS_LAYOUTS, CODE_PAGES, PREFIX_CODES, encodingInfos } from "../src/index.ts";
+import { CHESS_LAYOUTS, CODE_PAGES, FEN_TURNS, PREFIX_CODES, encodingInfos } from "../src/index.ts";
 import { callTool, createMcpServer, toolListings } from "../src/mcp.ts";
 import { serverInfo } from "../src/server-info.ts";
-import { ALPHABETS, CHARSET_FORMATS, CODES, LAYOUTS } from "../src/tool-contract.ts";
+import { ALPHABETS, CHARSET_FORMATS, CODES, LAYOUTS, TURNS } from "../src/tool-contract.ts";
 import {
   encodingsCharsetConvert,
   encodingsDecode,
@@ -286,6 +286,34 @@ describe("encodings MCP server", () => {
     ).toBe("square (8 bytes):\na2 b2 c2 d2 e2 f2 g2 h2");
   });
 
+  it("reads a FEN with its fields and writes one from 64 bytes", async () => {
+    expect(
+      await call("encodings_decode", {
+        encoding: "fen",
+        text: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      }),
+    ).toBe(
+      'fen → 64 bytes as utf8 (turn "w", castling "KQkq", enPassant "-", halfmove 0, fullmove 1):\n"RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr"',
+    );
+    expect(
+      await call("encodings_encode", {
+        encoding: "fen",
+        input: "RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr",
+        options: { castling: "KQkq", enPassant: "e3", turn: "b", fullmove: 2 },
+      }),
+    ).toBe("fen (64 bytes):\nrnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq e3 0 2");
+  });
+
+  it("refuses a FEN field longer than the schema allows", () => {
+    expect(() =>
+      encodingsEncode({
+        encoding: "fen",
+        input: "RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr",
+        options: { castling: "KQkqKQkq" },
+      }),
+    ).toThrow("castling");
+  });
+
   it("reads teleprinter codes in a table and writes them as numbers", async () => {
     expect(
       await call("encodings_decode", {
@@ -372,6 +400,10 @@ describe("encodings MCP server", () => {
     expect(LAYOUTS).toEqual(CHESS_LAYOUTS);
   });
 
+  it("offers in the schema the sides fen has", () => {
+    expect(TURNS).toEqual(FEN_TURNS);
+  });
+
   it("offers in the schema every option an encoding writes or reads with", () => {
     const writes = Object.keys(encodeSchema.properties.options.properties);
     const reads = Object.keys(decodeSchema.properties.options.properties);
@@ -411,7 +443,7 @@ describe("encodings MCP server", () => {
   });
 
   it("lists encodings and shows one", async () => {
-    expect((await call("encodings_info", {})).split("\n")).toHaveLength(19);
+    expect((await call("encodings_info", {})).split("\n")).toHaveLength(20);
     expect(await call("encodings_info", { encoding: "base32" })).toContain(
       'alphabet (string, default "standard", decode too)',
     );

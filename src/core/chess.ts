@@ -58,7 +58,7 @@ interface Read<T> {
 
 const NAME = "square";
 
-const FILES = "abcdefgh";
+export const FILES = "abcdefgh";
 
 /** Bytes in a bitboard, one per rank of eight squares. */
 const BITBOARD_BYTES = 8;
@@ -94,7 +94,7 @@ function squareOptions(options: Readonly<SquareOptions>): Required<SquareOptions
  * @param layout - How squares are numbered.
  * @returns {number} Its index, 0 to 63.
  */
-function indexOf(square: Square, layout: ChessLayout): number {
+export function indexOf(square: Square, layout: ChessLayout): number {
   if (layout === "a8") return (7 - square.rank) * 8 + square.file;
   if (layout === "file") return square.file * 8 + square.rank;
   return square.rank * 8 + square.file;

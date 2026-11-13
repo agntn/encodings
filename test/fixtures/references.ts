@@ -32,6 +32,9 @@
  *   for a8 = 0 and `flip_diagonal` for file by file, and `square_file` with `square_rank`.
  * - `chessBitboards`: python-chess 1.11.2 `SquareSet` over named `BB_` masks, as `f"{bb:016x}"`
  *   and the `square_name` of each square it holds.
+ * - `chessPositions`: python-chess 1.11.2 `Board(fen).fen(en_passant="fen")` over the PGN
+ *   standard's examples and `random.Random(113)` games, `piece_at(...).symbol()` per square in
+ *   each layout, and `str(board)` as the diagram.
  */
 
 /** Rows keyed by encoding name; `hex` is the input. */
@@ -1058,5 +1061,81 @@ export const chessBitboards: readonly VectorRow[] = [
     hex: "ffffffffffffffff",
     square:
       "a1 b1 c1 d1 e1 f1 g1 h1 a2 b2 c2 d2 e2 f2 g2 h2 a3 b3 c3 d3 e3 f3 g3 h3 a4 b4 c4 d4 e4 f4 g4 h4 a5 b5 c5 d5 e5 f5 g5 h5 a6 b6 c6 d6 e6 f6 g6 h6 a7 b7 c7 d7 e7 f7 g7 h7 a8 b8 c8 d8 e8 f8 g8 h8",
+  },
+];
+
+/** Positions as FEN, the board square by square in each layout, and as `str(board)`. */
+export const chessPositions: readonly VectorRow[] = [
+  {
+    fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    a1: "RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr",
+    a8: "rnbqkbnrpppppppp................................PPPPPPPPRNBQKBNR",
+    file: "RP....prNP....pnBP....pbQP....pqKP....pkBP....pbNP....pnRP....pr",
+    diagram:
+      "r n b q k b n r\np p p p p p p p\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\nP P P P P P P P\nR N B Q K B N R",
+  },
+  {
+    fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",
+    a1: "RNBQKBNRPPPP.PPP............P...................pppppppprnbqkbnr",
+    a8: "rnbqkbnrpppppppp....................P...........PPPP.PPPRNBQKBNR",
+    file: "RP....prNP....pnBP....pbQP....pqK..P..pkBP....pbNP....pnRP....pr",
+    diagram:
+      "r n b q k b n r\np p p p p p p p\n. . . . . . . .\n. . . . . . . .\n. . . . P . . .\n. . . . . . . .\nP P P P . P P P\nR N B Q K B N R",
+  },
+  {
+    fen: "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2",
+    a1: "RNBQKBNRPPPP.PPP............P.....p.............pp.ppppprnbqkbnr",
+    a8: "rnbqkbnrpp.ppppp..........p.........P...........PPPP.PPPRNBQKBNR",
+    file: "RP....prNP....pnBP..p..bQP....pqK..P..pkBP....pbNP....pnRP....pr",
+    diagram:
+      "r n b q k b n r\np p . p p p p p\n. . . . . . . .\n. . p . . . . .\n. . . . P . . .\n. . . . . . . .\nP P P P . P P P\nR N B Q K B N R",
+  },
+  {
+    fen: "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2",
+    a1: "RNBQKB.RPPPP.PPP.....N......P.....p.............pp.ppppprnbqkbnr",
+    a8: "rnbqkbnrpp.ppppp..........p.........P........N..PPPP.PPPRNBQKB.R",
+    file: "RP....prNP....pnBP..p..bQP....pqK..P..pkBPN...pb.P....pnRP....pr",
+    diagram:
+      "r n b q k b n r\np p . p p p p p\n. . . . . . . .\n. . p . . . . .\n. . . . P . . .\n. . . . . N . .\nP P P P . P P P\nR N B Q K B . R",
+  },
+  {
+    fen: "4k3/8/8/8/8/8/4P3/4K3 w - - 5 39",
+    a1: "....K.......P...............................................k...",
+    a8: "....k...............................................P.......K...",
+    file: "................................KP.....k........................",
+    diagram:
+      ". . . . k . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . P . . .\n. . . . K . . .",
+  },
+  {
+    fen: "rnb1kbnr/ppp2p2/3pp3/6q1/P6P/4P2N/1PPP1PPR/RNBQKB2 b Qkq a3 0 9",
+    a1: "RNBQKB...PPP.PPR....P..NP......P......q....pp...ppp..p..rnb.kbnr",
+    a8: "rnb.kbnrppp..p.....pp.........q.P......P....P..N.PPP.PPRRNBQKB..",
+    file: "R..P..prNP....pnBP....pbQP...p..K.P..p.kBP....pb.P..q..n.RNP...r",
+    diagram:
+      "r n b . k b n r\np p p . . p . .\n. . . p p . . .\n. . . . . . q .\nP . . . . . . P\n. . . . P . . N\n. P P P . P P R\nR N B Q K B . .",
+  },
+  {
+    fen: "rnb2knr/pp3qb1/4pp2/2p4P/PPp2N2/R3PPP1/3P3R/1NBQKB2 w - - 1 21",
+    a1: ".NBQKB.....P...RR...PPP.PPp..N....p....P....pp..pp...qb.rnb..knr",
+    a8: "rnb..knrpp...qb.....pp....p....PPPp..N..R...PPP....P...R.NBQKB..",
+    file: "..RP..prN..P..pnB..pp..bQP......K.P..p..B.PN.pqk..P...bn.R..P..r",
+    diagram:
+      "r n b . . k n r\np p . . . q b .\n. . . . p p . .\n. . p . . . . P\nP P p . . N . .\nR . . . P P P .\n. . . P . . . R\n. N B Q K B . .",
+  },
+  {
+    fen: "2b3n1/1Q3kN1/2nq1p1r/2p1p2P/1p2P3/R1pN1PPR/3P4/2B1KB2 b - - 7 39",
+    a1: "..B.KB.....P....R.pN.PPR.p..P.....p.p..P..nq.p.r.Q...kN...b...n.",
+    a8: "..b...n..Q...kN...nq.p.r..p.p..P.p..P...R.pN.PPR...P......B.KB..",
+    file: "..R........p..Q.B.p.pn.b.PN..q..K..Pp...B.P..pk...P...Nn..R.Pr..",
+    diagram:
+      ". . b . . . n .\n. Q . . . k N .\n. . n q . p . r\n. . p . p . . P\n. p . . P . . .\nR . p N . P P R\n. . . P . . . .\n. . B . K B . .",
+  },
+  {
+    fen: "6n1/3k1q2/b6P/2p3B1/R7/2pP1pPR/8/1Q2K2B w - - 0 61",
+    a1: ".Q..K..B..........pP.pPRR.........p...B.b......P...k.q........n.",
+    a8: "......n....k.q..b......P..p...B.R.........pP.pPR.........Q..K..B",
+    file: "...R.b..Q.........p.p.....P...k.K.........p...q...P.B..nB.R..P..",
+    diagram:
+      ". . . . . . n .\n. . . k . q . .\nb . . . . . . P\n. . p . . . B .\nR . . . . . . .\n. . p P . p P R\n. . . . . . . .\n. Q . . K . . B",
   },
 ];

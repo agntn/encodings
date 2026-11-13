@@ -107,6 +107,16 @@ export {
   type SquareCodec,
   type SquareOptions,
 } from "./chess.ts";
+export {
+  FEN_TURNS,
+  fen,
+  type FenCodec,
+  type FenDecoded,
+  type FenEncodeOptions,
+  type FenFields,
+  type FenOptions,
+  type FenTurn,
+} from "./fen.ts";
 export { CODE_PAGES, charsets, type CharsetOptions, type CodePage } from "./charsets.ts";
 export { rlp, type RlpInput, type RlpItem } from "./rlp.ts";
 export {
