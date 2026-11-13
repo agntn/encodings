@@ -34,7 +34,8 @@
  *   and the `square_name` of each square it holds.
  * - `chessPositions`: python-chess 1.11.2 `Board(fen).fen(en_passant="fen")` over the PGN
  *   standard's examples and `random.Random(113)` games, `piece_at(...).symbol()` per square in
- *   each layout, and `str(board)` as the diagram.
+ *   each layout, `str(board)` as the diagram, and `pieces_mask` for each of `PNBRQKpnbrqk` as
+ *   `f"{mask:016x}"`, joined, as the bitboards.
  */
 
 /** Rows keyed by encoding name; `hex` is the input. */
@@ -1064,7 +1065,7 @@ export const chessBitboards: readonly VectorRow[] = [
   },
 ];
 
-/** Positions as FEN, the board square by square in each layout, and as `str(board)`. */
+/** Positions as FEN, the board square by square in each layout, as `str(board)`, and as bitboards. */
 export const chessPositions: readonly VectorRow[] = [
   {
     fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
@@ -1073,6 +1074,8 @@ export const chessPositions: readonly VectorRow[] = [
     file: "RP....prNP....pnBP....pbQP....pqKP....pkBP....pbNP....pnRP....pr",
     diagram:
       "r n b q k b n r\np p p p p p p p\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\nP P P P P P P P\nR N B Q K B N R",
+    bitboards:
+      "000000000000ff000000000000000042000000000000002400000000000000810000000000000008000000000000001000ff00000000000042000000000000002400000000000000810000000000000008000000000000001000000000000000",
   },
   {
     fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",
@@ -1081,6 +1084,8 @@ export const chessPositions: readonly VectorRow[] = [
     file: "RP....prNP....pnBP....pbQP....pqK..P..pkBP....pbNP....pnRP....pr",
     diagram:
       "r n b q k b n r\np p p p p p p p\n. . . . . . . .\n. . . . . . . .\n. . . . P . . .\n. . . . . . . .\nP P P P . P P P\nR N B Q K B N R",
+    bitboards:
+      "000000001000ef000000000000000042000000000000002400000000000000810000000000000008000000000000001000ff00000000000042000000000000002400000000000000810000000000000008000000000000001000000000000000",
   },
   {
     fen: "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2",
@@ -1089,6 +1094,8 @@ export const chessPositions: readonly VectorRow[] = [
     file: "RP....prNP....pnBP..p..bQP....pqK..P..pkBP....pbNP....pnRP....pr",
     diagram:
       "r n b q k b n r\np p . p p p p p\n. . . . . . . .\n. . p . . . . .\n. . . . P . . .\n. . . . . . . .\nP P P P . P P P\nR N B Q K B N R",
+    bitboards:
+      "000000001000ef000000000000000042000000000000002400000000000000810000000000000008000000000000001000fb00040000000042000000000000002400000000000000810000000000000008000000000000001000000000000000",
   },
   {
     fen: "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2",
@@ -1097,6 +1104,8 @@ export const chessPositions: readonly VectorRow[] = [
     file: "RP....prNP....pnBP..p..bQP....pqK..P..pkBPN...pb.P....pnRP....pr",
     diagram:
       "r n b q k b n r\np p . p p p p p\n. . . . . . . .\n. . p . . . . .\n. . . . P . . .\n. . . . . N . .\nP P P P . P P P\nR N B Q K B . R",
+    bitboards:
+      "000000001000ef000000000000200002000000000000002400000000000000810000000000000008000000000000001000fb00040000000042000000000000002400000000000000810000000000000008000000000000001000000000000000",
   },
   {
     fen: "4k3/8/8/8/8/8/4P3/4K3 w - - 5 39",
@@ -1105,6 +1114,8 @@ export const chessPositions: readonly VectorRow[] = [
     file: "................................KP.....k........................",
     diagram:
       ". . . . k . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . P . . .\n. . . . K . . .",
+    bitboards:
+      "000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000",
   },
   {
     fen: "rnb1kbnr/ppp2p2/3pp3/6q1/P6P/4P2N/1PPP1PPR/RNBQKB2 b Qkq a3 0 9",
@@ -1113,6 +1124,8 @@ export const chessPositions: readonly VectorRow[] = [
     file: "R..P..prNP....pnBP....pbQP...p..K.P..p.kBP....pb.P..q..n.RNP...r",
     diagram:
       "r n b . k b n r\np p p . . p . .\n. . . p p . . .\n. . . . . . q .\nP . . . . . . P\n. . . . P . . N\n. P P P . P P R\nR N B Q K B . .",
+    bitboards:
+      "0000000081106e0000000000008000020000000000000024000000000000800100000000000000080000000000000010002718000000000042000000000000002400000000000000810000000000000000000040000000001000000000000000",
   },
   {
     fen: "rnb2knr/pp3qb1/4pp2/2p4P/PPp2N2/R3PPP1/3P3R/1NBQKB2 w - - 1 21",
@@ -1121,6 +1134,8 @@ export const chessPositions: readonly VectorRow[] = [
     file: "..RP..prN..P..pnB..pp..bQP......K.P..p..B.PN.pqk..P...bn.R..P..r",
     diagram:
       "r n b . . k n r\np p . . . q b .\n. . . . p p . .\n. . p . . . . P\nP P p . . N . .\nR . . . P P P .\n. . . P . . . R\n. N B Q K B . .",
+    bitboards:
+      "000000800370080000000000200000020000000000000024000000000001800000000000000000080000000000000010000330040400000042000000000000000440000000000000810000000000000000200000000000002000000000000000",
   },
   {
     fen: "2b3n1/1Q3kN1/2nq1p1r/2p1p2P/1p2P3/R1pN1PPR/3P4/2B1KB2 b - - 7 39",
@@ -1129,6 +1144,8 @@ export const chessPositions: readonly VectorRow[] = [
     file: "..R........p..Q.B.p.pn.b.PN..q..K..Pp...B.P..pk...P...Nn..R.Pr..",
     diagram:
       ". . b . . . n .\n. Q . . . k N .\n. . n q . p . r\n. . p . p . . P\n. p . . P . . .\nR . p N . P P R\n. . . P . . . .\n. . B . K B . .",
+    bitboards:
+      "000000801060080000400000000800000000000000000024000000000081000000020000000000000000000000000010000020140204000040000400000000000400000000000000000080000000000000000800000000000020000000000000",
   },
   {
     fen: "6n1/3k1q2/b6P/2p3B1/R7/2pP1pPR/8/1Q2K2B w - - 0 61",
@@ -1137,5 +1154,7 @@ export const chessPositions: readonly VectorRow[] = [
     file: "...R.b..Q.........p.p.....P...k.K.........p...q...P.B..nB.R..P..",
     diagram:
       ". . . . . . n .\n. . . k . q . .\nb . . . . . . P\n. . p . . . B .\nR . . . . . . .\n. . p P . p P R\n. . . . . . . .\n. Q . . K . . B",
+    bitboards:
+      "000080000048000000000000000000000000004000000080000000000180000000000000000000020000000000000010000000040024000040000000000000000000010000000000000000000000000000200000000000000008000000000000",
   },
 ];

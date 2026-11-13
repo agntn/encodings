@@ -304,6 +304,26 @@ describe("encodings MCP server", () => {
     ).toBe("fen (64 bytes):\nrnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq e3 0 2");
   });
 
+  it("splits a FEN into piece bitboards and writes one back from them", async () => {
+    const boards = await call("encodings_decode", {
+      encoding: "fen",
+      text: "4k3/8/8/8/8/8/4P3/4K3 b",
+      options: { bitboards: true },
+      outputFormat: "hex",
+    });
+    expect(boards).toBe(
+      `fen (bitboards) → 96 bytes as hex (turn "b"):\n${"0".repeat(12)}1000${"0".repeat(78)}10${"0".repeat(80)}10${"0".repeat(14)}`,
+    );
+    expect(
+      await call("encodings_encode", {
+        encoding: "fen",
+        input: boards.split("\n")[1],
+        inputFormat: "hex",
+        options: { bitboards: true, turn: "b" },
+      }),
+    ).toBe("fen (96 bytes):\n4k3/8/8/8/8/8/4P3/4K3 b - - 0 1");
+  });
+
   it("refuses a FEN field longer than the schema allows", () => {
     expect(() =>
       encodingsEncode({

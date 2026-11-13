@@ -257,6 +257,15 @@ describe("encodings CLI", { timeout: 20_000 }, () => {
     ).toBe("a2 b2 c2 d2 e2 f2 g2 h2\n");
   });
 
+  it("splits a FEN into piece bitboards and back", () => {
+    const read = run("decode", "fen", "4k3/8/8/8/8/8/4P3/4K3 w", "--bitboards", "-o", "hex");
+    expect(read.stdout.slice(0, 16)).toBe("0000000000001000");
+    expect(read.stderr).toBe("turn: w\n");
+    expect(run("encode", "fen", read.stdout, "--input-format", "hex", "--bitboards").stdout).toBe(
+      "4k3/8/8/8/8/8/4P3/4K3 w - - 0 1\n",
+    );
+  });
+
   it("reads a FEN with its fields on stderr and writes one with kebab case flags", () => {
     const read = run("decode", "fen", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     expect(read.stdout).toBe("RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr");

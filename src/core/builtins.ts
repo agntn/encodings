@@ -226,10 +226,14 @@ function squareOptions(values: Values): SquareOptions {
  * Reads the board options of fen from checked values.
  *
  * @param values - Checked option values.
- * @returns {FenOptions} The layout and the diagram switch.
+ * @returns {FenOptions} The layout and the diagram and bitboards switches.
  */
 function fenOptions(values: Values): FenOptions {
-  return { layout: String(values["layout"]) as ChessLayout, diagram: values["diagram"] === true };
+  return {
+    layout: String(values["layout"]) as ChessLayout,
+    diagram: values["diagram"] === true,
+    bitboards: values["bitboards"] === true,
+  };
 }
 
 /**
@@ -1047,6 +1051,14 @@ export const builtins: readonly Encoding[] = [
           required: false,
           default: false,
           description: "The board as eight lines of pieces and dots, rank 8 first, no fields",
+          decode: true,
+        },
+        {
+          name: "bitboards",
+          type: "boolean",
+          required: false,
+          default: false,
+          description: "The board as twelve 8-byte bitboards, one per piece in PNBRQKpnbrqk order",
           decode: true,
         },
         {
