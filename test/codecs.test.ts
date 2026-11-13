@@ -2161,6 +2161,23 @@ describe("large input", () => {
       latin1: 1_000_000,
     });
   }, 30_000);
+
+  it("decodes 1 MB of binary in a 24 MB heap, where a string per bit runs out", () => {
+    const script = `
+      import { binary } from "./src/index.ts";
+      const block = Array.from({ length: 256 }, (_, byte) => byte.toString(2).padStart(8, "0"));
+      const bytes = binary.decode(\`\${block.join(" ")} \`.repeat(4096));
+      console.log(JSON.stringify([bytes.length, bytes.every((byte, index) => byte === (index & 255))]));
+    `;
+    const { status, stdout, stderr } = spawnSync(
+      process.execPath,
+      ["--max-old-space-size=24", "--input-type=module", "-e", script],
+      { cwd: join(import.meta.dirname, ".."), encoding: "utf8" },
+    );
+    expect(stderr).not.toContain("heap out of memory");
+    expect(status).toBe(0);
+    expect(JSON.parse(stdout)).toEqual([1_048_576, true]);
+  }, 30_000);
 });
 
 describe("prefix", () => {
