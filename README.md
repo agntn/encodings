@@ -27,7 +27,7 @@ Docs and a live playground: [encodings.agntn.dev](https://encodings.agntn.dev).
 - ⛓️ **RLP as well.** Ethereum transactions apart and back, as strict as geth.
 - 🌳 **Prefix codes.** Your own Huffman table, truncated binary, unary or Elias gamma. Bits that run out of tape come back as leftovers, not as padding.
 - ♟️ **Square deal.** Chess squares and `(file, rank)` pairs become bytes 0 to 63 and back. `e4` is 28 from a1 or 36 from a8. Same square, two numbers. A bogus `e9` gets refused, with its position. A whole set of squares fits in one 64-bit bitboard too.
-- 🏰 **FEN, strictly.** A position comes apart into 64 bytes of piece letters. Castling and clocks go to `details`. Two counts in a row or castling as `kqKQ`? Refused, with the index.
+- 🏰 **FEN, strictly.** A position comes apart into 64 bytes of piece letters, or twelve piece bitboards. Castling and clocks go to `details`. Two counts in a row or castling as `kqKQ`? Refused, with the index.
 - 📠 **Teleprinter time.** ITA2, US-TTY and Baudot's ITA1, with the shifts handled for you. Shift keys included, small letters not.
 - 🛡️ **OpenPGP armor.** Keys and signatures in and out of their `-----BEGIN PGP` blocks. A bad CRC24 gets reported, not thrown.
 - 🤖 **Agent tools.** The same ones over MCP, Pi, OMP and the AI SDK. The MCP ones also answer at [encodings.agntn.dev/mcp](https://encodings.agntn.dev/guide/agents#remote-mcp), nothing to install.
@@ -131,7 +131,7 @@ That's most of it, really. Strings go in as UTF-8, bytes come out as `Uint8Array
 | `ita2`                         | `alphabet`: `ita2`, `ita1`, `us-tty`; `order`, `numbers`     |
 | `prefix`                       | `codebook`; `code`: `truncated`, `unary`, `gamma`; `n`       |
 | `square`                       | `layout`: `a1`, `a8`, `file`; `pairs`, `bitboard`            |
-| `fen`                          | `layout`, `diagram`; `turn`, `castling`, `enPassant`, clocks |
+| `fen`                          | `layout`, `diagram`, `bitboards`; FEN fields after the board |
 
 Base58Check is `base58` with `check`. Monero's addresses are `base58` with `blocks`. z-base-32 is `base32` with `alphabet: "z"`. Decoding takes the same options, so a variant reads back the way it was written.
 

@@ -1,5 +1,14 @@
 import { requireBytes, requireText } from "./bytes.ts";
-import { CHESS_LAYOUTS, FILES, indexOf, type ChessLayout } from "./chess.ts";
+import {
+  BITBOARD_BYTES,
+  CHESS_LAYOUTS,
+  FILES,
+  bitboardBit,
+  indexOf,
+  nameOfSquare,
+  squareOf,
+  type ChessLayout,
+} from "./chess.ts";
 import { DecodeError, EncodingError, InvalidOptionError, named, quote } from "./errors.ts";
 
 /** Whose move it is: `w` for White, `b` for Black. */
@@ -28,6 +37,8 @@ export interface FenOptions {
   layout?: ChessLayout;
   /** The board as eight lines of pieces and dots instead of a FEN. Default: false. */
   diagram?: boolean;
+  /** The board as twelve 8-byte bitboards, `PNBRQKpnbrqk` in that order. Default: false. */
+  bitboards?: boolean;
 }
 
 /** Options for writing a FEN: the layout and the fields after the board. */
@@ -35,7 +46,7 @@ export interface FenEncodeOptions extends FenOptions, Partial<FenFields> {}
 
 /** A board read from a FEN or a diagram. */
 export interface FenDecoded {
-  /** One piece letter per square, `.` for an empty one, in the chosen layout. */
+  /** One piece letter per square, `.` for an empty one, or 96 bytes of bitboards. */
   bytes: Uint8Array;
   /** The fields after the board the text has: all of them in a full FEN, none in a diagram. */
   fields: Partial<FenFields>;
@@ -46,8 +57,8 @@ export interface FenCodec {
   /**
    * Writes a board as a FEN or a diagram.
    *
-   * @param bytes - 64 bytes, a piece letter or `.` each.
-   * @param options - Layout, diagram, and the fields after the board.
+   * @param bytes - 64 bytes, a piece letter or `.` each, or 96 bytes of bitboards.
+   * @param options - Layout, diagram, bitboards, and the fields after the board.
    * @returns {string} The FEN, or eight lines of the board.
    */
   encode(bytes: Uint8Array, options?: Readonly<FenEncodeOptions>): string;
@@ -55,8 +66,8 @@ export interface FenCodec {
    * Reads a FEN or a diagram.
    *
    * @param text - The FEN, or the diagram with `diagram` set.
-   * @param options - Layout and diagram.
-   * @returns {FenDecoded} The 64 bytes and the fields after the board.
+   * @param options - Layout, diagram and bitboards.
+   * @returns {FenDecoded} The board bytes and the fields after the board.
    */
   decode(text: string, options?: Readonly<FenOptions>): FenDecoded;
 }
@@ -77,6 +88,9 @@ const EMPTY = ".";
 
 /** Squares on a board. */
 const SQUARES = 64;
+
+/** Bytes of the twelve bitboards, one per piece letter. */
+const BITBOARDS_BYTES = PIECES.length * BITBOARD_BYTES;
 
 /** Castling rights in the order FEN writes them. */
 const CASTLING = "KQkq";
@@ -101,20 +115,91 @@ const PASSANT_REASON = "use a square on rank 3 or 6, or -";
 const BLANKS = /[^\t\n\r ]+/gu;
 
 /**
- * Checks the layout and the diagram switch, which callers without types can pass as anything.
+ * Checks the layout and the two switches, which callers without types can pass as anything.
  *
  * @param options - Options from the caller.
  * @returns {Required<FenOptions>} The options with their defaults.
  */
 function boardOptions(options: Readonly<FenOptions>): Required<FenOptions> {
-  const { layout = "a1", diagram = false } = options;
+  const { layout = "a1", diagram = false, bitboards = false } = options;
   if (!(CHESS_LAYOUTS as readonly unknown[]).includes(layout)) {
     throw new InvalidOptionError("layout", layout, `use one of ${CHESS_LAYOUTS.join(", ")}`);
   }
   if (typeof diagram !== "boolean") {
     throw new InvalidOptionError("diagram", diagram, "must be a boolean");
   }
-  return { layout, diagram };
+  if (typeof bitboards !== "boolean") {
+    throw new InvalidOptionError("bitboards", bitboards, "must be a boolean");
+  }
+  return { layout, diagram, bitboards };
+}
+
+/**
+ * Splits a board into twelve bitboards, one per piece letter in `PNBRQKpnbrqk` order.
+ *
+ * @param board - 64 bytes, a piece letter or `.` each.
+ * @returns {Uint8Array} 96 bytes, eight big-endian ones per piece, bit i for byte i of the board.
+ */
+function splitBoard(board: ArrayLike<number>): Uint8Array {
+  const boards = new Uint8Array(BITBOARDS_BYTES);
+  for (let index = 0; index < SQUARES; index += 1) {
+    const piece = PIECES.indexOf(String.fromCodePoint(board[index]!));
+    if (piece !== -1) {
+      const { byte, mask } = bitboardBit(index);
+      boards[piece * BITBOARD_BYTES + byte]! |= mask;
+    }
+  }
+  return boards;
+}
+
+/**
+ * Lays twelve bitboards back onto one board, refusing a square two pieces claim.
+ *
+ * @param boards - 96 bytes, eight big-endian ones per piece in `PNBRQKpnbrqk` order.
+ * @param layout - How squares are numbered, for naming a clash.
+ * @returns {Uint8Array} 64 bytes, a piece letter or `.` each.
+ */
+function joinBitboards(boards: ArrayLike<number>, layout: ChessLayout): Uint8Array {
+  if (boards.length !== BITBOARDS_BYTES) {
+    throw new EncodingError(
+      `${NAME}: twelve bitboards are ${BITBOARDS_BYTES} bytes, not ${boards.length}`,
+    );
+  }
+  const board = new Uint8Array(SQUARES).fill(EMPTY.codePointAt(0)!);
+  for (const [piece, letter] of Array.from(PIECES).entries()) {
+    for (let index = 0; index < SQUARES; index += 1) {
+      const { byte, mask } = bitboardBit(index);
+      if ((boards[piece * BITBOARD_BYTES + byte]! & mask) !== 0) {
+        placePiece(board, { index, letter, layout });
+      }
+    }
+  }
+  return board;
+}
+
+/** One piece about to land on the board, and how to name its square if that one is taken. */
+interface Placement {
+  readonly index: number;
+  readonly letter: string;
+  readonly layout: ChessLayout;
+}
+
+/**
+ * Puts one piece on an empty square.
+ *
+ * @param board - The board so far, written in place.
+ * @param placement - The square, the piece letter and the layout.
+ */
+function placePiece(board: Uint8Array, placement: Placement): void {
+  const { index, letter, layout } = placement;
+  const there = String.fromCodePoint(board[index]!);
+  if (there !== EMPTY) {
+    const name = nameOfSquare(squareOf(index, layout));
+    throw new EncodingError(
+      `${NAME}: ${name} holds both ${there} and ${letter}; one piece a square`,
+    );
+  }
+  board[index] = letter.codePointAt(0)!;
 }
 
 /**
@@ -619,13 +704,14 @@ function readDiagram(text: string, layout: ChessLayout): FenDecoded {
   };
 }
 
-/** Chess positions in FEN: the board as 64 bytes, a piece letter or `.` per square. */
+/** Chess positions in FEN: the board as 64 bytes, a piece letter or `.` per square, or as bitboards. */
 export const fen: FenCodec = {
   encode(input, options = {}) {
     requireBytes(`${NAME}: encode`, input);
-    const { layout, diagram } = boardOptions(options);
-    checkBoard(input);
-    const ranks = ranksDown(input, layout);
+    const { layout, diagram, bitboards } = boardOptions(options);
+    const board = bitboards ? joinBitboards(input, layout) : input;
+    checkBoard(board);
+    const ranks = ranksDown(board, layout);
     if (diagram) {
       refuseFields(options);
       return ranks.map((row) => row.join(" ")).join("\n");
@@ -636,7 +722,8 @@ export const fen: FenCodec = {
   },
   decode(text, options = {}) {
     requireText(`${NAME}: decode`, text);
-    const { layout, diagram } = boardOptions(options);
-    return diagram ? readDiagram(text, layout) : readFen(text, layout);
+    const { layout, diagram, bitboards } = boardOptions(options);
+    const read = diagram ? readDiagram(text, layout) : readFen(text, layout);
+    return bitboards ? { bytes: splitBoard(read.bytes), fields: read.fields } : read;
   },
 };

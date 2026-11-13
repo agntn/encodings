@@ -2668,6 +2668,7 @@ describe("fen", () => {
     [{ fullmove: 0 }, "fullmove"],
     [{ layout: "h8" }, "layout"],
     [{ diagram: "yes" }, "diagram"],
+    [{ bitboards: 1 }, "bitboards"],
   ] as const)("refuses the option %o", (options, option) => {
     const bytes = fen.decode(start).bytes;
     expect(() => fen.encode(bytes, options as never)).toThrow(
@@ -2679,6 +2680,54 @@ describe("fen", () => {
     const bytes = fen.decode(start).bytes;
     expect(() => fen.encode(bytes, { diagram: true, castling: "KQkq" })).toThrow(
       "Invalid option castling=KQkq: a diagram shows the board alone",
+    );
+  });
+
+  it.each(chessPositions)("splits $fen into the bitboards python-chess has", (row) => {
+    const { bytes, fields } = fen.decode(row.fen!, { bitboards: true });
+    expect(hex.encode(bytes)).toBe(row.bitboards);
+    expect(fen.encode(bytes, { ...fields, bitboards: true })).toBe(row.fen);
+    const diagram = fen.decode(row.diagram!, { diagram: true, bitboards: true }).bytes;
+    expect(diagram).toEqual(bytes);
+  });
+
+  it("puts white pawns first, a2 to h2 counted in the layout of the board", () => {
+    const pawns = (layout: (typeof CHESS_LAYOUTS)[number]) =>
+      fen.decode(start, { layout, bitboards: true }).bytes.subarray(0, 8);
+    expect(hex.encode(pawns("a1"))).toBe("000000000000ff00");
+    expect(hex.encode(pawns("a8"))).toBe("00ff000000000000");
+    for (const layout of CHESS_LAYOUTS) {
+      expect(square.encode(pawns(layout), { layout, bitboard: true })).toBe(
+        "a2 b2 c2 d2 e2 f2 g2 h2",
+      );
+    }
+    const kings = fen.decode(start, { bitboards: true }).bytes.subarray(88);
+    expect(square.encode(kings, { bitboard: true })).toBe("e8");
+  });
+
+  it("round trips the bitboards of every piece on every square in every layout", () => {
+    for (const layout of CHESS_LAYOUTS) {
+      for (let at = 0; at < 96 * 8; at += 1) {
+        const boards = new Uint8Array(96);
+        boards[at >> 3] = 1 << (at & 7);
+        const text = fen.encode(boards, { layout, bitboards: true });
+        expect(fen.decode(text, { layout, bitboards: true }).bytes).toEqual(boards);
+      }
+    }
+  });
+
+  it("refuses bitboards that aren't 96 bytes or that stack two pieces", () => {
+    expect(() => fen.encode(new Uint8Array(64), { bitboards: true })).toThrow(
+      "fen: twelve bitboards are 96 bytes, not 64",
+    );
+    const boards = new Uint8Array(96);
+    boards[7] = 0x10;
+    boards[95] = 0x10;
+    expect(() => fen.encode(boards, { bitboards: true })).toThrow(
+      "fen: e1 holds both P and k; one piece a square",
+    );
+    expect(() => fen.encode(boards, { bitboards: true, layout: "a8" })).toThrow(
+      "fen: e8 holds both P and k",
     );
   });
 

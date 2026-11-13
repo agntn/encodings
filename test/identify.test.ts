@@ -111,6 +111,16 @@ describe("identify", () => {
     expect(candidates.map((candidate) => candidate.options?.["layout"])).toEqual([undefined]);
   });
 
+  /* Bitboards repack the board FEN already read, so the same position would turn up twice. */
+  it("never guesses piece bitboards for a FEN", () => {
+    for (const text of ["8/8/8/8/8/8/8/8", "4k3/8/8/8/8/8/4P3/4K3 b"]) {
+      const options = identify(text, { limit: 50 })
+        .filter((candidate) => candidate.encoding === "fen")
+        .map((candidate) => candidate.options);
+      expect(options).toEqual([undefined]);
+    }
+  });
+
   it("never reads bits as a prefix code it would have to guess", () => {
     for (const text of ["010110111", "0", "1111 0000", encode("binary", "Hi")]) {
       expect(identify(text, { limit: 20 }).map((candidate) => candidate.encoding)).not.toContain(

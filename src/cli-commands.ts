@@ -68,6 +68,7 @@ const layout = text("square, fen: a1 (default), a8 or file, which square is 0");
 const pairs = flag("square: (file, rank) pairs counted from 0, such as (4, 3) for e4");
 const bitboard = flag("square: the squares as one 8-byte bitboard, bit i for square i");
 const diagram = flag("fen: the board as eight lines of pieces and dots, no fields");
+const bitboards = flag("fen: the board as twelve 8-byte bitboards, PNBRQKpnbrqk");
 
 /** The flags `encode` turns into encoding options, which each encoding checks against its own. */
 export const encodeFlags = {
@@ -96,6 +97,7 @@ export const encodeFlags = {
   pairs,
   bitboard,
   diagram,
+  bitboards,
   turn: text("fen: side to move, w (default) or b"),
   castling: text("fen: castling rights such as KQkq, or - (default)"),
   enPassant: text("fen: en passant square on rank 3 or 6, or - (default)"),
@@ -133,6 +135,7 @@ export const decodeFlags = {
   pairs,
   bitboard,
   diagram,
+  bitboards,
   width: Type.Optional(Type.Integer({ description: "integer: bytes to fill with leading zeros" })),
   canonical: flag("base32, base64: refuse non-zero spare bits in the last character"),
 };

@@ -44,6 +44,12 @@ interface Square {
   readonly rank: number;
 }
 
+/** One square's bit in a bitboard: the byte it sits in and its mask there. */
+interface BitboardBit {
+  readonly byte: number;
+  readonly mask: number;
+}
+
 /** A square read from the text and the index it starts at. */
 interface Placed {
   readonly square: Square;
@@ -61,7 +67,7 @@ const NAME = "square";
 export const FILES = "abcdefgh";
 
 /** Bytes in a bitboard, one per rank of eight squares. */
-const BITBOARD_BYTES = 8;
+export const BITBOARD_BYTES = 8;
 
 /** What may sit inside a pair, around its digits and marks. */
 const SPACE = "\t\n\f\r ";
@@ -107,12 +113,32 @@ export function indexOf(square: Square, layout: ChessLayout): number {
  * @param layout - How squares are numbered.
  * @returns {Square} The square.
  */
-function squareOf(index: number, layout: ChessLayout): Square {
+export function squareOf(index: number, layout: ChessLayout): Square {
   const high = index >> 3;
   const low = index & 7;
   if (layout === "a8") return { file: low, rank: 7 - high };
   if (layout === "file") return { file: high, rank: low };
   return { file: low, rank: high };
+}
+
+/**
+ * Names a square, such as `e4`.
+ *
+ * @param one - The square.
+ * @returns {string} Its name.
+ */
+export function nameOfSquare(one: Square): string {
+  return `${FILES[one.file]}${one.rank + 1}`;
+}
+
+/**
+ * Where a square sits in a bitboard: big-endian, so square 0 is the low bit of the last byte.
+ *
+ * @param index - The square, 0 to 63.
+ * @returns {BitboardBit} Its byte and the mask of its bit.
+ */
+export function bitboardBit(index: number): BitboardBit {
+  return { byte: BITBOARD_BYTES - 1 - (index >> 3), mask: 1 << (index & 7) };
 }
 
 /**
@@ -264,14 +290,12 @@ function namesOf(text: string): Placed[] {
 function packBitboard(squares: readonly Placed[], layout: ChessLayout): Uint8Array {
   const board = new Uint8Array(BITBOARD_BYTES);
   for (const { square: one, at } of squares) {
-    const index = indexOf(one, layout);
-    const byte = BITBOARD_BYTES - 1 - (index >> 3);
-    const bit = 1 << (index & 7);
-    if ((board[byte]! & bit) !== 0) {
-      const name = `${FILES[one.file]}${one.rank + 1}`;
+    const { byte, mask } = bitboardBit(indexOf(one, layout));
+    if ((board[byte]! & mask) !== 0) {
+      const name = nameOfSquare(one);
       throw new DecodeError(NAME, `${name} at index ${at} is already on the board`, at);
     }
-    board[byte]! |= bit;
+    board[byte]! |= mask;
   }
   return board;
 }
@@ -288,8 +312,8 @@ function unpackBitboard(bytes: ArrayLike<number>): number[] {
   }
   const indices: number[] = [];
   for (let index = 0; index < 64; index += 1) {
-    const byte = bytes[BITBOARD_BYTES - 1 - (index >> 3)]!;
-    if ((byte >> (index & 7)) & 1) indices.push(index);
+    const { byte, mask } = bitboardBit(index);
+    if ((bytes[byte]! & mask) !== 0) indices.push(index);
   }
   return indices;
 }
@@ -305,7 +329,7 @@ export const square: SquareCodec = {
         throw new EncodingError(`${NAME}: byte ${byte} at index ${at} is over 63, the last square`);
       }
       const { file, rank } = squareOf(byte, layout);
-      return pairs ? `(${file}, ${rank})` : `${FILES[file]}${rank + 1}`;
+      return pairs ? `(${file}, ${rank})` : nameOfSquare({ file, rank });
     }).join(" ");
   },
   decode(text, options = {}) {
