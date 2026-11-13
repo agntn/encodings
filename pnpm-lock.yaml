@@ -44,8 +44,8 @@ catalogs:
       specifier: 1.6.4
       version: 1.6.4
     zod:
-      specifier: 4.6.5
-      version: 4.6.5
+      specifier: 4.6.6
+      version: 4.6.6
   dev:
     '@agntn/ox':
       specifier: 0.1.0
@@ -108,10 +108,10 @@ importers:
     dependencies:
       '@agntn/hashes':
         specifier: catalog:deps
-        version: 0.7.2(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5))(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.5))(zod@4.6.5)
+        version: 0.7.2(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.6))(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.6))(zod@4.6.6)
       '@agntn/tools':
         specifier: catalog:deps
-        version: 0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5))(@modelcontextprotocol/server@2.4.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.5))(zod@4.6.5)
+        version: 0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.6))(@modelcontextprotocol/server@2.4.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.6))(zod@4.6.6)
       '@modelcontextprotocol/server':
         specifier: catalog:deps
         version: 2.4.0
@@ -121,7 +121,7 @@ importers:
         version: 0.1.0(oxfmt@0.74.0(vite-plus@1.4.0(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.0)))(oxlint-tsgolint@7.0.2004)(oxlint@1.89.0(oxlint-tsgolint@7.0.2004)(vite-plus@1.4.0(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.0)))
       '@earendil-works/pi-coding-agent':
         specifier: catalog:dev
-        version: 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
+        version: 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.6)
       '@modelcontextprotocol/client':
         specifier: catalog:dev
         version: 2.4.0
@@ -133,7 +133,7 @@ importers:
         version: 26.6.5
       ai:
         specifier: catalog:dev
-        version: 7.0.127(zod@4.6.5)
+        version: 7.0.127(zod@4.6.6)
       obuild:
         specifier: catalog:dev
         version: 0.4.43(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magicast@0.5.5)(typescript@7.0.2)
@@ -151,28 +151,28 @@ importers:
     dependencies:
       '@agntn/hashes':
         specifier: catalog:deps
-        version: 0.7.2(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.5))(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.5))(zod@4.6.5)
+        version: 0.7.2(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.6))(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.6))(zod@4.6.6)
       '@agntn/tools':
         specifier: catalog:deps
-        version: 0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.5))(@modelcontextprotocol/server@2.4.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.5))(zod@4.6.5)
+        version: 0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.6))(@modelcontextprotocol/server@2.4.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.6))(zod@4.6.6)
       '@modelcontextprotocol/sdk':
         specifier: catalog:deps
-        version: 1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5)
+        version: 1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6)
       '@modelcontextprotocol/server':
         specifier: catalog:deps
         version: 2.4.0
       '@nuxtjs/mcp-toolkit':
         specifier: catalog:deps
-        version: 0.24.2(1204d3968c89188791337cbee36f0c48)
+        version: 0.24.2(5c4c111c6c9a99c49610720bb4bc95ce)
       agents:
         specifier: catalog:deps
-        version: 0.30.1(@ai-sdk/provider@4.0.21)(@babel/core@8.0.6)(@babel/runtime@7.29.7)(@earendil-works/pi-ai@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.12.3)(ws@8.22.0)(zod@4.6.5))(@modelcontextprotocol/client@2.4.0)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@modelcontextprotocol/server@2.4.0)(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(ai@7.0.127(zod@4.6.5))(jiti@2.7.0)(react@19.2.7)(rolldown@1.2.11)(terser@5.51.2)(typescript@7.0.2)(zod@4.6.5)
+        version: 0.30.1(@ai-sdk/provider@4.0.21)(@babel/core@8.0.6)(@babel/runtime@7.29.7)(@earendil-works/pi-ai@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.12.3)(ws@8.22.0)(zod@4.6.6))(@modelcontextprotocol/client@2.4.0)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@modelcontextprotocol/server@2.4.0)(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(ai@7.0.127(zod@4.6.6))(jiti@2.7.0)(react@19.2.7)(rolldown@1.2.11)(terser@5.51.2)(typescript@7.0.2)(zod@4.6.6)
       better-sqlite3:
         specifier: catalog:deps
         version: 12.11.1
       docus:
         specifier: catalog:deps
-        version: 5.15.0(3f2a68172e16f3c2a2d44ed564514593)
+        version: 5.15.0(a0d65d43665f9c1e94ff7e320f236127)
       nuxt:
         specifier: catalog:deps
         version: 4.6.2(4691d63ddca722197b4cc370b65876a9)
@@ -181,7 +181,7 @@ importers:
         version: 1.6.4
       zod:
         specifier: catalog:deps
-        version: 4.6.5
+        version: 4.6.6
     devDependencies:
       '@iconify-json/lucide':
         specifier: catalog:dev
@@ -200,7 +200,7 @@ importers:
         version: 3.16.2(@nuxt/schema@4.6.2)(@oxc-project/types@0.151.0)(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(better-sqlite3@12.11.1)(confbox@0.2.4)(dotenv@17.4.2)(esbuild@0.28.2)(giget@3.3.1)(magic-string@1.4.3)(magicast@0.5.5)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(rollup@4.63.6)(supports-color@10.2.2)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1)
       '@nuxt/ui':
         specifier: catalog:dev
-        version: 4.12.0(214c5972edf192e1c1c78ddf84dd19a3)
+        version: 4.12.0(35505489c7668008f2b206704f6c222d)
       '@vueuse/core':
         specifier: catalog:dev
         version: 15.0.0(vue@3.5.44(typescript@7.0.2))
@@ -3672,6 +3672,9 @@ packages:
   '@smithy/core@3.36.2':
     resolution: {integrity: sha512-oRw0rB9QSUiCZfEs23G5F4Af+b2rQt1lItIICWu5IejFNd+uPM8SWqiKLMpQ6bX1Q7slsLbjuoE2niErFtkVPQ==}
     engines: {node: '>=18.0.0'}
+    deprecated: |-
+      Deprecated due to a bug in custom logger data redaction. Upgrade to the latest version. If you used a custom logger with this
+        version, review your logs and rotate any credentials or other secrets. See https://github.com/aws/aws-sdk-js-v3/issues/8393.
 
   '@smithy/credential-provider-imds@4.5.2':
     resolution: {integrity: sha512-A9uSdn72ozbRUSit0eib0TW7nXuNPlaeM0zcGkJ+nE6tFcSDbnmtwoxbTCFBukVQcszDAyvsd7+rTduPTXpygg==}
@@ -9436,34 +9439,34 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.6.5:
-    resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
+  zod@4.6.6:
+    resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
 
-  '@agntn/hashes@0.7.2(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5))(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.5))(zod@4.6.5)':
+  '@agntn/hashes@0.7.2(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.6))(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.6))(zod@4.6.6)':
     dependencies:
-      '@agntn/tools': 0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.5))(zod@4.6.5)
+      '@agntn/tools': 0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.6))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.6))(zod@4.6.6)
       '@modelcontextprotocol/server': 2.2.0
     optionalDependencies:
-      '@earendil-works/pi-coding-agent': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
+      '@earendil-works/pi-coding-agent': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.6)
       '@oh-my-pi/pi-coding-agent': 18.12.6
-      ai: 7.0.127(zod@4.6.5)
+      ai: 7.0.127(zod@4.6.6)
     transitivePeerDependencies:
       - h3-mcp
       - zod
 
-  '@agntn/hashes@0.7.2(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.5))(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.5))(zod@4.6.5)':
+  '@agntn/hashes@0.7.2(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.6))(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.6))(zod@4.6.6)':
     dependencies:
-      '@agntn/tools': 0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.5))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.5))(zod@4.6.5)
+      '@agntn/tools': 0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.6))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.6))(zod@4.6.6)
       '@modelcontextprotocol/server': 2.2.0
     optionalDependencies:
-      '@earendil-works/pi-coding-agent': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.5)
+      '@earendil-works/pi-coding-agent': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.6)
       '@oh-my-pi/pi-coding-agent': 18.12.6
-      ai: 7.0.127(zod@4.6.5)
+      ai: 7.0.127(zod@4.6.6)
     transitivePeerDependencies:
       - h3-mcp
       - zod
@@ -9474,77 +9477,77 @@ snapshots:
       oxlint: 1.89.0(oxlint-tsgolint@7.0.2004)(vite-plus@1.4.0(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.0))
       oxlint-tsgolint: 7.0.2004
 
-  '@agntn/tools@0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.5))(zod@4.6.5)':
+  '@agntn/tools@0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.6))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.6))(zod@4.6.6)':
     optionalDependencies:
-      '@earendil-works/pi-coding-agent': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
+      '@earendil-works/pi-coding-agent': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.6)
       '@modelcontextprotocol/server': 2.2.0
       '@oh-my-pi/pi-coding-agent': 18.12.6
-      ai: 7.0.127(zod@4.6.5)
-      zod: 4.6.5
+      ai: 7.0.127(zod@4.6.6)
+      zod: 4.6.6
 
-  '@agntn/tools@0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5))(@modelcontextprotocol/server@2.4.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.5))(zod@4.6.5)':
+  '@agntn/tools@0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.6))(@modelcontextprotocol/server@2.4.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.6))(zod@4.6.6)':
     optionalDependencies:
-      '@earendil-works/pi-coding-agent': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
+      '@earendil-works/pi-coding-agent': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.6)
       '@modelcontextprotocol/server': 2.4.0
       '@oh-my-pi/pi-coding-agent': 18.12.6
-      ai: 7.0.127(zod@4.6.5)
-      zod: 4.6.5
+      ai: 7.0.127(zod@4.6.6)
+      zod: 4.6.6
 
-  '@agntn/tools@0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.5))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.5))(zod@4.6.5)':
+  '@agntn/tools@0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.6))(@modelcontextprotocol/server@2.2.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.6))(zod@4.6.6)':
     optionalDependencies:
-      '@earendil-works/pi-coding-agent': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.5)
+      '@earendil-works/pi-coding-agent': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.6)
       '@modelcontextprotocol/server': 2.2.0
       '@oh-my-pi/pi-coding-agent': 18.12.6
-      ai: 7.0.127(zod@4.6.5)
-      zod: 4.6.5
+      ai: 7.0.127(zod@4.6.6)
+      zod: 4.6.6
 
-  '@agntn/tools@0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.5))(@modelcontextprotocol/server@2.4.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.5))(zod@4.6.5)':
+  '@agntn/tools@0.2.4(@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.6))(@modelcontextprotocol/server@2.4.0)(@oh-my-pi/pi-coding-agent@18.12.6)(ai@7.0.127(zod@4.6.6))(zod@4.6.6)':
     optionalDependencies:
-      '@earendil-works/pi-coding-agent': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.5)
+      '@earendil-works/pi-coding-agent': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.6)
       '@modelcontextprotocol/server': 2.4.0
       '@oh-my-pi/pi-coding-agent': 18.12.6
-      ai: 7.0.127(zod@4.6.5)
-      zod: 4.6.5
+      ai: 7.0.127(zod@4.6.6)
+      zod: 4.6.6
 
-  '@ai-sdk/gateway@4.0.103(zod@4.6.5)':
+  '@ai-sdk/gateway@4.0.103(zod@4.6.6)':
     dependencies:
       '@ai-sdk/provider': 4.0.21
-      '@ai-sdk/provider-utils': 5.0.53(zod@4.6.5)
+      '@ai-sdk/provider-utils': 5.0.53(zod@4.6.6)
       '@vercel/oidc': 3.2.0
-      zod: 4.6.5
+      zod: 4.6.6
 
-  '@ai-sdk/gateway@4.0.126(zod@4.6.5)':
+  '@ai-sdk/gateway@4.0.126(zod@4.6.6)':
     dependencies:
       '@ai-sdk/provider': 4.0.34
-      '@ai-sdk/provider-utils': 5.0.68(zod@4.6.5)
+      '@ai-sdk/provider-utils': 5.0.68(zod@4.6.6)
       '@vercel/oidc': 3.2.0
-      zod: 4.6.5
+      zod: 4.6.6
 
-  '@ai-sdk/mcp@2.0.84(zod@4.6.5)':
+  '@ai-sdk/mcp@2.0.84(zod@4.6.6)':
     dependencies:
       '@ai-sdk/provider': 4.0.34
-      '@ai-sdk/provider-utils': 5.0.68(zod@4.6.5)
+      '@ai-sdk/provider-utils': 5.0.68(zod@4.6.6)
       cross-spawn: 7.0.6
       pkce-challenge: 5.0.1
-      zod: 4.6.5
+      zod: 4.6.6
 
-  '@ai-sdk/provider-utils@5.0.53(zod@4.6.5)':
+  '@ai-sdk/provider-utils@5.0.53(zod@4.6.6)':
     dependencies:
       '@ai-sdk/provider': 4.0.21
       '@standard-schema/spec': 1.1.0
       '@workflow/serde': 4.1.0
       eventsource-parser: 3.1.1
       undici: 7.29.0
-      zod: 4.6.5
+      zod: 4.6.6
 
-  '@ai-sdk/provider-utils@5.0.68(zod@4.6.5)':
+  '@ai-sdk/provider-utils@5.0.68(zod@4.6.6)':
     dependencies:
       '@ai-sdk/provider': 4.0.34
       '@standard-schema/spec': 1.1.0
       '@workflow/serde': 4.1.0
       eventsource-parser: 3.1.1
       undici: 7.29.0
-      zod: 4.6.5
+      zod: 4.6.6
 
   '@ai-sdk/provider@4.0.21':
     dependencies:
@@ -9554,10 +9557,10 @@ snapshots:
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/vue@4.0.153(vue@3.5.44(typescript@7.0.2))(zod@4.6.5)':
+  '@ai-sdk/vue@4.0.153(vue@3.5.44(typescript@7.0.2))(zod@4.6.6)':
     dependencies:
-      '@ai-sdk/provider-utils': 5.0.68(zod@4.6.5)
-      ai: 7.0.153(zod@4.6.5)
+      '@ai-sdk/provider-utils': 5.0.68(zod@4.6.6)
+      ai: 7.0.153(zod@4.6.6)
       swrv: 1.3.0(vue@3.5.44(typescript@7.0.2))
       vue: 3.5.44(typescript@7.0.2)
     transitivePeerDependencies:
@@ -9571,12 +9574,12 @@ snapshots:
       package-manager-detector: 1.9.0
       tinyexec: 1.3.1
 
-  '@anthropic-ai/sdk@0.129.0(zod@4.6.5)':
+  '@anthropic-ai/sdk@0.129.0(zod@4.6.6)':
     dependencies:
       json-schema-to-ts: 3.1.1
       standardwebhooks: 1.1.1
     optionalDependencies:
-      zod: 4.6.5
+      zod: 4.6.6
 
   '@apidevtools/json-schema-ref-parser@14.2.1(@types/json-schema@7.0.15)':
     dependencies:
@@ -10195,9 +10198,9 @@ snapshots:
 
   '@dxup/unimport@0.1.2': {}
 
-  '@earendil-works/pi-agent-core@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)':
+  '@earendil-works/pi-agent-core@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.21.3)(zod@4.6.6)':
     dependencies:
-      '@earendil-works/pi-ai': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)
+      '@earendil-works/pi-ai': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.21.3)(zod@4.6.6)
       typebox: 1.3.27
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
@@ -10212,60 +10215,9 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-agent-core@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.22.0)(zod@4.6.5)':
+  '@earendil-works/pi-agent-core@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.22.0)(zod@4.6.6)':
     dependencies:
-      '@earendil-works/pi-ai': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.22.0)(zod@4.6.5)
-      typebox: 1.3.27
-    transitivePeerDependencies:
-      - '@aws-sdk/credential-provider-node'
-      - '@modelcontextprotocol/sdk'
-      - '@smithy/hash-node'
-      - '@smithy/signature-v4'
-      - bufferutil
-      - kerberos
-      - supports-color
-      - undici
-      - utf-8-validate
-      - ws
-      - zod
-    optional: true
-
-  '@earendil-works/pi-ai@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)':
-    dependencies:
-      '@anthropic-ai/sdk': 0.129.0(zod@4.6.5)
-      '@aws-sdk/client-bedrock-runtime': 3.1127.0
-      '@earendil-works/pi-telemetry': 1.4.0
-      '@google/genai': 2.21.0(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)
-      '@smithy/node-http-handler': 4.12.1
-      http-proxy-agent: 9.1.0(supports-color@10.2.2)
-      https-proxy-agent: 9.1.0(supports-color@10.2.2)
-      openai: 7.19.0(@aws-sdk/credential-provider-node@3.972.88)(@smithy/signature-v4@5.7.4)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)
-      partial-json: 0.1.7
-      typebox: 1.3.27
-    transitivePeerDependencies:
-      - '@aws-sdk/credential-provider-node'
-      - '@modelcontextprotocol/sdk'
-      - '@smithy/hash-node'
-      - '@smithy/signature-v4'
-      - bufferutil
-      - kerberos
-      - supports-color
-      - undici
-      - utf-8-validate
-      - ws
-      - zod
-
-  '@earendil-works/pi-ai@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.22.0)(zod@4.6.5)':
-    dependencies:
-      '@anthropic-ai/sdk': 0.129.0(zod@4.6.5)
-      '@aws-sdk/client-bedrock-runtime': 3.1127.0
-      '@earendil-works/pi-telemetry': 1.4.0
-      '@google/genai': 2.21.0(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)
-      '@smithy/node-http-handler': 4.12.1
-      http-proxy-agent: 9.1.0(supports-color@10.2.2)
-      https-proxy-agent: 9.1.0(supports-color@10.2.2)
-      openai: 7.19.0(@aws-sdk/credential-provider-node@3.972.88)(@smithy/signature-v4@5.7.4)(undici@8.10.2)(ws@8.22.0)(zod@4.6.5)
-      partial-json: 0.1.7
+      '@earendil-works/pi-ai': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.22.0)(zod@4.6.6)
       typebox: 1.3.27
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
@@ -10281,16 +10233,67 @@ snapshots:
       - zod
     optional: true
 
-  '@earendil-works/pi-ai@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.12.3)(ws@8.22.0)(zod@4.6.5)':
+  '@earendil-works/pi-ai@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.21.3)(zod@4.6.6)':
     dependencies:
-      '@anthropic-ai/sdk': 0.129.0(zod@4.6.5)
+      '@anthropic-ai/sdk': 0.129.0(zod@4.6.6)
       '@aws-sdk/client-bedrock-runtime': 3.1127.0
       '@earendil-works/pi-telemetry': 1.4.0
-      '@google/genai': 2.21.0(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)
+      '@google/genai': 2.21.0(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(supports-color@10.2.2)
       '@smithy/node-http-handler': 4.12.1
       http-proxy-agent: 9.1.0(supports-color@10.2.2)
       https-proxy-agent: 9.1.0(supports-color@10.2.2)
-      openai: 7.19.0(@aws-sdk/credential-provider-node@3.972.88)(@smithy/signature-v4@5.7.4)(undici@8.12.3)(ws@8.22.0)(zod@4.6.5)
+      openai: 7.19.0(@aws-sdk/credential-provider-node@3.972.88)(@smithy/signature-v4@5.7.4)(undici@8.10.2)(ws@8.21.3)(zod@4.6.6)
+      partial-json: 0.1.7
+      typebox: 1.3.27
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-provider-node'
+      - '@modelcontextprotocol/sdk'
+      - '@smithy/hash-node'
+      - '@smithy/signature-v4'
+      - bufferutil
+      - kerberos
+      - supports-color
+      - undici
+      - utf-8-validate
+      - ws
+      - zod
+
+  '@earendil-works/pi-ai@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.22.0)(zod@4.6.6)':
+    dependencies:
+      '@anthropic-ai/sdk': 0.129.0(zod@4.6.6)
+      '@aws-sdk/client-bedrock-runtime': 3.1127.0
+      '@earendil-works/pi-telemetry': 1.4.0
+      '@google/genai': 2.21.0(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(supports-color@10.2.2)
+      '@smithy/node-http-handler': 4.12.1
+      http-proxy-agent: 9.1.0(supports-color@10.2.2)
+      https-proxy-agent: 9.1.0(supports-color@10.2.2)
+      openai: 7.19.0(@aws-sdk/credential-provider-node@3.972.88)(@smithy/signature-v4@5.7.4)(undici@8.10.2)(ws@8.22.0)(zod@4.6.6)
+      partial-json: 0.1.7
+      typebox: 1.3.27
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-provider-node'
+      - '@modelcontextprotocol/sdk'
+      - '@smithy/hash-node'
+      - '@smithy/signature-v4'
+      - bufferutil
+      - kerberos
+      - supports-color
+      - undici
+      - utf-8-validate
+      - ws
+      - zod
+    optional: true
+
+  '@earendil-works/pi-ai@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.12.3)(ws@8.22.0)(zod@4.6.6)':
+    dependencies:
+      '@anthropic-ai/sdk': 0.129.0(zod@4.6.6)
+      '@aws-sdk/client-bedrock-runtime': 3.1127.0
+      '@earendil-works/pi-telemetry': 1.4.0
+      '@google/genai': 2.21.0(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(supports-color@10.2.2)
+      '@smithy/node-http-handler': 4.12.1
+      http-proxy-agent: 9.1.0(supports-color@10.2.2)
+      https-proxy-agent: 9.1.0(supports-color@10.2.2)
+      openai: 7.19.0(@aws-sdk/credential-provider-node@3.972.88)(@smithy/signature-v4@5.7.4)(undici@8.12.3)(ws@8.22.0)(zod@4.6.6)
       partial-json: 0.1.7
       typebox: 1.3.27
     transitivePeerDependencies:
@@ -10311,10 +10314,10 @@ snapshots:
     dependencies:
       quickjs-wasi: 3.6.2
 
-  '@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)':
+  '@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.6)':
     dependencies:
-      '@earendil-works/pi-agent-core': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)
-      '@earendil-works/pi-ai': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)
+      '@earendil-works/pi-agent-core': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.21.3)(zod@4.6.6)
+      '@earendil-works/pi-ai': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.21.3)(zod@4.6.6)
       '@earendil-works/pi-codemode': 1.4.0
       '@earendil-works/pi-mcp': 1.4.0
       '@earendil-works/pi-tui': 1.4.0
@@ -10347,10 +10350,10 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.5)':
+  '@earendil-works/pi-coding-agent@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0)(zod@4.6.6)':
     dependencies:
-      '@earendil-works/pi-agent-core': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.22.0)(zod@4.6.5)
-      '@earendil-works/pi-ai': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.22.0)(zod@4.6.5)
+      '@earendil-works/pi-agent-core': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.22.0)(zod@4.6.6)
+      '@earendil-works/pi-ai': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.10.2)(ws@8.22.0)(zod@4.6.6)
       '@earendil-works/pi-codemode': 1.4.0
       '@earendil-works/pi-mcp': 1.4.0
       '@earendil-works/pi-tui': 1.4.0
@@ -10711,14 +10714,14 @@ snapshots:
       '@floating-ui/utils': 0.2.12
       vue: 3.5.44(typescript@7.0.2)
 
-  '@google/genai@2.21.0(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)':
+  '@google/genai@2.21.0(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(supports-color@10.2.2)':
     dependencies:
       google-auth-library: 10.9.1(supports-color@10.2.2)
       p-retry: 4.6.2
       protobufjs: 7.6.5
       ws: 8.22.0
     optionalDependencies:
-      '@modelcontextprotocol/sdk': 1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5)
+      '@modelcontextprotocol/sdk': 1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -11183,17 +11186,17 @@ snapshots:
       eventsource-parser: 3.1.1
       jose: 6.2.12
       pkce-challenge: 5.0.1
-      zod: 4.6.5
+      zod: 4.6.6
 
   '@modelcontextprotocol/core@2.2.0':
     dependencies:
-      zod: 4.6.5
+      zod: 4.6.6
 
   '@modelcontextprotocol/core@2.4.0':
     dependencies:
-      zod: 4.6.5
+      zod: 4.6.6
 
-  '@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5)':
+  '@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6)':
     dependencies:
       '@hono/node-server': 2.1.3(hono@4.13.12)
       ajv: 8.20.0
@@ -11210,8 +11213,8 @@ snapshots:
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
       raw-body: 3.0.2
-      zod: 4.6.5
-      zod-to-json-schema: 3.25.2(zod@4.6.5)
+      zod: 4.6.6
+      zod-to-json-schema: 3.25.2(zod@4.6.6)
     optionalDependencies:
       '@cfworker/json-schema': 4.1.1
     transitivePeerDependencies:
@@ -11220,12 +11223,12 @@ snapshots:
   '@modelcontextprotocol/server@2.2.0':
     dependencies:
       '@modelcontextprotocol/core': 2.2.0
-      zod: 4.6.5
+      zod: 4.6.6
 
   '@modelcontextprotocol/server@2.4.0':
     dependencies:
       '@modelcontextprotocol/core': 2.4.0
-      zod: 4.6.5
+      zod: 4.6.6
 
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     optional: true
@@ -11932,7 +11935,7 @@ snapshots:
       rc9: 3.1.0
       std-env: 4.3.0
 
-  '@nuxt/ui@4.12.0(214c5972edf192e1c1c78ddf84dd19a3)':
+  '@nuxt/ui@4.12.0(35505489c7668008f2b206704f6c222d)':
     dependencies:
       '@floating-ui/dom': 1.8.0
       '@iconify/vue': 5.0.3(vue@3.5.44(typescript@7.0.2))
@@ -12002,8 +12005,8 @@ snapshots:
       vue-component-type-helpers: 3.3.13
     optionalDependencies:
       '@nuxt/content': 3.16.2(@nuxt/schema@4.6.2)(@oxc-project/types@0.151.0)(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(better-sqlite3@12.11.1)(confbox@0.2.4)(dotenv@17.4.2)(esbuild@0.28.2)(giget@3.3.1)(magic-string@1.4.3)(magicast@0.5.5)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(rollup@4.63.6)(supports-color@10.2.2)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1)
-      ai: 7.0.127(zod@4.6.5)
-      zod: 4.6.5
+      ai: 7.0.127(zod@4.6.6)
+      zod: 4.6.6
     transitivePeerDependencies:
       - '@arethetypeswrong/core'
       - '@azure/app-configuration'
@@ -12315,19 +12318,19 @@ snapshots:
       - webpack
       - yaml
 
-  '@nuxtjs/mcp-toolkit@0.23.0(1204d3968c89188791337cbee36f0c48)':
+  '@nuxtjs/mcp-toolkit@0.23.0(5c4c111c6c9a99c49610720bb4bc95ce)':
     dependencies:
-      '@modelcontextprotocol/sdk': 1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5)
+      '@modelcontextprotocol/sdk': 1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6)
       '@nuxt/kit': 4.6.2(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
       '@vitejs/plugin-vue': 6.0.10(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))
       h3: 1.15.11
       tinyglobby: 0.2.17
       vite: '@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1)'
       vite-plugin-singlefile: 2.3.3(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(rollup@4.63.6)
-      zod: 4.6.5
+      zod: 4.6.6
     optionalDependencies:
       '@vue/compiler-sfc': 3.5.44
-      agents: 0.30.1(@ai-sdk/provider@4.0.21)(@babel/core@8.0.6)(@babel/runtime@7.29.7)(@earendil-works/pi-ai@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.12.3)(ws@8.22.0)(zod@4.6.5))(@modelcontextprotocol/client@2.4.0)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@modelcontextprotocol/server@2.4.0)(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(ai@7.0.127(zod@4.6.5))(jiti@2.7.0)(react@19.2.7)(rolldown@1.2.11)(terser@5.51.2)(typescript@7.0.2)(zod@4.6.5)
+      agents: 0.30.1(@ai-sdk/provider@4.0.21)(@babel/core@8.0.6)(@babel/runtime@7.29.7)(@earendil-works/pi-ai@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.12.3)(ws@8.22.0)(zod@4.6.6))(@modelcontextprotocol/client@2.4.0)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@modelcontextprotocol/server@2.4.0)(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(ai@7.0.127(zod@4.6.6))(jiti@2.7.0)(react@19.2.7)(rolldown@1.2.11)(terser@5.51.2)(typescript@7.0.2)(zod@4.6.6)
       vue: 3.5.44(typescript@7.0.2)
     transitivePeerDependencies:
       - '@arethetypeswrong/core'
@@ -12364,19 +12367,19 @@ snapshots:
       - vue-tsc
       - yaml
 
-  '@nuxtjs/mcp-toolkit@0.24.2(1204d3968c89188791337cbee36f0c48)':
+  '@nuxtjs/mcp-toolkit@0.24.2(5c4c111c6c9a99c49610720bb4bc95ce)':
     dependencies:
-      '@modelcontextprotocol/sdk': 1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5)
+      '@modelcontextprotocol/sdk': 1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6)
       '@nuxt/kit': 4.6.2(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
       '@vitejs/plugin-vue': 6.0.10(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))
       h3: 1.15.11
       tinyglobby: 0.2.17
       vite: '@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1)'
       vite-plugin-singlefile: 2.3.3(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(rollup@4.63.6)
-      zod: 4.6.5
+      zod: 4.6.6
     optionalDependencies:
       '@vue/compiler-sfc': 3.5.44
-      agents: 0.30.1(@ai-sdk/provider@4.0.21)(@babel/core@8.0.6)(@babel/runtime@7.29.7)(@earendil-works/pi-ai@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.12.3)(ws@8.22.0)(zod@4.6.5))(@modelcontextprotocol/client@2.4.0)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@modelcontextprotocol/server@2.4.0)(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(ai@7.0.127(zod@4.6.5))(jiti@2.7.0)(react@19.2.7)(rolldown@1.2.11)(terser@5.51.2)(typescript@7.0.2)(zod@4.6.5)
+      agents: 0.30.1(@ai-sdk/provider@4.0.21)(@babel/core@8.0.6)(@babel/runtime@7.29.7)(@earendil-works/pi-ai@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.12.3)(ws@8.22.0)(zod@4.6.6))(@modelcontextprotocol/client@2.4.0)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@modelcontextprotocol/server@2.4.0)(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(ai@7.0.127(zod@4.6.6))(jiti@2.7.0)(react@19.2.7)(rolldown@1.2.11)(terser@5.51.2)(typescript@7.0.2)(zod@4.6.6)
       vue: 3.5.44(typescript@7.0.2)
     transitivePeerDependencies:
       - '@arethetypeswrong/core'
@@ -12472,20 +12475,20 @@ snapshots:
       - supports-color
       - unplugin
 
-  '@nuxtjs/robots@6.2.4(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.5)':
+  '@nuxtjs/robots@6.2.4(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.6)':
     dependencies:
       '@fingerprintjs/botd': 2.0.0
       '@nuxt/kit': 4.6.2(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
       consola: 3.4.2
       defu: 6.1.7
       h3: 1.15.11
-      nuxt-site-config: 4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.5)
-      nuxtseo-shared: 5.3.16(23eb724753098cfda88e8193089b5098)
+      nuxt-site-config: 4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.6)
+      nuxtseo-shared: 5.3.16(d6ca9125425523e1abbb81232a67f0a9)
       pathe: 2.0.3
       pkg-types: 2.3.3
       ufo: 1.6.4
     optionalDependencies:
-      zod: 4.6.5
+      zod: 4.6.6
     transitivePeerDependencies:
       - '@nuxt/schema'
       - confbox
@@ -12501,13 +12504,13 @@ snapshots:
       - vite
       - vue
 
-  '@nuxtjs/sitemap@8.6.2(@nuxt/schema@4.6.2)(@oxc-project/types@0.151.0)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.5)':
+  '@nuxtjs/sitemap@8.6.2(@nuxt/schema@4.6.2)(@oxc-project/types@0.151.0)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.6)':
     dependencies:
       '@nuxt/kit': 4.6.2(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.141.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
       consola: 3.4.2
       defu: 6.1.7
-      nuxt-site-config: 4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.141.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.5)
-      nuxtseo-shared: 5.3.16(431123116b49c0173cb58e74cacc0b60)
+      nuxt-site-config: 4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.141.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.6)
+      nuxtseo-shared: 5.3.16(a40df7ed3f5aef49584e87a858165066)
       ofetch: 1.5.1
       ohash: 2.0.12
       oxc-parser: 0.141.0
@@ -12519,7 +12522,7 @@ snapshots:
       ufo: 1.6.4
       ultrahtml: 1.7.0
     optionalDependencies:
-      zod: 4.6.5
+      zod: 4.6.6
     transitivePeerDependencies:
       - '@nuxt/schema'
       - '@oxc-project/types'
@@ -14770,12 +14773,12 @@ snapshots:
 
   agent-base@9.0.0: {}
 
-  agents@0.30.1(@ai-sdk/provider@4.0.21)(@babel/core@8.0.6)(@babel/runtime@7.29.7)(@earendil-works/pi-ai@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.12.3)(ws@8.22.0)(zod@4.6.5))(@modelcontextprotocol/client@2.4.0)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@modelcontextprotocol/server@2.4.0)(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(ai@7.0.127(zod@4.6.5))(jiti@2.7.0)(react@19.2.7)(rolldown@1.2.11)(terser@5.51.2)(typescript@7.0.2)(zod@4.6.5):
+  agents@0.30.1(@ai-sdk/provider@4.0.21)(@babel/core@8.0.6)(@babel/runtime@7.29.7)(@earendil-works/pi-ai@1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.12.3)(ws@8.22.0)(zod@4.6.6))(@modelcontextprotocol/client@2.4.0)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@modelcontextprotocol/server@2.4.0)(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(ai@7.0.127(zod@4.6.6))(jiti@2.7.0)(react@19.2.7)(rolldown@1.2.11)(terser@5.51.2)(typescript@7.0.2)(zod@4.6.6):
     dependencies:
       '@babel/plugin-proposal-decorators': 8.0.2(@babel/core@8.0.6)
       '@cfworker/json-schema': 4.1.1
       '@modelcontextprotocol/client': 2.4.0
-      '@modelcontextprotocol/sdk': 1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5)
+      '@modelcontextprotocol/sdk': 1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6)
       '@modelcontextprotocol/server': 2.4.0
       '@rolldown/plugin-babel': 0.2.4(@babel/core@8.0.6)(@babel/runtime@7.29.7)(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1)
       capnweb: 0.12.0
@@ -14787,11 +14790,11 @@ snapshots:
       postal-mime: 2.7.6
       vite: '@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1)'
       yaml: 2.9.1
-      zod: 4.6.5
+      zod: 4.6.6
     optionalDependencies:
       '@ai-sdk/provider': 4.0.21
-      '@earendil-works/pi-ai': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.12.3)(ws@8.22.0)(zod@4.6.5)
-      ai: 7.0.127(zod@4.6.5)
+      '@earendil-works/pi-ai': 1.4.0(@aws-sdk/credential-provider-node@3.972.88)(@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.6))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(undici@8.12.3)(ws@8.22.0)(zod@4.6.6)
+      ai: 7.0.127(zod@4.6.6)
       react: 19.2.7
     transitivePeerDependencies:
       - '@arethetypeswrong/core'
@@ -14818,19 +14821,19 @@ snapshots:
       - unrun
       - vue-tsc
 
-  ai@7.0.127(zod@4.6.5):
+  ai@7.0.127(zod@4.6.6):
     dependencies:
-      '@ai-sdk/gateway': 4.0.103(zod@4.6.5)
+      '@ai-sdk/gateway': 4.0.103(zod@4.6.6)
       '@ai-sdk/provider': 4.0.21
-      '@ai-sdk/provider-utils': 5.0.53(zod@4.6.5)
-      zod: 4.6.5
+      '@ai-sdk/provider-utils': 5.0.53(zod@4.6.6)
+      zod: 4.6.6
 
-  ai@7.0.153(zod@4.6.5):
+  ai@7.0.153(zod@4.6.6):
     dependencies:
-      '@ai-sdk/gateway': 4.0.126(zod@4.6.5)
+      '@ai-sdk/gateway': 4.0.126(zod@4.6.6)
       '@ai-sdk/provider': 4.0.34
-      '@ai-sdk/provider-utils': 5.0.68(zod@4.6.5)
-      zod: 4.6.5
+      '@ai-sdk/provider-utils': 5.0.68(zod@4.6.6)
+      zod: 4.6.6
 
   ajv-formats@3.0.1:
     dependencies:
@@ -15402,11 +15405,11 @@ snapshots:
 
   diff@9.0.0: {}
 
-  docus@5.15.0(3f2a68172e16f3c2a2d44ed564514593):
+  docus@5.15.0(a0d65d43665f9c1e94ff7e320f236127):
     dependencies:
-      '@ai-sdk/gateway': 4.0.126(zod@4.6.5)
-      '@ai-sdk/mcp': 2.0.84(zod@4.6.5)
-      '@ai-sdk/vue': 4.0.153(vue@3.5.44(typescript@7.0.2))(zod@4.6.5)
+      '@ai-sdk/gateway': 4.0.126(zod@4.6.6)
+      '@ai-sdk/mcp': 2.0.84(zod@4.6.6)
+      '@ai-sdk/vue': 4.0.153(vue@3.5.44(typescript@7.0.2))(zod@4.6.6)
       '@comark/vue': 0.7.0(shiki@4.5.0)(vue@3.5.44(typescript@7.0.2))
       '@iconify-json/lucide': 1.2.147
       '@iconify-json/simple-icons': 1.2.100
@@ -15414,12 +15417,12 @@ snapshots:
       '@nuxt/content': 3.16.2(@nuxt/schema@4.6.2)(@oxc-project/types@0.151.0)(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(better-sqlite3@12.11.1)(confbox@0.2.4)(dotenv@17.4.2)(esbuild@0.28.2)(giget@3.3.1)(magic-string@1.4.3)(magicast@0.5.5)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(rollup@4.63.6)(supports-color@10.2.2)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1)
       '@nuxt/image': 2.1.0(@nuxt/schema@4.6.2)(@types/node@26.6.5)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(unstorage@1.17.5(db0@0.3.4(better-sqlite3@12.11.1))(ioredis@5.11.1(supports-color@10.2.2)))
       '@nuxt/kit': 4.6.2(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
-      '@nuxt/ui': 4.12.0(214c5972edf192e1c1c78ddf84dd19a3)
+      '@nuxt/ui': 4.12.0(35505489c7668008f2b206704f6c222d)
       '@nuxtjs/i18n': 10.6.0(@nuxt/schema@4.6.2)(@types/node@26.6.5)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(db0@0.3.4(better-sqlite3@12.11.1))(dotenv@17.4.2)(esbuild@0.28.2)(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(supports-color@10.2.2)(terser@5.51.2)(typescript@7.0.2)(vue@3.5.44(typescript@7.0.2))(yaml@2.9.1)
-      '@nuxtjs/mcp-toolkit': 0.23.0(1204d3968c89188791337cbee36f0c48)
+      '@nuxtjs/mcp-toolkit': 0.23.0(5c4c111c6c9a99c49610720bb4bc95ce)
       '@nuxtjs/mdc': 0.23.2(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(supports-color@10.2.2)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
-      '@nuxtjs/robots': 6.2.4(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.5)
-      '@nuxtjs/sitemap': 8.6.2(@nuxt/schema@4.6.2)(@oxc-project/types@0.151.0)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.5)
+      '@nuxtjs/robots': 6.2.4(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.6)
+      '@nuxtjs/sitemap': 8.6.2(@nuxt/schema@4.6.2)(@oxc-project/types@0.151.0)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.6)
       '@shikijs/core': 4.5.0
       '@shikijs/engine-javascript': 4.5.0
       '@shikijs/langs': 4.5.0
@@ -15427,24 +15430,24 @@ snapshots:
       '@shikijs/themes': 4.5.0
       '@takumi-rs/core': 2.14.0(csstype@3.2.3)(react@19.2.7)
       '@vueuse/core': 15.0.0(vue@3.5.44(typescript@7.0.2))
-      ai: 7.0.127(zod@4.6.5)
+      ai: 7.0.127(zod@4.6.6)
       better-sqlite3: 12.11.1
       defu: 6.1.7
       exsolve: 1.1.3
       git-url-parse: 16.1.0
       h3: 1.15.11
       nuxt: 4.6.2(4691d63ddca722197b4cc370b65876a9)
-      nuxt-agent-discovery: 0.7.1(1bc593efdcb28d1dda994a211d78c917)
+      nuxt-agent-discovery: 0.7.1(51ae77ac01bbb6808c2d9ef6bc2e9508)
       nuxt-llms: 0.2.0(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
-      nuxt-og-image: 6.10.4(0ec68bea47c5786707bfdc6fda9d7a04)
-      nuxt-schema-org: 6.4.3(07e9a3916bf490629578f9ad1c60be0e)
+      nuxt-og-image: 6.10.4(42573b3d70777bcc57e3131a3281d8d3)
+      nuxt-schema-org: 6.4.3(ad6e97ef0aafe077d2fc61b1fa7d757a)
       pathe: 2.0.3
       pkg-types: 2.3.3
       scule: 1.3.0
       tailwindcss: 4.3.3
       ufo: 1.6.4
-      zod: 4.6.5
-      zod-to-json-schema: 3.25.2(zod@4.6.5)
+      zod: 4.6.6
+      zod-to-json-schema: 3.25.2(zod@4.6.6)
     transitivePeerDependencies:
       - '@arethetypeswrong/core'
       - '@azure/app-configuration'
@@ -17764,7 +17767,7 @@ snapshots:
       path-key: 4.0.0
       unicorn-magic: 0.3.0
 
-  nuxt-agent-discovery@0.7.1(1bc593efdcb28d1dda994a211d78c917):
+  nuxt-agent-discovery@0.7.1(51ae77ac01bbb6808c2d9ef6bc2e9508):
     dependencies:
       '@nuxt/kit': 4.6.2(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
       defu: 6.1.7
@@ -17773,9 +17776,9 @@ snapshots:
       yaml: 2.9.1
     optionalDependencies:
       '@nuxt/content': 3.16.2(@nuxt/schema@4.6.2)(@oxc-project/types@0.151.0)(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(better-sqlite3@12.11.1)(confbox@0.2.4)(dotenv@17.4.2)(esbuild@0.28.2)(giget@3.3.1)(magic-string@1.4.3)(magicast@0.5.5)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(rollup@4.63.6)(supports-color@10.2.2)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1)
-      '@nuxtjs/mcp-toolkit': 0.23.0(1204d3968c89188791337cbee36f0c48)
-      '@nuxtjs/robots': 6.2.4(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.5)
-      '@nuxtjs/sitemap': 8.6.2(@nuxt/schema@4.6.2)(@oxc-project/types@0.151.0)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.5)
+      '@nuxtjs/mcp-toolkit': 0.23.0(5c4c111c6c9a99c49610720bb4bc95ce)
+      '@nuxtjs/robots': 6.2.4(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.6)
+      '@nuxtjs/sitemap': 8.6.2(@nuxt/schema@4.6.2)(@oxc-project/types@0.151.0)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.6)
       comark: 0.6.2(shiki@4.5.0)
       nuxt-llms: 0.2.0(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
     transitivePeerDependencies:
@@ -17832,7 +17835,7 @@ snapshots:
       - rolldown
       - unplugin
 
-  nuxt-og-image@6.10.4(0ec68bea47c5786707bfdc6fda9d7a04):
+  nuxt-og-image@6.10.4(42573b3d70777bcc57e3131a3281d8d3):
     dependencies:
       '@clack/prompts': 1.8.1
       '@nuxt/kit': 4.6.2(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
@@ -17848,8 +17851,8 @@ snapshots:
       magic-string: 1.4.3
       magicast: 0.5.5
       mocked-exports: 0.1.1
-      nuxt-site-config: 4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.5)
-      nuxtseo-shared: 5.3.16(23eb724753098cfda88e8193089b5098)
+      nuxt-site-config: 4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.6)
+      nuxtseo-shared: 5.3.16(d6ca9125425523e1abbb81232a67f0a9)
       nypm: 0.6.10
       object-identity: 0.2.3
       ofetch: 1.5.1
@@ -17873,7 +17876,7 @@ snapshots:
       sharp: 0.35.5(@types/node@26.6.5)
       tailwindcss: 4.3.3
       unifont: 0.7.5
-      zod: 4.6.5
+      zod: 4.6.6
     transitivePeerDependencies:
       - '@arethetypeswrong/core'
       - '@farmfe/core'
@@ -17915,18 +17918,18 @@ snapshots:
       - webpack
       - yaml
 
-  nuxt-schema-org@6.4.3(07e9a3916bf490629578f9ad1c60be0e):
+  nuxt-schema-org@6.4.3(ad6e97ef0aafe077d2fc61b1fa7d757a):
     dependencies:
       '@nuxt/kit': 4.6.2(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
       defu: 6.1.7
-      nuxt-site-config: 4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.5)
-      nuxtseo-shared: 5.3.16(23eb724753098cfda88e8193089b5098)
+      nuxt-site-config: 4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.6)
+      nuxtseo-shared: 5.3.16(d6ca9125425523e1abbb81232a67f0a9)
       pkg-types: 2.3.3
       ufo: 1.6.4
     optionalDependencies:
       '@unhead/vue': 3.4.3(@oxc-project/types@0.151.0)(@types/node@26.6.5)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(lightningcss@1.33.0)(oxc-parser@0.151.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(vue@3.5.44(typescript@7.0.2))(yaml@2.9.1)
       unhead: 3.4.3(@types/node@26.6.5)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1)
-      zod: 4.6.5
+      zod: 4.6.6
     transitivePeerDependencies:
       - '@nuxt/schema'
       - confbox
@@ -17980,7 +17983,7 @@ snapshots:
       - unplugin
       - vue
 
-  nuxt-site-config@4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.141.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.5):
+  nuxt-site-config@4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.141.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.6):
     dependencies:
       '@nuxt/devalue': 2.0.2
       '@nuxt/kit': 4.6.2(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.141.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
@@ -17988,7 +17991,7 @@ snapshots:
       defu: 6.1.7
       h3: 1.15.11
       nuxt-site-config-kit: 4.2.3(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.141.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))
-      nuxtseo-shared: 5.3.16(431123116b49c0173cb58e74cacc0b60)
+      nuxtseo-shared: 5.3.16(a40df7ed3f5aef49584e87a858165066)
       pathe: 2.0.3
       pkg-types: 2.3.3
       site-config-stack: 4.2.3(vue@3.5.44(typescript@7.0.2))
@@ -18009,7 +18012,7 @@ snapshots:
       - vite
       - zod
 
-  nuxt-site-config@4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.5):
+  nuxt-site-config@4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.6):
     dependencies:
       '@nuxt/devalue': 2.0.2
       '@nuxt/kit': 4.6.2(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
@@ -18017,7 +18020,7 @@ snapshots:
       defu: 6.1.7
       h3: 1.15.11
       nuxt-site-config-kit: 4.2.3(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))
-      nuxtseo-shared: 5.3.16(23eb724753098cfda88e8193089b5098)
+      nuxtseo-shared: 5.3.16(d6ca9125425523e1abbb81232a67f0a9)
       pathe: 2.0.3
       pkg-types: 2.3.3
       site-config-stack: 4.2.3(vue@3.5.44(typescript@7.0.2))
@@ -18198,41 +18201,7 @@ snapshots:
       - xml2js
       - yaml
 
-  nuxtseo-shared@5.3.16(23eb724753098cfda88e8193089b5098):
-    dependencies:
-      '@clack/prompts': 1.8.1
-      '@nuxt/devtools-kit': 4.0.0-alpha.7(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
-      '@nuxt/kit': 4.6.2(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
-      '@nuxt/schema': 4.6.2
-      birpc: 4.2.0
-      consola: 3.4.2
-      defu: 6.1.7
-      nuxt: 4.6.2(4691d63ddca722197b4cc370b65876a9)
-      nypm: 0.6.10
-      ofetch: 1.5.1
-      pathe: 2.0.3
-      pkg-types: 2.3.3
-      radix3: 1.1.2
-      sirv: 3.0.2
-      std-env: 4.3.0
-      ufo: 1.6.4
-      vue: 3.5.44(typescript@7.0.2)
-    optionalDependencies:
-      nuxt-site-config: 4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.5)
-      zod: 4.6.5
-    transitivePeerDependencies:
-      - confbox
-      - dotenv
-      - giget
-      - jiti
-      - magic-string
-      - mlly
-      - oxc-parser
-      - rolldown
-      - unplugin
-      - vite
-
-  nuxtseo-shared@5.3.16(431123116b49c0173cb58e74cacc0b60):
+  nuxtseo-shared@5.3.16(a40df7ed3f5aef49584e87a858165066):
     dependencies:
       '@clack/prompts': 1.8.1
       '@nuxt/devtools-kit': 4.0.0-alpha.7(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.141.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
@@ -18252,8 +18221,42 @@ snapshots:
       ufo: 1.6.4
       vue: 3.5.44(typescript@7.0.2)
     optionalDependencies:
-      nuxt-site-config: 4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.5)
-      zod: 4.6.5
+      nuxt-site-config: 4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.6)
+      zod: 4.6.6
+    transitivePeerDependencies:
+      - confbox
+      - dotenv
+      - giget
+      - jiti
+      - magic-string
+      - mlly
+      - oxc-parser
+      - rolldown
+      - unplugin
+      - vite
+
+  nuxtseo-shared@5.3.16(d6ca9125425523e1abbb81232a67f0a9):
+    dependencies:
+      '@clack/prompts': 1.8.1
+      '@nuxt/devtools-kit': 4.0.0-alpha.7(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
+      '@nuxt/kit': 4.6.2(@nuxt/schema@4.6.2)(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))
+      '@nuxt/schema': 4.6.2
+      birpc: 4.2.0
+      consola: 3.4.2
+      defu: 6.1.7
+      nuxt: 4.6.2(4691d63ddca722197b4cc370b65876a9)
+      nypm: 0.6.10
+      ofetch: 1.5.1
+      pathe: 2.0.3
+      pkg-types: 2.3.3
+      radix3: 1.1.2
+      sirv: 3.0.2
+      std-env: 4.3.0
+      ufo: 1.6.4
+      vue: 3.5.44(typescript@7.0.2)
+    optionalDependencies:
+      nuxt-site-config: 4.2.3(@nuxt/schema@4.6.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.3)(mlly@1.8.2)(nuxt@4.6.2(4691d63ddca722197b4cc370b65876a9))(oxc-parser@0.151.0)(rolldown@1.2.11)(unplugin@3.4.0(@types/node@26.6.5)(@volar/typescript@2.4.28(typescript@7.0.2))(@vue/language-core@3.3.11)(esbuild@0.28.2)(jiti@2.7.0)(rolldown@1.2.11)(rollup@4.63.6)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1))(vue@3.5.44(typescript@7.0.2))(zod@4.6.6)
+      zod: 4.6.6
     transitivePeerDependencies:
       - confbox
       - dotenv
@@ -18371,30 +18374,30 @@ snapshots:
       powershell-utils: 0.2.1
       wsl-utils: 1.0.1
 
-  openai@7.19.0(@aws-sdk/credential-provider-node@3.972.88)(@smithy/signature-v4@5.7.4)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5):
+  openai@7.19.0(@aws-sdk/credential-provider-node@3.972.88)(@smithy/signature-v4@5.7.4)(undici@8.10.2)(ws@8.21.3)(zod@4.6.6):
     optionalDependencies:
       '@aws-sdk/credential-provider-node': 3.972.88
       '@smithy/signature-v4': 5.7.4
       undici: 8.10.2
       ws: 8.21.3
-      zod: 4.6.5
+      zod: 4.6.6
 
-  openai@7.19.0(@aws-sdk/credential-provider-node@3.972.88)(@smithy/signature-v4@5.7.4)(undici@8.10.2)(ws@8.22.0)(zod@4.6.5):
+  openai@7.19.0(@aws-sdk/credential-provider-node@3.972.88)(@smithy/signature-v4@5.7.4)(undici@8.10.2)(ws@8.22.0)(zod@4.6.6):
     optionalDependencies:
       '@aws-sdk/credential-provider-node': 3.972.88
       '@smithy/signature-v4': 5.7.4
       undici: 8.10.2
       ws: 8.22.0
-      zod: 4.6.5
+      zod: 4.6.6
     optional: true
 
-  openai@7.19.0(@aws-sdk/credential-provider-node@3.972.88)(@smithy/signature-v4@5.7.4)(undici@8.12.3)(ws@8.22.0)(zod@4.6.5):
+  openai@7.19.0(@aws-sdk/credential-provider-node@3.972.88)(@smithy/signature-v4@5.7.4)(undici@8.12.3)(ws@8.22.0)(zod@4.6.6):
     optionalDependencies:
       '@aws-sdk/credential-provider-node': 3.972.88
       '@smithy/signature-v4': 5.7.4
       undici: 8.12.3
       ws: 8.22.0
-      zod: 4.6.5
+      zod: 4.6.6
     optional: true
 
   optionator@0.9.4:
@@ -20884,12 +20887,12 @@ snapshots:
     dependencies:
       zod: 3.25.76
 
-  zod-to-json-schema@3.25.2(zod@4.6.5):
+  zod-to-json-schema@3.25.2(zod@4.6.6):
     dependencies:
-      zod: 4.6.5
+      zod: 4.6.6
 
   zod@3.25.76: {}
 
-  zod@4.6.5: {}
+  zod@4.6.6: {}
 
   zwitch@2.0.4: {}

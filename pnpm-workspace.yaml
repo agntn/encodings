@@ -63,7 +63,7 @@ catalogs:
     docus: 5.15.0
     nuxt: 4.6.2
     ufo: 1.6.4
-    zod: 4.6.5
+    zod: 4.6.6
   dev:
     "@agntn/ox": 0.1.0
     "@earendil-works/pi-coding-agent": 1.4.0
