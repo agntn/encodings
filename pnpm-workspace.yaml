@@ -53,7 +53,7 @@ catalog:
 # One version per name for the library and docs/, which bundles the library from ../src.
 catalogs:
   deps:
-    "@agntn/hashes": 0.7.2
+    "@agntn/hashes": 0.7.3
     "@agntn/tools": 0.2.4
     "@modelcontextprotocol/sdk": 1.32.2
     "@modelcontextprotocol/server": 2.4.0
