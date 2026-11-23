@@ -11,6 +11,8 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { Client } from "@modelcontextprotocol/client";
+import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
 import { describe, expect, it } from "vite-plus/test";
 
 const switches = new Set([
@@ -494,7 +496,61 @@ function served(from: "bundle" | "source") {
   return { code: 0, from, name: "encodings" };
 }
 
+/** Without a pin, the SDK `Client` never says anything newer than 2025. */
+type Era = "legacy" | Readonly<{ pin: string }>;
+
+/* Starts `mcp` from the built bin and connects a client of one era. */
+async function connect(extraEnv: Readonly<Record<string, string>>, mode: Era): Promise<Client> {
+  const client = new Client(
+    { name: "encodings-test", version: "1.0.0" },
+    { versionNegotiation: { mode } },
+  );
+  await client.connect(
+    new StdioClientTransport({
+      command: process.execPath,
+      args: [join(root, "dist/cli.mjs"), "mcp"],
+      env: { ...env, ...extraEnv },
+      stderr: "ignore",
+    }),
+  );
+  return client;
+}
+
+const builds = [
+  { from: "source", env: {} },
+  { from: "bundle", env: { ENCODINGS_DIST: "1" } },
+] as const;
+const toolNames = [
+  "encodings_encode",
+  "encodings_decode",
+  "encodings_identify",
+  "encodings_info",
+  "encodings_charset_convert",
+];
+
 describe.skipIf(!existsSync(join(root, "dist/cli.mjs")))("encodings mcp from the built bin", () => {
+  it.each(builds)("lets a client pinned to 2026 listen, from the $from", async (build) => {
+    const client = await connect(build.env, { pin: "2026-07-28" });
+    try {
+      expect(client.getNegotiatedProtocolVersion()).toBe("2026-07-28");
+      const subscription = await client.listen({ toolsListChanged: true });
+      expect((await client.listTools()).tools.map((tool) => tool.name)).toEqual(toolNames);
+      await subscription.close();
+    } finally {
+      await client.close();
+    }
+  });
+
+  it.each(builds)("still opens a 2025 client with initialize, from the $from", async (build) => {
+    const client = await connect(build.env, "legacy");
+    try {
+      expect(client.getNegotiatedProtocolVersion()).toMatch(/^2025-/u);
+      expect((await client.listTools()).tools.map((tool) => tool.name)).toEqual(toolNames);
+    } finally {
+      await client.close();
+    }
+  });
+
   it("serves the live source inside a checkout", () => {
     expect(serve(root)).toMatchObject(served("source"));
   });

@@ -43,16 +43,16 @@ function servesSource(): boolean {
 }
 
 /**
- * Serves the live `src/mcp.ts` over stdio, from a URL built at runtime so the bundler leaves
- * `src` out.
+ * Serves the live `src/mcp.ts` over stdio to 2025 and 2026 clients alike, from a URL built at
+ * runtime so the bundler leaves `src` out.
  *
- * @returns {Promise<void>} Once the server is connected.
+ * @returns {Promise<void>} Once the server listens.
  */
 async function serveSourceMcp(): Promise<void> {
   const module: unknown = await import(sourceMcp.href);
   if (!isMcpModule(module)) throw new TypeError(`${sourceMcpPath} has no createMcpServer`);
-  const { StdioServerTransport } = await import("@modelcontextprotocol/server/stdio");
-  await module.createMcpServer().connect(new StdioServerTransport());
+  const { serveStdio } = await import("@modelcontextprotocol/server/stdio");
+  serveStdio(() => module.createMcpServer());
 }
 
 /**
